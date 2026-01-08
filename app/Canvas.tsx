@@ -3,13 +3,23 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Stage, Layer, Line } from "react-konva";
 import Konva from "konva";
-import { Maximize, Minimize } from "lucide-react";
+import {
+  Maximize,
+  Minimize,
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  Layers,
+  FileText,
+  Palette,
+} from "lucide-react";
 
 const CanvasGrid: React.FC = () => {
   const stageRef = useRef<any>(null);
   const [scale, setScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const handleResize = () =>
@@ -78,7 +88,7 @@ const CanvasGrid: React.FC = () => {
   };
 
   return (
-    <div style={{ position: "relative" }}>
+    <div className="relative">
       {/* Stage */}
       <Stage
         width={size.width}
@@ -89,31 +99,74 @@ const CanvasGrid: React.FC = () => {
         style={{ background: "#f5f5f5" }}
       ></Stage>
 
-      <div
-        style={{
-          position: "absolute",
-          bottom: 10,
-          right: 10,
-          zIndex: 10,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
+      {/* Floating Sidebar */}
+      <div className="absolute top-1/2 -translate-y-1/2 left-5 z-20 transition-all duration-300 ease-in-out">
+        <div
+          className={`bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-black/10 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? "w-[280px]" : "w-12"
+          }`}
+          style={{ height: "50vh" }}
+        >
+          {/* Sidebar Header */}
+          <div
+            className={`flex items-center min-h-14 ${
+              isSidebarOpen
+                ? "p-4 border-b border-black/10 justify-between"
+                : "p-3 justify-center"
+            }`}
+          >
+            {isSidebarOpen && (
+              <h2 className="text-lg font-semibold text-[#1a1a1a] m-0">
+                Tools
+              </h2>
+            )}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="bg-transparent border-none cursor-pointer p-2 rounded-md flex items-center justify-center text-gray-600 transition-colors duration-200 hover:bg-black/5"
+            >
+              {isSidebarOpen ? (
+                <ChevronLeft size={20} />
+              ) : (
+                <ChevronRight size={20} />
+              )}
+            </button>
+          </div>
 
-          color: "#fff",
-          fontSize: 14,
-        }}
-        className="flex gap-3"
-      >
+          {/* Sidebar Content */}
+          <div
+            className={`flex-1 flex flex-col overflow-y-auto ${
+              isSidebarOpen ? "p-3 gap-2" : "p-2 gap-1"
+            }`}
+          >
+            <SidebarItem
+              icon={<Layers size={18} />}
+              label="Layers"
+              isMinimized={!isSidebarOpen}
+            />
+            <SidebarItem
+              icon={<Palette size={18} />}
+              label="Colors"
+              isMinimized={!isSidebarOpen}
+            />
+            <SidebarItem
+              icon={<FileText size={18} />}
+              label="Documents"
+              isMinimized={!isSidebarOpen}
+            />
+            <SidebarItem
+              icon={<Settings size={18} />}
+              label="Settings"
+              isMinimized={!isSidebarOpen}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="absolute bottom-[10px] right-[10px] z-10 flex items-center gap-3 text-white text-sm">
         <button
           onClick={toggleFullscreen}
-          style={{
-            zIndex: 10,
-            padding: "8px 12px",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
+          className="z-10 px-3 py-2 text-white border-none rounded cursor-pointer"
         >
           {isFullscreen ? (
             <Minimize className="stroke-gray-500" />
@@ -121,41 +174,42 @@ const CanvasGrid: React.FC = () => {
             <Maximize className="stroke-gray-500" />
           )}
         </button>
-        <div
-          style={{
-            padding: "0 10px",
-            borderRadius: 6,
-          }}
-          className="flex items-center justify-between gap-2 border-2 border-gray-500"
-        >
+        <div className="px-[10px] rounded-md flex items-center justify-between gap-2 border-2 border-gray-500">
           <button
             onClick={() => zoomBy(1.1)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: 16,
-            }}
+            className="bg-transparent border-none text-white cursor-pointer text-base"
           >
             ➕
           </button>
           <span className="text-gray-800">{Math.round(scale * 100)}%</span>
           <button
             onClick={() => zoomBy(0.9)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: 16,
-            }}
+            className="bg-transparent border-none text-white cursor-pointer text-base"
           >
             ➖
           </button>
         </div>
       </div>
     </div>
+  );
+};
+
+// Sidebar Item Component
+const SidebarItem: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  isMinimized?: boolean;
+}> = ({ icon, label, isMinimized = false }) => {
+  return (
+    <button
+      className={`w-full bg-transparent border-none rounded-lg cursor-pointer flex items-center gap-3 text-[#1a1a1a] text-sm font-medium transition-colors duration-200 text-left hover:bg-black/5 ${
+        isMinimized ? "p-3 justify-center" : "px-4 py-3 justify-start"
+      }`}
+      title={isMinimized ? label : undefined}
+    >
+      <span className="text-gray-600 flex items-center">{icon}</span>
+      {!isMinimized && <span>{label}</span>}
+    </button>
   );
 };
 
