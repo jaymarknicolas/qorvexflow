@@ -89,6 +89,8 @@ const CanvasGrid: React.FC = () => {
     if (scale !== 1) zoomBy(1 / scale); // Reset zoom to 1
   };
 
+  const isActive = (section: SidebarSection) => activeSection === section;
+
   return (
     <div
       className="relative"
@@ -140,38 +142,39 @@ const CanvasGrid: React.FC = () => {
               isSidebarOpen ? "p-3 gap-2" : "p-2 gap-1"
             }`}
           >
-            {activeSection === "main" ? (
+            {activeSection === "main" && (
               <>
                 <SidebarItem
                   icon={<Zap size={18} />}
                   label="Widgets"
                   isMinimized={!isSidebarOpen}
                   onClick={() => setActiveSection("widgets")}
-                  isActive={activeSection === "widgets"}
+                  isActive={isActive("widgets")}
                 />
                 <SidebarItem
                   icon={<Palette size={18} />}
                   label="Colors"
                   isMinimized={!isSidebarOpen}
                   onClick={() => setActiveSection("colors")}
-                  isActive={activeSection === "colors"}
+                  isActive={isActive("colors")}
                 />
                 <SidebarItem
                   icon={<FileText size={18} />}
                   label="Documents"
                   isMinimized={!isSidebarOpen}
                   onClick={() => setActiveSection("documents")}
-                  isActive={activeSection === "documents"}
+                  isActive={isActive("documents")}
                 />
                 <SidebarItem
                   icon={<Settings size={18} />}
                   label="Settings"
                   isMinimized={!isSidebarOpen}
                   onClick={() => setActiveSection("settings")}
-                  isActive={activeSection === "settings"}
+                  isActive={isActive("settings")}
                 />
               </>
-            ) : activeSection === "widgets" ? (
+            )}
+            {activeSection === "widgets" && (
               <>
                 <button
                   onClick={() => setActiveSection("main")}
@@ -185,7 +188,7 @@ const CanvasGrid: React.FC = () => {
                   onWidgetDragStart={handleWidgetDragStart}
                 />
               </>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
