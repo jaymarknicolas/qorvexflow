@@ -1,5 +1,5 @@
-import CanvasGrid from "./canvas";
+// import CanvasGrid from "./canvas";
 
 export default function Home() {
-  return <CanvasGrid />;
+  return <div>Welcome to the Home Page</div>;
 }
