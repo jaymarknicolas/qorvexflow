@@ -42,7 +42,7 @@ function WidgetIcon({
 
 export default function WidgetSidebar() {
   return (
-    <aside className="fixed left-6 top-24 z-50 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-3 flex flex-col gap-3">
+    <aside className="fixed left-6 top-1/2 -translate-y-1/2 z-50 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-3 flex flex-col gap-3">
       {widgets.map((w) => (
         <WidgetIcon key={w.id} {...w} />
       ))}
