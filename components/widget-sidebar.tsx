@@ -1,9 +1,10 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { Timer, ListTodo, Music, BarChart3, Calendar } from "lucide-react";
+import { Timer, ListTodo, Music, BarChart3, Calendar, type LucideIcon } from "lucide-react";
+import type { WidgetDefinition } from "@/types";
 
-const widgets = [
+const widgets: WidgetDefinition[] = [
   { id: "pomodoro", icon: Timer, label: "Pomodoro" },
   { id: "tasks", icon: ListTodo, label: "Tasks" },
   { id: "music", icon: Music, label: "Music" },
@@ -11,15 +12,13 @@ const widgets = [
   { id: "calendar", icon: Calendar, label: "Calendar" },
 ];
 
-function WidgetIcon({
-  id,
-  icon: Icon,
-  label,
-}: {
+interface WidgetIconProps {
   id: string;
-  icon: any;
+  icon: LucideIcon;
   label: string;
-}) {
+}
+
+function WidgetIcon({ id, icon: Icon, label }: WidgetIconProps) {
   const { setNodeRef, listeners, attributes } = useDraggable({
     id,
     data: { from: "sidebar" },
@@ -42,9 +41,12 @@ function WidgetIcon({
 
 export default function WidgetSidebar() {
   return (
-    <aside className="fixed left-6 top-1/2 -translate-y-1/2 z-50 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-3 flex flex-col gap-3">
+    <aside
+      className="fixed left-6 top-1/2 -translate-y-1/2 z-50 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl p-3 flex flex-col gap-3"
+      aria-label="Widget sidebar"
+    >
       {widgets.map((w) => (
-        <WidgetIcon key={w.id} {...w} />
+        <WidgetIcon key={w.id} id={w.id} icon={w.icon} label={w.label} />
       ))}
     </aside>
   );

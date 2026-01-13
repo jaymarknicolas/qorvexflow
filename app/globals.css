@@ -129,3 +129,79 @@
     @apply bg-white/10 backdrop-blur-lg border border-white/20;
   }
 }
+
+/* ============================================
+   THEME SYSTEM
+   ============================================ */
+
+/* Neon Cyber Theme (Default) */
+:root[data-theme="neon"] {
+  --theme-bg-from: #0f172a;
+  --theme-bg-via: #1e293b;
+  --theme-bg-to: #0f172a;
+  --theme-primary: #06b6d4;
+  --theme-secondary: #3b82f6;
+  --theme-accent: #a855f7;
+  --theme-glow-1: #06b6d4;
+  --theme-glow-2: #a855f7;
+  --theme-glow-3: #f97316;
+}
+
+:root[data-theme="neon"] .themed-bg {
+  background: linear-gradient(
+      to bottom right,
+      rgba(15, 23, 42, 0.7),
+      rgba(30, 41, 59, 0.75),
+      rgba(15, 23, 42, 0.7)
+    ),
+    url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWE5dWVlZ3BsOHIzYWV3MjN0c3NjeGM1MTNvNzhkNGF1MmQxNGIyNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BROrSHlmyzzHf3i/giphy.gif")
+      center/cover no-repeat fixed;
+}
+
+/* Lo-Fi Night Theme */
+:root[data-theme="lofi"] {
+  --theme-bg-from: #1e1b4b;
+  --theme-bg-via: #312e81;
+  --theme-bg-to: #1e1b4b;
+  --theme-primary: #8b5cf6;
+  --theme-secondary: #ec4899;
+  --theme-accent: #f472b6;
+  --theme-glow-1: #8b5cf6;
+  --theme-glow-2: #ec4899;
+  --theme-glow-3: #f59e0b;
+}
+
+/* :root[data-theme="lofi"] .themed-bg {
+  background: linear-gradient(
+      to bottom right,
+      rgba(30, 27, 75, 0.7),
+      rgba(49, 46, 129, 0.75),
+      rgba(30, 27, 75, 0.7)
+    ),
+    url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHNraGRhbjBuN3JhcDhtcnMyeGN4YXdtNGF6aGVoY3hjdmR6OWV5dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlEpGHMCUcFP8d2/giphy.gif")
+      center/cover no-repeat fixed;
+} */
+
+/* Studio Ghibli Theme */
+:root[data-theme="ghibli"] {
+  --theme-bg-from: #1c4532;
+  --theme-bg-via: #14532d;
+  --theme-bg-to: #1c4532;
+  --theme-primary: #10b981;
+  --theme-secondary: #f59e0b;
+  --theme-accent: #ef4444;
+  --theme-glow-1: #10b981;
+  --theme-glow-2: #f59e0b;
+  --theme-glow-3: #fb923c;
+}
+
+/* :root[data-theme="ghibli"] .themed-bg {
+  background: linear-gradient(
+      to bottom right,
+      rgba(28, 69, 50, 0.7),
+      rgba(20, 83, 45, 0.75),
+      rgba(28, 69, 50, 0.7)
+    ),
+    url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzRkOTBsOGpxN2V3bjNseDlkYmFsMW43eW50NTV3Z2FleG9hZHdjdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TgKEjlhKSXPPuI7OVV/giphy.gif")
+      center/cover no-repeat fixed;
+} */

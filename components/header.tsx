@@ -1,15 +1,10 @@
 "use client";
 
-import { User2, Palette } from "lucide-react";
+import { User2, Layout, Check, Grid3x3, Grid2x2, Maximize, Columns, Rows } from "lucide-react";
 import { useState } from "react";
 import clsx from "clsx";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useTheme } from "@/lib/contexts/theme-context";
+import { useLayout } from "@/lib/contexts/layout-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +25,11 @@ interface NavItem {
   label: string;
 }
 
-export default function Header() {
+interface HeaderProps {
+  onLayoutClick?: () => void;
+}
+
+export default function Header({ onLayoutClick }: HeaderProps = {}) {
   const navItems: NavItem[] = [
     { label: "Dashboard" },
     { label: "Tasks" },
@@ -39,9 +38,12 @@ export default function Header() {
   ];
 
   const [activeNav, setActiveNav] = useState<string>("Dashboard");
+  const { theme, setTheme } = useTheme();
+  const { layout, setLayout } = useLayout();
+
   return (
     <header className="border-b border-white/10 backdrop-blur-md sticky top-0 z-20 bg-slate-950/50">
-      <div className="max-w-11/12 mx-auto px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <div className="flex gap-8">
             {/* Logo */}
@@ -74,22 +76,131 @@ export default function Header() {
             </nav>
           </div>
 
-          <div className="flex gap-8">
+          <div className="flex gap-3">
+            {/* Layout Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors">
+                  <Layout className="w-4 h-4 text-cyan-400" />
+                  <span className="text-sm font-medium">
+                    {layout === "default" && "Default"}
+                    {layout === "grid-3x3" && "Grid 3×3"}
+                    {layout === "grid-2x3" && "Grid 2×3"}
+                    {layout === "single-focus" && "Single Focus"}
+                    {layout === "dual-column" && "Dual Column"}
+                    {layout === "triple-row" && "Triple Row"}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Select Layout</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLayout("default")} className="cursor-pointer">
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Grid2x2 className="w-4 h-4" />
+                      <span>Default (2+3)</span>
+                    </span>
+                    {layout === "default" && <Check className="w-4 h-4 text-cyan-400" />}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLayout("grid-3x3")} className="cursor-pointer">
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Grid3x3 className="w-4 h-4" />
+                      <span>Grid 3×3</span>
+                    </span>
+                    {layout === "grid-3x3" && <Check className="w-4 h-4 text-cyan-400" />}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLayout("grid-2x3")} className="cursor-pointer">
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Grid2x2 className="w-4 h-4" />
+                      <span>Grid 2×3</span>
+                    </span>
+                    {layout === "grid-2x3" && <Check className="w-4 h-4 text-cyan-400" />}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLayout("single-focus")} className="cursor-pointer">
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Maximize className="w-4 h-4" />
+                      <span>Single Focus</span>
+                    </span>
+                    {layout === "single-focus" && <Check className="w-4 h-4 text-cyan-400" />}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLayout("dual-column")} className="cursor-pointer">
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Columns className="w-4 h-4" />
+                      <span>Dual Column</span>
+                    </span>
+                    {layout === "dual-column" && <Check className="w-4 h-4 text-cyan-400" />}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLayout("triple-row")} className="cursor-pointer">
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Rows className="w-4 h-4" />
+                      <span>Triple Row</span>
+                    </span>
+                    {layout === "triple-row" && <Check className="w-4 h-4 text-cyan-400" />}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Theme */}
-            <Select>
-              <SelectTrigger className="w-[180px] flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white">
-                <Palette className="w-4 h-4 text-cyan-400" />
-                <SelectValue
-                  placeholder="Theme"
-                  className="text-sm font-medium text-white"
-                />
-              </SelectTrigger>
-              <SelectContent position="item-aligned" align="end">
-                <SelectItem value="neon">Neon</SelectItem>
-                <SelectItem value="lofi">Lo-Fi Night</SelectItem>
-                <SelectItem value="ghibli">Ghibli</SelectItem>
-              </SelectContent>
-            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors">
+                  <span className="text-sm font-medium">
+                    {theme === "neon" && "🌆 Neon Cyber"}
+                    {theme === "lofi" && "🎵 Lo-Fi Night"}
+                    {theme === "ghibli" && "🌿 Studio Ghibli"}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setTheme("neon")}
+                  className="cursor-pointer"
+                >
+                  <span className="flex items-center justify-between w-full">
+                    <span>🌆 Neon Cyber</span>
+                    {theme === "neon" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setTheme("lofi")}
+                  className="cursor-pointer"
+                >
+                  <span className="flex items-center justify-between w-full">
+                    <span>🎵 Lo-Fi Night</span>
+                    {theme === "lofi" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setTheme("ghibli")}
+                  className="cursor-pointer"
+                >
+                  <span className="flex items-center justify-between w-full">
+                    <span>🌿 Studio Ghibli</span>
+                    {theme === "ghibli" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* User Profile */}
             <DropdownMenu>
