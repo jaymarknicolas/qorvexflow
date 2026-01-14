@@ -6,7 +6,8 @@
 // Widget Configuration
 // ============================================
 
-export const SLOT_IDS = ["slot-1", "slot-2", "slot-3", "slot-4", "slot-5"] as const;
+// Maximum slots supported across all layouts (grid-6 needs 6)
+export const SLOT_IDS = ["slot-1", "slot-2", "slot-3", "slot-4", "slot-5", "slot-6"] as const;
 export type SlotId = (typeof SLOT_IDS)[number];
 
 export const WIDGET_TYPES = ["pomodoro", "tasks", "music", "stats", "calendar", "notes", "youtube"] as const;

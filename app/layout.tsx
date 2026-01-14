@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QorvexFlow",
+  title: "Qorvex",
   description:
-    "QorvexFlow is a next-generation personal workspace that transforms your browser into a dynamic, fully customizable dashboard. Built with Next.js, it empowers you to organize your tools, apps, and tasks in one fluid and futuristic interface.",
+    "Qorvex is a next-generation personal workspace that transforms your browser into a dynamic, fully customizable dashboard. Built with Next.js, it empowers you to organize your tools, apps, and tasks in one fluid and futuristic interface.",
 };
 
 export default function RootLayout({

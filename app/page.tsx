@@ -25,7 +25,16 @@ import { useWidgetSettings } from "@/lib/contexts/widget-settings-context";
 import { useDynamicScale } from "@/lib/hooks/useDynamicScale";
 import { widgetClipboard } from "@/lib/services/widget-clipboard";
 import type { WidgetType } from "@/types";
-import { Timer, ListTodo, Music, BarChart3, Calendar, FileText, Youtube, Quote } from "lucide-react";
+import {
+  Timer,
+  ListTodo,
+  Music,
+  BarChart3,
+  Calendar,
+  FileText,
+  Youtube,
+  Quote,
+} from "lucide-react";
 import NotesWidgetWYSIWYG from "@/components/notes-widget-wysiwyg";
 import YouTubeWidgetInput from "@/components/youtube-widget-input";
 import QuotesWidget from "@/components/quotes-widget";
@@ -70,7 +79,7 @@ export default function Home() {
     isOpen: boolean;
   }>({ type: null, isOpen: false });
   const { theme } = useTheme();
-  
+
   // Reference to workspace content for dynamic scaling
   const workspaceRef = useRef<HTMLDivElement>(null);
   const { scale, shouldScale } = useDynamicScale(workspaceRef, 80);
@@ -133,7 +142,9 @@ export default function Home() {
   // Get responsive widget height classes
   const getWidgetHeightClass = () => {
     if (isMobile) {
-      return "min-h-[280px] max-h-[320px]";
+      // On mobile, widgets should occupy full width and have consistent height
+      // Use fixed height for scrollable experience
+      return "min-h-[400px] h-[400px]";
     }
     return "min-h-[320px] sm:min-h-[360px] lg:min-h-[400px] max-h-[320px] sm:max-h-[360px] lg:max-h-[400px]";
   };
@@ -170,7 +181,9 @@ export default function Home() {
           onResetSettings={() => handleResetSettings(slotWidgets[id]!)}
           dragHandleProps={{ ...listeners, ...attributes }}
         />
-        <WidgetErrorBoundary>{renderWidget(slotWidgets[id])}</WidgetErrorBoundary>
+        <WidgetErrorBoundary>
+          {renderWidget(slotWidgets[id])}
+        </WidgetErrorBoundary>
       </div>
     );
   };
@@ -192,11 +205,13 @@ export default function Home() {
           sections: [
             {
               slots: ["slot-1", "slot-2"],
-              gridClass: "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8",
+              gridClass:
+                "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8",
             },
             {
               slots: ["slot-3", "slot-4", "slot-5"],
-              gridClass: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
+              gridClass:
+                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
             },
           ],
         };
@@ -210,7 +225,8 @@ export default function Home() {
         // Hexagon: 3x2
         return {
           slots: ["slot-1", "slot-2", "slot-3", "slot-4", "slot-5", "slot-6"],
-          gridClass: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
+          gridClass:
+            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
         };
       case "asymmetric":
         // Asymmetric: 1 large + 4 small
@@ -223,7 +239,8 @@ export default function Home() {
             },
             {
               slots: ["slot-2", "slot-3", "slot-4", "slot-5"],
-              gridClass: "grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8",
+              gridClass:
+                "grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8",
             },
           ],
         };
@@ -238,7 +255,8 @@ export default function Home() {
             },
             {
               slots: ["slot-2", "slot-3"],
-              gridClass: "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8",
+              gridClass:
+                "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8",
             },
           ],
         };
@@ -254,11 +272,13 @@ export default function Home() {
           sections: [
             {
               slots: ["slot-1", "slot-2"],
-              gridClass: "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8",
+              gridClass:
+                "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8",
             },
             {
               slots: ["slot-3", "slot-4", "slot-5"],
-              gridClass: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
+              gridClass:
+                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
             },
           ],
         };
@@ -272,10 +292,13 @@ export default function Home() {
     return (
       <div
         ref={workspaceRef}
-        className="max-w-7xl w-full px-4 md:px-6 lg:px-8"
+        className={`max-w-7xl w-full px-3 sm:px-4 md:px-6 lg:px-8 !origin-center ${
+          isMobile ? "pb-24" : ""
+        }`}
         style={{
-          transform: shouldScale ? `scale(${scale})` : "scale(1)",
-          transformOrigin: "center center",
+          // Don't scale on mobile - let users scroll instead
+          transform: shouldScale && !isMobile ? `scale(${scale})` : "scale(1)",
+          transformOrigin: "center top",
           transition: "transform 0.3s ease-out",
         }}
       >
@@ -283,14 +306,21 @@ export default function Home() {
           // Layouts with sections
           <div className="grid grid-cols-1 gap-4 md:gap-6 lg:gap-8">
             {config.sections?.map((section, idx) => (
-              <div key={idx} className={section.gridClass}>
+              <div
+                key={idx}
+                className={
+                  isMobile ? "grid grid-cols-1 gap-4" : section.gridClass
+                }
+              >
                 {section.slots.map((id) => renderWidgetSlot(id))}
               </div>
             ))}
           </div>
         ) : (
           // Single grid layouts
-          <div className={config.gridClass}>
+          <div
+            className={isMobile ? "grid grid-cols-1 gap-4" : config.gridClass}
+          >
             {config.slots.map((id) => renderWidgetSlot(id))}
           </div>
         )}
@@ -299,7 +329,11 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex flex-col themed-bg relative overflow-hidden">
+    <div
+      className={`min-h-screen ${
+        isMobile ? "h-auto" : "h-screen"
+      } flex flex-col themed-bg relative ${isMobile ? "" : "overflow-hidden"}`}
+    >
       {/* Animated background effects */}
       <div className="fixed inset-0 opacity-30 pointer-events-none z-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
@@ -317,21 +351,34 @@ export default function Home() {
         <Header />
       </div>
 
-      <div className="relative z-10 flex-1 flex items-center justify-center overflow-hidden">
+      <div
+        className={`relative z-10 flex-1 flex ${
+          isMobile ? "items-start" : "items-center"
+        } justify-center ${isMobile ? "" : "overflow-hidden"} py-4 md:py-0`}
+      >
         {/* Only render DndContext on client to avoid hydration mismatch */}
         {isMounted ? (
           <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <WidgetSidebar />
             {renderWorkspace()}
             <DragOverlay>
-              {activeId ? (
-                <div className="h-12 w-12 rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-80">
-                  {(() => {
+              {activeId
+                ? (() => {
+                    // When dragging from a slot (widget actions), don't show icon
+                    // Only show icon when dragging from sidebar
+                    const isDraggingFromSlot = activeId.startsWith("widget-");
+
+                    if (isDraggingFromSlot) return;
+
+                    // Dragging from sidebar - show the widget icon
                     const IconComponent = getWidgetIcon(activeId as WidgetType);
-                    return <IconComponent className="h-6 w-6 text-cyan-400" />;
-                  })()}
-                </div>
-              ) : null}
+                    return (
+                      <div className="h-12 w-12 rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm flex items-center justify-center opacity-80">
+                        <IconComponent className="h-6 w-6 text-cyan-400" />
+                      </div>
+                    );
+                  })()
+                : null}
             </DragOverlay>
           </DndContext>
         ) : (

@@ -42,14 +42,15 @@ export function useWorkspace(): UseWorkspaceReturn {
 
   const placeWidget = useCallback(
     (slotId: string, widgetType: WidgetType): boolean => {
-      // Validate slot ID
-      if (!SLOT_IDS.includes(slotId as any)) {
-        console.warn(`Invalid slot ID: ${slotId}`);
+      // Validate slot ID - allow any slot-N format for dynamic layouts
+      const isValidSlotFormat = /^slot-\d+$/.test(slotId);
+      if (!isValidSlotFormat) {
+        console.warn(`Invalid slot ID format: ${slotId}`);
         return false;
       }
 
       // Check if slot is already occupied
-      if (slotWidgets[slotId] !== null) {
+      if (slotWidgets[slotId] !== null && slotWidgets[slotId] !== undefined) {
         console.warn(`Slot ${slotId} is already occupied`);
         return false;
       }
@@ -73,9 +74,10 @@ export function useWorkspace(): UseWorkspaceReturn {
 
   const moveWidget = useCallback(
     (fromSlotId: string, toSlotId: string): boolean => {
-      // Validate slot IDs
-      if (!SLOT_IDS.includes(fromSlotId as any) || !SLOT_IDS.includes(toSlotId as any)) {
-        console.warn("Invalid slot ID");
+      // Validate slot IDs - allow any slot-N format for dynamic layouts
+      const slotRegex = /^slot-\d+$/;
+      if (!slotRegex.test(fromSlotId) || !slotRegex.test(toSlotId)) {
+        console.warn("Invalid slot ID format");
         return false;
       }
 
@@ -86,10 +88,11 @@ export function useWorkspace(): UseWorkspaceReturn {
         return false;
       }
 
-      // Move widget
+      // Move widget (swap if target has a widget)
+      const targetWidget = slotWidgets[toSlotId];
       setSlotWidgets((prev) => ({
         ...prev,
-        [fromSlotId]: null,
+        [fromSlotId]: targetWidget || null,
         [toSlotId]: widgetType,
       }));
 

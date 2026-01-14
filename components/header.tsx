@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 interface NavItem {
   label: string;
@@ -292,13 +293,11 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               {/* Logo */}
               <div className="flex items-center gap-2.5 group cursor-pointer">
                 <div className="relative">
-                  <div
-                    className={`w-9 h-9 rounded-xl bg-gradient-to-br ${colors.logoGradient} flex items-center justify-center shadow-lg ${colors.logoShadow} transition-shadow`}
-                  >
-                    <span className="text-white font-bold text-base">Q</span>
-                  </div>
-                  <div
-                    className={`absolute inset-0 rounded-xl bg-gradient-to-br ${colors.logoGlow} blur-lg opacity-0 group-hover:opacity-50 transition-opacity`}
+                  <Image
+                    src="/images/logo.png"
+                    alt="Qorvex Logo"
+                    width={36}
+                    height={36}
                   />
                 </div>
                 <div className="hidden sm:flex flex-col">
