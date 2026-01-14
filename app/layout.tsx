@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/contexts/theme-context";
 import { LayoutProvider } from "@/lib/contexts/layout-context";
+import { WidgetSettingsProvider } from "@/lib/contexts/widget-settings-context";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +34,12 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <LayoutProvider>{children}</LayoutProvider>
+          <LayoutProvider>
+            <WidgetSettingsProvider>
+              {children}
+              <Toaster position="bottom-right" richColors />
+            </WidgetSettingsProvider>
+          </LayoutProvider>
         </ThemeProvider>
       </body>
     </html>

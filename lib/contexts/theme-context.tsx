@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 
 export type ThemeType = "neon" | "lofi" | "ghibli";
 
@@ -12,7 +18,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeType>("neon");
+  const [theme, setThemeState] = useState<ThemeType>("lofi");
   const [isMounted, setIsMounted] = useState(false);
 
   // Load theme from localStorage on mount

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
-export type LayoutType = "default" | "grid-3x3" | "grid-2x3" | "single-focus" | "dual-column" | "triple-row";
+export type LayoutType = "grid-5" | "grid-4" | "grid-6" | "asymmetric" | "focus" | "kanban";
 
 interface LayoutContextType {
   layout: LayoutType;
@@ -12,7 +12,7 @@ interface LayoutContextType {
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export function LayoutProvider({ children }: { children: ReactNode }) {
-  const [layout, setLayoutState] = useState<LayoutType>("default");
+  const [layout, setLayoutState] = useState<LayoutType>("grid-5");
   const [isMounted, setIsMounted] = useState(false);
 
   // Load layout from localStorage on mount
@@ -20,7 +20,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     setIsMounted(true);
     if (typeof window !== "undefined") {
       const savedLayout = localStorage.getItem("qorvexflow_layout") as LayoutType;
-      if (savedLayout && ["default", "grid-3x3", "grid-2x3", "single-focus", "dual-column", "triple-row"].includes(savedLayout)) {
+      if (savedLayout && ["grid-5", "grid-4", "grid-6", "asymmetric", "focus", "kanban"].includes(savedLayout)) {
         setLayoutState(savedLayout);
       }
     }

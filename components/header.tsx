@@ -1,6 +1,15 @@
 "use client";
 
-import { User2, Layout, Check, Grid3x3, Grid2x2, Maximize, Columns, Rows } from "lucide-react";
+import {
+  User2,
+  Layout,
+  Check,
+  Grid3x3,
+  Grid2x2,
+  Maximize,
+  Columns,
+  Rows,
+} from "lucide-react";
 import { useState } from "react";
 import clsx from "clsx";
 import { useTheme } from "@/lib/contexts/theme-context";
@@ -57,7 +66,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
             </div>
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center bg-white/10 rounded-full p-1">
+            {/* <nav className="hidden md:flex items-center bg-white/10 rounded-full p-1">
               {navItems.map((item) => (
                 <div
                   key={item.label}
@@ -73,7 +82,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   </span>
                 </div>
               ))}
-            </nav>
+            </nav> */}
           </div>
 
           <div className="flex gap-3">
@@ -83,70 +92,100 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                 <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors">
                   <Layout className="w-4 h-4 text-cyan-400" />
                   <span className="text-sm font-medium">
-                    {layout === "default" && "Default"}
-                    {layout === "grid-3x3" && "Grid 3×3"}
-                    {layout === "grid-2x3" && "Grid 2×3"}
-                    {layout === "single-focus" && "Single Focus"}
-                    {layout === "dual-column" && "Dual Column"}
-                    {layout === "triple-row" && "Triple Row"}
+                    {layout === "grid-5" && "Classic Grid"}
+                    {layout === "grid-4" && "Quad Grid"}
+                    {layout === "grid-6" && "Hexagon"}
+                    {layout === "asymmetric" && "Asymmetric"}
+                    {layout === "focus" && "Focus Mode"}
+                    {layout === "kanban" && "Kanban Board"}
                   </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Select Layout</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setLayout("default")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => setLayout("grid-5")}
+                  className="cursor-pointer"
+                >
                   <span className="flex items-center justify-between w-full">
                     <span className="flex items-center gap-2">
                       <Grid2x2 className="w-4 h-4" />
-                      <span>Default (2+3)</span>
+                      <span>Classic Grid (2+3)</span>
                     </span>
-                    {layout === "default" && <Check className="w-4 h-4 text-cyan-400" />}
+                    {layout === "grid-5" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
                   </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLayout("grid-3x3")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => setLayout("grid-4")}
+                  className="cursor-pointer"
+                >
+                  <span className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-2">
+                      <Grid2x2 className="w-4 h-4" />
+                      <span>Quad Grid (2×2)</span>
+                    </span>
+                    {layout === "grid-4" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLayout("grid-6")}
+                  className="cursor-pointer"
+                >
                   <span className="flex items-center justify-between w-full">
                     <span className="flex items-center gap-2">
                       <Grid3x3 className="w-4 h-4" />
-                      <span>Grid 3×3</span>
+                      <span>Hexagon (3×2)</span>
                     </span>
-                    {layout === "grid-3x3" && <Check className="w-4 h-4 text-cyan-400" />}
+                    {layout === "grid-6" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
                   </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLayout("grid-2x3")} className="cursor-pointer">
-                  <span className="flex items-center justify-between w-full">
-                    <span className="flex items-center gap-2">
-                      <Grid2x2 className="w-4 h-4" />
-                      <span>Grid 2×3</span>
-                    </span>
-                    {layout === "grid-2x3" && <Check className="w-4 h-4 text-cyan-400" />}
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLayout("single-focus")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => setLayout("asymmetric")}
+                  className="cursor-pointer"
+                >
                   <span className="flex items-center justify-between w-full">
                     <span className="flex items-center gap-2">
                       <Maximize className="w-4 h-4" />
-                      <span>Single Focus</span>
+                      <span>Asymmetric (1+4)</span>
                     </span>
-                    {layout === "single-focus" && <Check className="w-4 h-4 text-cyan-400" />}
+                    {layout === "asymmetric" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
                   </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLayout("dual-column")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => setLayout("focus")}
+                  className="cursor-pointer"
+                >
                   <span className="flex items-center justify-between w-full">
                     <span className="flex items-center gap-2">
-                      <Columns className="w-4 h-4" />
-                      <span>Dual Column</span>
+                      <Maximize className="w-4 h-4" />
+                      <span>Focus Mode (1+2)</span>
                     </span>
-                    {layout === "dual-column" && <Check className="w-4 h-4 text-cyan-400" />}
+                    {layout === "focus" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
                   </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLayout("triple-row")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => setLayout("kanban")}
+                  className="cursor-pointer"
+                >
                   <span className="flex items-center justify-between w-full">
                     <span className="flex items-center gap-2">
                       <Rows className="w-4 h-4" />
-                      <span>Triple Row</span>
+                      <span>Kanban Board (3 cols)</span>
                     </span>
-                    {layout === "triple-row" && <Check className="w-4 h-4 text-cyan-400" />}
+                    {layout === "kanban" && (
+                      <Check className="w-4 h-4 text-cyan-400" />
+                    )}
                   </span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -220,10 +259,6 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    Billing
-                    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
                     Settings
                     <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                   </DropdownMenuItem>
@@ -232,31 +267,6 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>Team</DropdownMenuItem>
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      Invite users
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem>Email</DropdownMenuItem>
-                        <DropdownMenuItem>Message</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>More...</DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
-                  <DropdownMenuItem>
-                    New Team
-                    <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>GitHub</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-                <DropdownMenuItem disabled>API</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   Log out

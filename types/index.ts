@@ -8,7 +8,7 @@ import { LucideIcon } from "lucide-react";
 // Widget Types
 // ============================================
 
-export type WidgetType = "pomodoro" | "tasks" | "music" | "stats" | "calendar";
+export type WidgetType = "pomodoro" | "tasks" | "music" | "stats" | "calendar" | "notes" | "youtube" | "quotes";
 
 export interface WidgetDefinition {
   id: WidgetType;

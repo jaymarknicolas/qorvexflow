@@ -9,7 +9,7 @@
 export const SLOT_IDS = ["slot-1", "slot-2", "slot-3", "slot-4", "slot-5"] as const;
 export type SlotId = (typeof SLOT_IDS)[number];
 
-export const WIDGET_TYPES = ["pomodoro", "tasks", "music", "stats", "calendar"] as const;
+export const WIDGET_TYPES = ["pomodoro", "tasks", "music", "stats", "calendar", "notes", "youtube"] as const;
 export type WidgetType = (typeof WIDGET_TYPES)[number];
 
 // ============================================
@@ -46,9 +46,12 @@ export const STORAGE_KEYS = {
   TASKS: "qorvexflow_tasks",
   POMODORO: "qorvexflow_pomodoro",
   MUSIC: "qorvexflow_music",
+  MUSIC_PLAYER: "qorvexflow_music_player",
   CALENDAR: "qorvexflow_calendar",
   FOCUS_STATS: "qorvexflow_focus_stats",
   SETTINGS: "qorvexflow_settings",
+  NOTES: "qorvexflow_notes",
+  YOUTUBE: "qorvexflow_youtube",
   LAST_SAVED: "qorvexflow_last_saved",
 } as const;
 

@@ -16,6 +16,7 @@ export default function PomodoroWidget({
     mode,
     progress,
     displayTime,
+    cycleCount,
     start,
     pause,
     reset,
@@ -30,9 +31,15 @@ export default function PomodoroWidget({
         <div className="flex items-start justify-between mb-8">
           <div>
             <h2 className="text-xl font-bold text-white">
-              {mode === "work" ? "🍅 Focus Time" : "☕ Break Time"}
+              {mode === "work" ? "🍅 Focus Time" : mode === "long-break" ? "🌴 Long Break" : "☕ Short Break"}
             </h2>
-            <p className="text-xs text-white/60 mt-1">{mode === "work" ? "Stay focused!" : "Relax and recharge"}</p>
+            <p className="text-xs text-white/60 mt-1">
+              {mode === "work"
+                ? `Stay focused! (${cycleCount}/4 until long break)`
+                : mode === "long-break"
+                ? "Great job! Take a longer rest"
+                : "Relax and recharge"}
+            </p>
           </div>
         </div>
 

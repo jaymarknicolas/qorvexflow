@@ -128,6 +128,62 @@
   .glass {
     @apply bg-white/10 backdrop-blur-lg border border-white/20;
   }
+
+  /* TipTap Editor Styles */
+  .ProseMirror {
+    @apply text-white outline-none;
+  }
+
+  .ProseMirror p {
+    @apply mb-2;
+  }
+
+  .ProseMirror h1 {
+    @apply text-2xl font-bold mb-3 text-white;
+  }
+
+  .ProseMirror h2 {
+    @apply text-xl font-bold mb-2 text-white;
+  }
+
+  .ProseMirror h3 {
+    @apply text-lg font-bold mb-2 text-white;
+  }
+
+  .ProseMirror ul {
+    @apply list-disc pl-6 mb-2;
+  }
+
+  .ProseMirror ol {
+    @apply list-decimal pl-6 mb-2;
+  }
+
+  .ProseMirror li {
+    @apply mb-1;
+  }
+
+  .ProseMirror a {
+    @apply text-cyan-400 underline cursor-pointer;
+  }
+
+  .ProseMirror .is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply float-left h-0 pointer-events-none text-white/40;
+  }
+
+  /* Custom scrollbar for widgets */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-white/5 rounded;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded hover:bg-white/30;
+  }
 }
 
 /* ============================================
