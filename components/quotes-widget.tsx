@@ -162,16 +162,53 @@ const MOTIVATIONAL_QUOTES: QuoteData[] = [
   },
 ];
 
+// Persist quotes widget state in memory across re-mounts
+let persistedQuotesState: {
+  quote: QuoteData;
+  isFavorite: boolean;
+} | null = null;
+
 export default function QuotesWidget() {
-  const [currentQuote, setCurrentQuote] = useState<QuoteData>(
-    MOTIVATIONAL_QUOTES[0]
-  );
-  const [isFavorite, setIsFavorite] = useState(false);
+  // Initialize from memory first, then localStorage
+  const [currentQuote, setCurrentQuote] = useState<QuoteData>(() => {
+    if (persistedQuotesState !== null) {
+      return persistedQuotesState.quote;
+    }
+    // Try to load from localStorage
+    if (typeof window !== "undefined") {
+      const savedQuoteIndex = localStorage.getItem("qorvexflow_quote_index");
+      if (savedQuoteIndex) {
+        const index = parseInt(savedQuoteIndex, 10);
+        if (index >= 0 && index < MOTIVATIONAL_QUOTES.length) {
+          return MOTIVATIONAL_QUOTES[index];
+        }
+      }
+    }
+    return MOTIVATIONAL_QUOTES[0];
+  });
+
+  const [isFavorite, setIsFavorite] = useState(() => {
+    if (persistedQuotesState !== null) {
+      return persistedQuotesState.isFavorite;
+    }
+    return false;
+  });
+
   const [copied, setCopied] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Load quote of the day on mount
+  // Keep memory state in sync
   useEffect(() => {
+    persistedQuotesState = { quote: currentQuote, isFavorite };
+  }, [currentQuote, isFavorite]);
+
+  // Only run localStorage initialization on first mount when no persisted state
+  useEffect(() => {
+    if (persistedQuotesState !== null && persistedQuotesState.quote !== MOTIVATIONAL_QUOTES[0]) {
+      // Already initialized from memory
+      return;
+    }
+
     const today = new Date().toDateString();
     const savedDate = localStorage.getItem("qorvexflow_quote_date");
     const savedQuoteIndex = localStorage.getItem("qorvexflow_quote_index");

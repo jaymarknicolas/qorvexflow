@@ -3,42 +3,66 @@
 import { useState, useEffect } from "react";
 import { Youtube, Link as LinkIcon, Play } from "lucide-react";
 
+// Persist YouTube widget state in memory across re-mounts
+let persistedYouTubeState: {
+  videoUrl: string;
+  embedUrl: string;
+} | null = null;
+
+// Helper to convert URL to embed format
+const convertToEmbedUrl = (url: string): string => {
+  try {
+    let videoId = "";
+    if (url.includes("youtube.com/watch?v=")) {
+      videoId = url.split("v=")[1]?.split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    } else if (url.includes("youtube.com/embed/")) {
+      videoId = url.split("embed/")[1]?.split("?")[0];
+    }
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
+    }
+    return "";
+  } catch {
+    return "";
+  }
+};
+
 export default function YouTubeWidgetInput() {
-  const [videoUrl, setVideoUrl] = useState("");
-  const [embedUrl, setEmbedUrl] = useState("");
+  // Initialize from memory first, then localStorage
+  const [videoUrl, setVideoUrl] = useState(() => {
+    if (persistedYouTubeState !== null) {
+      return persistedYouTubeState.videoUrl;
+    }
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("qorvexflow_youtube_url");
+      if (saved) {
+        return saved;
+      }
+    }
+    return "";
+  });
+
+  const [embedUrl, setEmbedUrl] = useState(() => {
+    if (persistedYouTubeState !== null) {
+      return persistedYouTubeState.embedUrl;
+    }
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("qorvexflow_youtube_url");
+      if (saved) {
+        return convertToEmbedUrl(saved);
+      }
+    }
+    return "";
+  });
+
   const [inputValue, setInputValue] = useState("");
 
-  // Load from localStorage
+  // Keep memory state in sync
   useEffect(() => {
-    const saved = localStorage.getItem("qorvexflow_youtube_url");
-    if (saved) {
-      setVideoUrl(saved);
-      setEmbedUrl(convertToEmbedUrl(saved));
-    }
-  }, []);
-
-  const convertToEmbedUrl = (url: string): string => {
-    try {
-      // Extract video ID from various YouTube URL formats
-      let videoId = "";
-
-      if (url.includes("youtube.com/watch?v=")) {
-        videoId = url.split("v=")[1]?.split("&")[0];
-      } else if (url.includes("youtu.be/")) {
-        videoId = url.split("youtu.be/")[1]?.split("?")[0];
-      } else if (url.includes("youtube.com/embed/")) {
-        videoId = url.split("embed/")[1]?.split("?")[0];
-      }
-
-      if (videoId) {
-        return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
-      }
-
-      return "";
-    } catch {
-      return "";
-    }
-  };
+    persistedYouTubeState = { videoUrl, embedUrl };
+  }, [videoUrl, embedUrl]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -20,14 +20,28 @@ export interface UseTasksReturn {
   completionRate: number;
 }
 
-export function useTasks(): UseTasksReturn {
-  const [tasks, setTasks] = useState<Task[]>([]);
+// Persist tasks in memory across re-mounts (for when component re-renders)
+let persistedTasks: Task[] | null = null;
 
-  // Load tasks from localStorage on mount
+export function useTasks(): UseTasksReturn {
+  // Initialize from memory first, then localStorage
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    if (persistedTasks !== null) {
+      return persistedTasks;
+    }
+    // Try to load from localStorage during initialization
+    if (typeof window !== "undefined") {
+      const savedTasks = tasksStorage.load();
+      persistedTasks = savedTasks;
+      return savedTasks;
+    }
+    return [];
+  });
+
+  // Keep memory state in sync
   useEffect(() => {
-    const savedTasks = tasksStorage.load();
-    setTasks(savedTasks);
-  }, []);
+    persistedTasks = tasks;
+  }, [tasks]);
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {

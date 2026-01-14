@@ -564,7 +564,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
 
@@ -574,7 +574,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={`fixed top-0 right-0 bottom-0 w-full max-w-sm ${colors.mobileMenuBg} backdrop-blur-xl border-l border-white/10 z-50 lg:hidden overflow-y-auto`}
+              className={`fixed top-0 right-0 bottom-0 w-full max-w-sm ${colors.mobileMenuBg} backdrop-blur-xl border-l border-white/10 z-[101] lg:hidden overflow-y-auto`}
             >
               {/* Mobile Menu Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">

@@ -25,6 +25,15 @@ export interface UsePomodoroReturn {
   testSound: () => void;
 }
 
+// Persist timer state in memory across re-renders (but not page refreshes)
+// This helps maintain state when components re-mount due to parent re-renders
+let persistedTimerState: {
+  timeLeft: number;
+  isRunning: boolean;
+  mode: "work" | "short-break" | "long-break";
+  lastUpdateTime: number;
+} | null = null;
+
 export function usePomodoro(): UsePomodoroReturn {
   // Load settings from localStorage
   const [settings, setSettings] = useState<PomodoroWidgetSettings>(() => {
@@ -41,14 +50,42 @@ export function usePomodoro(): UsePomodoroReturn {
     return DEFAULT_WIDGET_SETTINGS.pomodoro;
   });
 
-  const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60);
-  const [isRunning, setIsRunning] = useState(false);
+  // Initialize state from persisted memory state or defaults
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (persistedTimerState) {
+      // Calculate elapsed time since last update
+      const elapsed = Math.floor((Date.now() - persistedTimerState.lastUpdateTime) / 1000);
+      if (persistedTimerState.isRunning) {
+        return Math.max(0, persistedTimerState.timeLeft - elapsed);
+      }
+      return persistedTimerState.timeLeft;
+    }
+    return settings.workDuration * 60;
+  });
+
+  const [isRunning, setIsRunning] = useState(() => {
+    return persistedTimerState?.isRunning ?? false;
+  });
+
+  const [mode, setMode] = useState<"work" | "short-break" | "long-break">(() => {
+    return persistedTimerState?.mode ?? "work";
+  });
+
   const [sessions, setSessions] = useState(0);
-  const [mode, setMode] = useState<"work" | "short-break" | "long-break">("work");
   const [cycleCount, setCycleCount] = useState(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Persist timer state to memory on every change
+  useEffect(() => {
+    persistedTimerState = {
+      timeLeft,
+      isRunning,
+      mode,
+      lastUpdateTime: Date.now(),
+    };
+  }, [timeLeft, isRunning, mode]);
 
   // Calculate durations based on settings
   const workDuration = settings.workDuration * 60;

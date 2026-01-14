@@ -15,16 +15,29 @@ import {
   Heading2,
 } from "lucide-react";
 
-export default function NotesWidgetWYSIWYG() {
-  const [content, setContent] = useState("");
+// Persist notes content in memory across re-mounts
+let persistedNotesContent: string | null = null;
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("qorvexflow_notes_wysiwyg");
-    if (saved) {
-      setContent(saved);
+export default function NotesWidgetWYSIWYG() {
+  // Initialize from memory first, then localStorage
+  const [content, setContent] = useState(() => {
+    if (persistedNotesContent !== null) {
+      return persistedNotesContent;
     }
-  }, []);
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("qorvexflow_notes_wysiwyg");
+      if (saved) {
+        persistedNotesContent = saved;
+        return saved;
+      }
+    }
+    return "";
+  });
+
+  // Keep memory state in sync
+  useEffect(() => {
+    persistedNotesContent = content;
+  }, [content]);
 
   const editor = useEditor({
     immediatelyRender: false,

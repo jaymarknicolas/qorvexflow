@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   Play,
   Pause,
@@ -82,22 +82,107 @@ const GHIBLI_STREAMS = [
   "https://www.youtube.com/embed/I4fxYapxu5M?autoplay=1&mute=0", // The Wind Rises
 ];
 
+// Track state for each theme to preserve playback position
+interface ThemeState {
+  lofi: { track: number; isPlaying: boolean };
+  ghibli: { track: number; isPlaying: boolean };
+}
+
+// Persist music player state in memory across re-mounts
+let persistedMusicState: {
+  isPlaying: boolean;
+  currentTrack: number;
+  volume: number;
+  isMuted: boolean;
+  isShuffleOn: boolean;
+  isRepeatOn: boolean;
+  themeState: ThemeState;
+  currentTheme: string;
+} | null = null;
+
 export default function MusicPlayerSimple() {
   const { theme } = useTheme();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
-  const [volume, setVolume] = useState(70);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isShuffleOn, setIsShuffleOn] = useState(false);
-  const [isRepeatOn, setIsRepeatOn] = useState(false);
+
+  // Use refs to track the previous theme and preserve state
+  const prevThemeRef = useRef(persistedMusicState?.currentTheme ?? theme);
+  const themeStateRef = useRef<ThemeState>(
+    persistedMusicState?.themeState ?? {
+      lofi: { track: 0, isPlaying: false },
+      ghibli: { track: 0, isPlaying: false },
+    }
+  );
+
+  // Initialize state from persisted memory or defaults
+  const [isPlaying, setIsPlaying] = useState(
+    () => persistedMusicState?.isPlaying ?? false
+  );
+  const [currentTrack, setCurrentTrack] = useState(
+    () => persistedMusicState?.currentTrack ?? 0
+  );
+  const [volume, setVolume] = useState(
+    () => persistedMusicState?.volume ?? 70
+  );
+  const [isMuted, setIsMuted] = useState(
+    () => persistedMusicState?.isMuted ?? false
+  );
+  const [isShuffleOn, setIsShuffleOn] = useState(
+    () => persistedMusicState?.isShuffleOn ?? false
+  );
+  const [isRepeatOn, setIsRepeatOn] = useState(
+    () => persistedMusicState?.isRepeatOn ?? false
+  );
   const [waveformOffset, setWaveformOffset] = useState(0);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [playHistory, setPlayHistory] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Track the current stream key to prevent unnecessary iframe reloads
+  const [streamKey, setStreamKey] = useState(0);
+
+  // Persist music player state to memory on changes
+  useEffect(() => {
+    persistedMusicState = {
+      isPlaying,
+      currentTrack,
+      volume,
+      isMuted,
+      isShuffleOn,
+      isRepeatOn,
+      themeState: themeStateRef.current,
+      currentTheme: theme,
+    };
+  }, [isPlaying, currentTrack, volume, isMuted, isShuffleOn, isRepeatOn, theme]);
+
   // Choose the right track list & stream URLs
   const TRACKS = theme === "ghibli" ? GHIBLI_TRACKS : LOFI_TRACKS;
   const STREAMS = theme === "ghibli" ? GHIBLI_STREAMS : STREAM_URLS;
+
+  // Handle theme changes - preserve playing state and track position per theme
+  useEffect(() => {
+    if (prevThemeRef.current !== theme) {
+      // Save current state for previous theme
+      const prevThemeKey = prevThemeRef.current === "ghibli" ? "ghibli" : "lofi";
+      themeStateRef.current[prevThemeKey] = {
+        track: currentTrack,
+        isPlaying: isPlaying,
+      };
+
+      // Restore state for new theme
+      const newThemeKey = theme === "ghibli" ? "ghibli" : "lofi";
+      const savedState = themeStateRef.current[newThemeKey];
+
+      // Only update track if theme actually changed
+      setCurrentTrack(savedState.track);
+
+      // Increment stream key to force iframe reload with new theme's stream
+      if (isPlaying) {
+        setIsLoading(true);
+        setStreamKey((prev) => prev + 1);
+      }
+
+      prevThemeRef.current = theme;
+    }
+  }, [theme, currentTrack, isPlaying]);
 
   // Theme colors
   const getThemeColors = () => {
@@ -231,9 +316,14 @@ export default function MusicPlayerSimple() {
   // Current track data
   const currentTrackData = TRACKS[currentTrack];
 
+  // Only set random track on first ever mount (when no persisted state)
+  const hasInitializedRef = useRef(persistedMusicState !== null);
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * LOFI_TRACKS.length);
-    setCurrentTrack(randomIndex);
+    if (!hasInitializedRef.current) {
+      const randomIndex = Math.floor(Math.random() * LOFI_TRACKS.length);
+      setCurrentTrack(randomIndex);
+      hasInitializedRef.current = true;
+    }
   }, []);
 
   return (
@@ -241,7 +331,7 @@ export default function MusicPlayerSimple() {
       {/* Hidden iframe for music playback */}
       {isPlaying && (
         <iframe
-          key={`stream-${currentTrack}`}
+          key={`stream-${currentTrack}-${streamKey}`}
           src={
             isPlaying
               ? STREAMS[currentTrack % STREAMS.length]
