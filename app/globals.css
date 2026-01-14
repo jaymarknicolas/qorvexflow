@@ -131,7 +131,8 @@
 
   /* TipTap Editor Styles */
   .ProseMirror {
-    @apply text-white outline-none;
+    @apply outline-none;
+    color: var(--theme-text);
   }
 
   .ProseMirror p {
@@ -139,15 +140,18 @@
   }
 
   .ProseMirror h1 {
-    @apply text-2xl font-bold mb-3 text-white;
+    @apply text-2xl font-bold mb-3;
+    color: var(--theme-text);
   }
 
   .ProseMirror h2 {
-    @apply text-xl font-bold mb-2 text-white;
+    @apply text-xl font-bold mb-2;
+    color: var(--theme-text);
   }
 
   .ProseMirror h3 {
-    @apply text-lg font-bold mb-2 text-white;
+    @apply text-lg font-bold mb-2;
+    color: var(--theme-text);
   }
 
   .ProseMirror ul {
@@ -163,12 +167,14 @@
   }
 
   .ProseMirror a {
-    @apply text-cyan-400 underline cursor-pointer;
+    color: var(--theme-primary);
+    @apply underline cursor-pointer;
   }
 
   .ProseMirror .is-editor-empty:first-child::before {
     content: attr(data-placeholder);
-    @apply float-left h-0 pointer-events-none text-white/40;
+    @apply float-left h-0 pointer-events-none;
+    color: var(--theme-text-muted);
   }
 
   /* Custom scrollbar for widgets */
@@ -187,77 +193,265 @@
 }
 
 /* ============================================
-   THEME SYSTEM
+   THEME SYSTEM - Lo-Fi & Ghibli
    ============================================ */
 
-/* Neon Cyber Theme (Default) */
-:root[data-theme="neon"] {
-  --theme-bg-from: #0f172a;
-  --theme-bg-via: #1e293b;
-  --theme-bg-to: #0f172a;
-  --theme-primary: #06b6d4;
-  --theme-secondary: #3b82f6;
-  --theme-accent: #a855f7;
-  --theme-glow-1: #06b6d4;
-  --theme-glow-2: #a855f7;
-  --theme-glow-3: #f97316;
-}
-
-:root[data-theme="neon"] .themed-bg {
-  background: linear-gradient(
-      to bottom right,
-      rgba(15, 23, 42, 0.7),
-      rgba(30, 41, 59, 0.75),
-      rgba(15, 23, 42, 0.7)
-    ),
-    url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWE5dWVlZ3BsOHIzYWV3MjN0c3NjeGM1MTNvNzhkNGF1MmQxNGIyNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BROrSHlmyzzHf3i/giphy.gif")
-      center/cover no-repeat fixed;
-}
-
-/* Lo-Fi Night Theme */
+/* ============================================
+   LO-FI NIGHT THEME
+   A cozy, purple-pink aesthetic inspired by
+   lo-fi hip hop and late night study sessions
+   ============================================ */
 :root[data-theme="lofi"] {
+  /* Background colors */
   --theme-bg-from: #1e1b4b;
   --theme-bg-via: #312e81;
   --theme-bg-to: #1e1b4b;
-  --theme-primary: #8b5cf6;
-  --theme-secondary: #ec4899;
-  --theme-accent: #f472b6;
+
+  /* Primary colors - Purple/Violet */
+  --theme-primary: #a78bfa;
+  --theme-primary-hover: #c4b5fd;
+  --theme-primary-dark: #7c3aed;
+
+  /* Secondary colors - Pink */
+  --theme-secondary: #f472b6;
+  --theme-secondary-hover: #f9a8d4;
+  --theme-secondary-dark: #db2777;
+
+  /* Accent colors */
+  --theme-accent: #818cf8;
+  --theme-accent-hover: #a5b4fc;
+
+  /* Text colors */
+  --theme-text: #f5f3ff;
+  --theme-text-secondary: #c4b5fd;
+  --theme-text-muted: rgba(196, 181, 253, 0.6);
+
+  /* Surface colors */
+  --theme-surface: rgba(49, 46, 129, 0.4);
+  --theme-surface-hover: rgba(49, 46, 129, 0.6);
+  --theme-surface-border: rgba(167, 139, 250, 0.2);
+
+  /* Glow effects */
   --theme-glow-1: #8b5cf6;
   --theme-glow-2: #ec4899;
   --theme-glow-3: #f59e0b;
+
+  /* Gradient */
+  --theme-gradient-from: #8b5cf6;
+  --theme-gradient-to: #ec4899;
+
+  /* Header/Navigation */
+  --theme-header-bg: rgba(30, 27, 75, 0.8);
+  --theme-header-border: rgba(167, 139, 250, 0.1);
+
+  /* Widget specific */
+  --theme-widget-bg: rgba(49, 46, 129, 0.3);
+  --theme-widget-border: rgba(167, 139, 250, 0.15);
+
+  /* Button styles */
+  --theme-btn-primary-from: #8b5cf6;
+  --theme-btn-primary-to: #ec4899;
+
+  /* Font */
+  --theme-font-family: "Geist", system-ui, -apple-system, sans-serif;
+  --theme-font-heading: "Geist", system-ui, -apple-system, sans-serif;
 }
 
-/* :root[data-theme="lofi"] .themed-bg {
-  background: linear-gradient(
-      to bottom right,
-      rgba(30, 27, 75, 0.7),
-      rgba(49, 46, 129, 0.75),
-      rgba(30, 27, 75, 0.7)
-    ),
-    url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHNraGRhbjBuN3JhcDhtcnMyeGN4YXdtNGF6aGVoY3hjdmR6OWV5dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlEpGHMCUcFP8d2/giphy.gif")
-      center/cover no-repeat fixed;
-} */
+/* Lo-Fi Theme Specific Styles */
+:root[data-theme="lofi"] body {
+  font-family: var(--theme-font-family);
+}
 
-/* Studio Ghibli Theme */
+:root[data-theme="lofi"] .themed-bg {
+  background: linear-gradient(
+      135deg,
+      rgba(30, 27, 75, 0.95),
+      rgba(49, 46, 129, 0.9),
+      rgba(30, 27, 75, 0.95)
+    );
+}
+
+:root[data-theme="lofi"] .theme-gradient-text {
+  @apply bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400 bg-clip-text text-transparent;
+}
+
+:root[data-theme="lofi"] .theme-primary-button {
+  @apply bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500;
+}
+
+:root[data-theme="lofi"] .theme-glow {
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), 0 0 80px rgba(236, 72, 153, 0.2);
+}
+
+:root[data-theme="lofi"] .theme-card {
+  @apply bg-indigo-950/40 border-violet-500/20;
+}
+
+:root[data-theme="lofi"] .theme-accent-text {
+  color: var(--theme-primary);
+}
+
+/* ============================================
+   STUDIO GHIBLI THEME
+   A warm, nature-inspired aesthetic with
+   earthy greens, warm ambers, and soft browns
+   inspired by Studio Ghibli films
+   ============================================ */
 :root[data-theme="ghibli"] {
-  --theme-bg-from: #1c4532;
-  --theme-bg-via: #14532d;
-  --theme-bg-to: #1c4532;
-  --theme-primary: #10b981;
-  --theme-secondary: #f59e0b;
-  --theme-accent: #ef4444;
-  --theme-glow-1: #10b981;
-  --theme-glow-2: #f59e0b;
+  /* Background colors - Forest greens */
+  --theme-bg-from: #14532d;
+  --theme-bg-via: #166534;
+  --theme-bg-to: #14532d;
+
+  /* Primary colors - Natural Green */
+  --theme-primary: #86efac;
+  --theme-primary-hover: #bbf7d0;
+  --theme-primary-dark: #22c55e;
+
+  /* Secondary colors - Warm Amber/Gold */
+  --theme-secondary: #fbbf24;
+  --theme-secondary-hover: #fcd34d;
+  --theme-secondary-dark: #d97706;
+
+  /* Accent colors - Sky Blue */
+  --theme-accent: #7dd3fc;
+  --theme-accent-hover: #bae6fd;
+
+  /* Text colors - Warm whites and creams */
+  --theme-text: #fefce8;
+  --theme-text-secondary: #d9f99d;
+  --theme-text-muted: rgba(217, 249, 157, 0.6);
+
+  /* Surface colors */
+  --theme-surface: rgba(22, 101, 52, 0.4);
+  --theme-surface-hover: rgba(22, 101, 52, 0.6);
+  --theme-surface-border: rgba(134, 239, 172, 0.2);
+
+  /* Glow effects */
+  --theme-glow-1: #22c55e;
+  --theme-glow-2: #fbbf24;
   --theme-glow-3: #fb923c;
+
+  /* Gradient */
+  --theme-gradient-from: #22c55e;
+  --theme-gradient-to: #eab308;
+
+  /* Header/Navigation */
+  --theme-header-bg: rgba(20, 83, 45, 0.85);
+  --theme-header-border: rgba(134, 239, 172, 0.1);
+
+  /* Widget specific */
+  --theme-widget-bg: rgba(22, 101, 52, 0.3);
+  --theme-widget-border: rgba(134, 239, 172, 0.15);
+
+  /* Button styles */
+  --theme-btn-primary-from: #22c55e;
+  --theme-btn-primary-to: #eab308;
+
+  /* Font - Softer, more rounded */
+  --theme-font-family: "Geist", system-ui, -apple-system, sans-serif;
+  --theme-font-heading: "Geist", system-ui, -apple-system, sans-serif;
 }
 
-/* :root[data-theme="ghibli"] .themed-bg {
+/* Ghibli Theme Specific Styles */
+:root[data-theme="ghibli"] body {
+  font-family: var(--theme-font-family);
+}
+
+:root[data-theme="ghibli"] .themed-bg {
   background: linear-gradient(
-      to bottom right,
-      rgba(28, 69, 50, 0.7),
-      rgba(20, 83, 45, 0.75),
-      rgba(28, 69, 50, 0.7)
-    ),
-    url("https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzRkOTBsOGpxN2V3bjNseDlkYmFsMW43eW50NTV3Z2FleG9hZHdjdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TgKEjlhKSXPPuI7OVV/giphy.gif")
-      center/cover no-repeat fixed;
-} */
+      135deg,
+      rgba(20, 83, 45, 0.95),
+      rgba(22, 101, 52, 0.9),
+      rgba(20, 83, 45, 0.95)
+    );
+}
+
+:root[data-theme="ghibli"] .theme-gradient-text {
+  @apply bg-gradient-to-r from-green-400 via-emerald-400 to-yellow-400 bg-clip-text text-transparent;
+}
+
+:root[data-theme="ghibli"] .theme-primary-button {
+  @apply bg-gradient-to-r from-green-600 to-amber-500 hover:from-green-500 hover:to-amber-400;
+}
+
+:root[data-theme="ghibli"] .theme-glow {
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.3), 0 0 80px rgba(251, 191, 36, 0.2);
+}
+
+:root[data-theme="ghibli"] .theme-card {
+  @apply bg-green-950/40 border-green-500/20;
+}
+
+:root[data-theme="ghibli"] .theme-accent-text {
+  color: var(--theme-primary);
+}
+
+/* ============================================
+   SHARED THEME UTILITIES
+   ============================================ */
+
+/* Theme-aware text colors */
+.theme-text {
+  color: var(--theme-text);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--theme-text-muted);
+}
+
+/* Theme-aware backgrounds */
+.theme-surface {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-surface-border);
+}
+
+.theme-surface-hover:hover {
+  background-color: var(--theme-surface-hover);
+}
+
+/* Theme-aware borders */
+.theme-border {
+  border-color: var(--theme-surface-border);
+}
+
+/* Theme-aware gradients for buttons and accents */
+.theme-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--theme-gradient-from),
+    var(--theme-gradient-to)
+  );
+}
+
+/* Primary color utilities */
+.theme-primary-bg {
+  background-color: var(--theme-primary);
+}
+
+.theme-primary-text {
+  color: var(--theme-primary);
+}
+
+/* Secondary color utilities */
+.theme-secondary-bg {
+  background-color: var(--theme-secondary);
+}
+
+.theme-secondary-text {
+  color: var(--theme-secondary);
+}
+
+/* Theme transitions */
+[data-theme] * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+}
+
+/* Ensure smooth theme switching */
+html {
+  transition: background-color 0.3s ease;
+}

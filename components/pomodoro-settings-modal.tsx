@@ -9,7 +9,8 @@ interface PomodoroSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   settings: PomodoroWidgetSettings;
-  onSave: (settings: PomodoroWidgetSettings) => void;
+  onSave: (settings: Partial<PomodoroWidgetSettings>) => void;
+  onTestSound?: () => void;
 }
 
 export default function PomodoroSettingsModal({
@@ -17,12 +18,25 @@ export default function PomodoroSettingsModal({
   onClose,
   settings,
   onSave,
+  onTestSound,
 }: PomodoroSettingsModalProps) {
   const [localSettings, setLocalSettings] = useState<PomodoroWidgetSettings>(settings);
 
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   const handleSave = () => {
     onSave(localSettings);
@@ -42,32 +56,45 @@ export default function PomodoroSettingsModal({
     setLocalSettings(defaults);
   };
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClose();
+  };
+
+  const handleModalClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - highest z-index to cover everything */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            onClick={handleBackdropClick}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            style={{ zIndex: 9998 }}
           />
 
-          {/* Modal */}
+          {/* Modal Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
+            style={{ zIndex: 9999 }}
           >
-            <div className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
+            <div
+              onClick={handleModalClick}
+              className="pointer-events-auto bg-gradient-to-br from-slate-900 to-slate-800 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col"
+            >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 flex-shrink-0">
+                <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
                   <Clock className="w-5 h-5 text-cyan-400" />
                   Pomodoro Settings
                 </h2>
@@ -76,15 +103,15 @@ export default function PomodoroSettingsModal({
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5 text-white/60" />
+                  <X className="w-5 h-5 text-white/60 hover:text-white" />
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)] custom-scrollbar">
-                <div className="space-y-6">
+              {/* Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+                <div className="space-y-5 sm:space-y-6">
                   {/* Timer Durations */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
                       <Clock className="w-4 h-4 text-cyan-400" />
                       Timer Durations
@@ -204,7 +231,7 @@ export default function PomodoroSettingsModal({
                   </div>
 
                   {/* Auto-start Options */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
                       <Zap className="w-4 h-4 text-yellow-400" />
                       Auto-start
@@ -242,7 +269,7 @@ export default function PomodoroSettingsModal({
                   </div>
 
                   {/* Notifications */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
                       <Bell className="w-4 h-4 text-blue-400" />
                       Notifications
@@ -270,28 +297,39 @@ export default function PomodoroSettingsModal({
                         className="w-5 h-5 rounded accent-blue-500 cursor-pointer"
                       />
                     </label>
+
+                    {onTestSound && (
+                      <button
+                        type="button"
+                        onClick={onTestSound}
+                        className="w-full p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors flex items-center justify-center gap-2 text-sm text-white/70 hover:text-cyan-400"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                        Test Notification Sound
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between gap-3 p-6 border-t border-white/10">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t border-white/10 flex-shrink-0 bg-slate-900/50">
                 <button
                   onClick={handleReset}
-                  className="px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors order-2 sm:order-1"
                 >
                   Reset to Defaults
                 </button>
-                <div className="flex gap-3">
+                <div className="flex gap-3 order-1 sm:order-2">
                   <button
                     onClick={onClose}
-                    className="px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                    className="flex-1 sm:flex-none px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors border border-white/10"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
-                    className="px-4 py-2 text-sm bg-linear-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white rounded-lg font-medium transition-all shadow-lg shadow-cyan-500/20"
+                    className="flex-1 sm:flex-none px-4 py-2 text-sm bg-linear-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white rounded-lg font-medium transition-all shadow-lg shadow-cyan-500/20"
                   >
                     Save Changes
                   </button>

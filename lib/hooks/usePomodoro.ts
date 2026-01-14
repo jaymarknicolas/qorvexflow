@@ -4,11 +4,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { DEFAULT_POMODORO_DURATION, DEFAULT_BREAK_DURATION } from "@/lib/constants";
 import { pomodoroStorage } from "@/lib/services/storage";
-
-const LONG_BREAK_DURATION = 15; // 15 minutes
-const CYCLES_BEFORE_LONG_BREAK = 4; // After 4 focus sessions, take a long break
+import type { PomodoroWidgetSettings } from "@/types/widget-settings";
+import { DEFAULT_WIDGET_SETTINGS } from "@/types/widget-settings";
 
 export interface UsePomodoroReturn {
   timeLeft: number;
@@ -18,45 +16,51 @@ export interface UsePomodoroReturn {
   progress: number;
   displayTime: string;
   cycleCount: number;
+  settings: PomodoroWidgetSettings;
   start: () => void;
   pause: () => void;
   reset: () => void;
   skip: () => void;
+  updateSettings: (newSettings: Partial<PomodoroWidgetSettings>) => void;
+  testSound: () => void;
 }
 
 export function usePomodoro(): UsePomodoroReturn {
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_POMODORO_DURATION * 60);
+  // Load settings from localStorage
+  const [settings, setSettings] = useState<PomodoroWidgetSettings>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("qorvexflow_pomodoro_settings");
+        if (saved) {
+          return { ...DEFAULT_WIDGET_SETTINGS.pomodoro, ...JSON.parse(saved) };
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+    return DEFAULT_WIDGET_SETTINGS.pomodoro;
+  });
+
+  const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [sessions, setSessions] = useState(0);
   const [mode, setMode] = useState<"work" | "short-break" | "long-break">("work");
-  const [cycleCount, setCycleCount] = useState(0); // Track focus cycles for long break
+  const [cycleCount, setCycleCount] = useState(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  const workDuration = DEFAULT_POMODORO_DURATION * 60;
-  const shortBreakDuration = DEFAULT_BREAK_DURATION * 60;
-  const longBreakDuration = LONG_BREAK_DURATION * 60;
+  // Calculate durations based on settings
+  const workDuration = settings.workDuration * 60;
+  const shortBreakDuration = settings.breakDuration * 60;
+  const longBreakDuration = settings.longBreakDuration * 60;
 
-  // Initialize audio notification on client side
+  // Save settings to localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Create audio element for notification sound
-      audioRef.current = new Audio();
-      // Using a simple sine wave beep
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 800;
-      oscillator.type = "sine";
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      localStorage.setItem("qorvexflow_pomodoro_settings", JSON.stringify(settings));
     }
-  }, []);
+  }, [settings]);
 
   // Load saved state from localStorage
   useEffect(() => {
@@ -76,32 +80,103 @@ export function usePomodoro(): UsePomodoroReturn {
     localStorage.setItem("qorvexflow_pomodoro_cycle", cycleCount.toString());
   }, [sessions, cycleCount]);
 
-  // Play notification sound
+  // Update settings
+  const updateSettings = useCallback((newSettings: Partial<PomodoroWidgetSettings>) => {
+    setSettings(prev => {
+      const updated = { ...prev, ...newSettings };
+      return updated;
+    });
+  }, []);
+
+  // Play notification sound - improved version with multiple beeps
   const playNotificationSound = useCallback(() => {
+    if (!settings.enableNotifications) return;
+
+    if (typeof window !== "undefined") {
+      try {
+        // Create or resume audio context
+        if (!audioContextRef.current) {
+          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+
+        const audioContext = audioContextRef.current;
+
+        // Resume if suspended (needed for some browsers)
+        if (audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+
+        // Play a pleasant chime sequence
+        const playTone = (frequency: number, startTime: number, duration: number) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.value = frequency;
+          oscillator.type = "sine";
+
+          // Smooth envelope
+          gainNode.gain.setValueAtTime(0, startTime);
+          gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+          oscillator.start(startTime);
+          oscillator.stop(startTime + duration);
+        };
+
+        const now = audioContext.currentTime;
+
+        // Play a pleasant 3-note chime
+        playTone(523.25, now, 0.3);        // C5
+        playTone(659.25, now + 0.15, 0.3); // E5
+        playTone(783.99, now + 0.3, 0.4);  // G5
+
+      } catch (e) {
+        console.log("Audio notification failed:", e);
+      }
+    }
+  }, [settings.enableNotifications]);
+
+  // Test sound function
+  const testSound = useCallback(() => {
     if (typeof window !== "undefined") {
       try {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        const playTone = (frequency: number, startTime: number, duration: number) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
 
-        oscillator.frequency.value = 800;
-        oscillator.type = "sine";
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
 
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
+          oscillator.frequency.value = frequency;
+          oscillator.type = "sine";
+
+          gainNode.gain.setValueAtTime(0, startTime);
+          gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+          oscillator.start(startTime);
+          oscillator.stop(startTime + duration);
+        };
+
+        const now = audioContext.currentTime;
+        playTone(523.25, now, 0.3);
+        playTone(659.25, now + 0.15, 0.3);
+        playTone(783.99, now + 0.3, 0.4);
       } catch (e) {
-        // Ignore audio errors
+        console.log("Test sound failed:", e);
       }
     }
   }, []);
 
   // Show browser notification
   const showNotification = useCallback((title: string, body: string) => {
+    if (!settings.enableNotifications) return;
+
     if (typeof window !== "undefined" && "Notification" in window) {
       if (Notification.permission === "granted") {
         new Notification(title, {
@@ -111,9 +186,9 @@ export function usePomodoro(): UsePomodoroReturn {
         });
       }
     }
-  }, []);
+  }, [settings.enableNotifications]);
 
-  const getDurationForMode = (currentMode: "work" | "short-break" | "long-break") => {
+  const getDurationForMode = useCallback((currentMode: "work" | "short-break" | "long-break") => {
     switch (currentMode) {
       case "work":
         return workDuration;
@@ -122,7 +197,7 @@ export function usePomodoro(): UsePomodoroReturn {
       case "long-break":
         return longBreakDuration;
     }
-  };
+  }, [workDuration, shortBreakDuration, longBreakDuration]);
 
   const handleTimerComplete = useCallback(() => {
     // Play notification sound
@@ -137,21 +212,25 @@ export function usePomodoro(): UsePomodoroReturn {
       setCycleCount(newCycleCount);
 
       // Determine if it's time for a long break
-      if (newCycleCount >= CYCLES_BEFORE_LONG_BREAK) {
+      if (newCycleCount >= settings.longBreakInterval) {
         setMode("long-break");
         setTimeLeft(longBreakDuration);
-        showNotification("🎉 Time for a Long Break!", `You've completed ${CYCLES_BEFORE_LONG_BREAK} focus sessions! Take a 15-minute break.`);
-        setCycleCount(0); // Reset cycle count
+        showNotification("🎉 Time for a Long Break!", `You've completed ${settings.longBreakInterval} focus sessions! Take a ${settings.longBreakDuration}-minute break.`);
+        setCycleCount(0);
       } else {
         setMode("short-break");
         setTimeLeft(shortBreakDuration);
-        showNotification("✨ Focus Complete!", `Great work! Take a ${DEFAULT_BREAK_DURATION}-minute break.`);
+        showNotification("✨ Focus Complete!", `Great work! Take a ${settings.breakDuration}-minute break.`);
       }
 
-      // Auto-start break
-      setTimeout(() => {
-        setIsRunning(true);
-      }, 1000);
+      // Auto-start break if enabled
+      if (settings.autoStartBreaks) {
+        setTimeout(() => {
+          setIsRunning(true);
+        }, 1000);
+      } else {
+        setIsRunning(false);
+      }
     } else {
       // Break completed, start work
       setMode("work");
@@ -163,12 +242,16 @@ export function usePomodoro(): UsePomodoroReturn {
         showNotification("💪 Break Complete!", "Time to focus again!");
       }
 
-      // Auto-start focus session
-      setTimeout(() => {
-        setIsRunning(true);
-      }, 1000);
+      // Auto-start focus session if enabled
+      if (settings.autoStartPomodoros) {
+        setTimeout(() => {
+          setIsRunning(true);
+        }, 1000);
+      } else {
+        setIsRunning(false);
+      }
     }
-  }, [mode, sessions, cycleCount, playNotificationSound, showNotification, workDuration, shortBreakDuration, longBreakDuration]);
+  }, [mode, sessions, cycleCount, playNotificationSound, showNotification, settings, workDuration, shortBreakDuration, longBreakDuration]);
 
   // Timer logic
   useEffect(() => {
@@ -194,7 +277,14 @@ export function usePomodoro(): UsePomodoroReturn {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeLeft, mode, handleTimerComplete]);
+  }, [isRunning, timeLeft, mode, handleTimerComplete, getDurationForMode]);
+
+  // Update timeLeft when settings change and timer is not running
+  useEffect(() => {
+    if (!isRunning) {
+      setTimeLeft(getDurationForMode(mode));
+    }
+  }, [settings.workDuration, settings.breakDuration, settings.longBreakDuration, isRunning, mode, getDurationForMode]);
 
   const start = useCallback(() => {
     setIsRunning(true);
@@ -203,6 +293,10 @@ export function usePomodoro(): UsePomodoroReturn {
       if (Notification.permission === "default") {
         Notification.requestPermission();
       }
+    }
+    // Resume audio context on user interaction
+    if (audioContextRef.current?.state === "suspended") {
+      audioContextRef.current.resume();
     }
   }, []);
 
@@ -213,21 +307,18 @@ export function usePomodoro(): UsePomodoroReturn {
   const reset = useCallback(() => {
     setIsRunning(false);
     setTimeLeft(getDurationForMode(mode));
-  }, [mode]);
+  }, [mode, getDurationForMode]);
 
   const skip = useCallback(() => {
     setIsRunning(false);
 
     if (mode === "work") {
-      // Skip to short break (don't count as completed session)
       setMode("short-break");
       setTimeLeft(shortBreakDuration);
     } else if (mode === "short-break") {
-      // Skip to work
       setMode("work");
       setTimeLeft(workDuration);
     } else {
-      // Skip long break to work
       setMode("work");
       setTimeLeft(workDuration);
     }
@@ -250,10 +341,12 @@ export function usePomodoro(): UsePomodoroReturn {
     progress,
     displayTime,
     cycleCount,
+    settings,
     start,
     pause,
     reset,
     skip,
+    updateSettings,
+    testSound,
   };
 }
-
