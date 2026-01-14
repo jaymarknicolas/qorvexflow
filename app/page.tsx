@@ -293,7 +293,7 @@ export default function Home() {
       <div
         ref={workspaceRef}
         className={`max-w-7xl w-full px-3 sm:px-4 md:px-6 lg:px-8 !origin-center ${
-          isMobile ? "pb-24" : ""
+          isMobile ? "pb-24 h-screen overflow-auto" : ""
         }`}
         style={{
           // Don't scale on mobile - let users scroll instead
