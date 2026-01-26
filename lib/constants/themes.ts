@@ -4,7 +4,7 @@
  */
 
 export interface ThemeConfig {
-  id: "neon" | "lofi" | "ghibli";
+  id: "neon" | "lofi" | "ghibli" | "coffeeshop";
   name: string;
   description: string;
   colors: {
@@ -129,6 +129,38 @@ export const THEMES: Record<string, ThemeConfig> = {
       glassmorphism: false,
       particles: true,
       animations: "normal",
+    },
+  },
+
+  coffeeshop: {
+    id: "coffeeshop",
+    name: "Coffee Shop",
+    description: "Warm, cozy vibes inspired by coffee shop ambiance",
+    colors: {
+      primary: "#d97706", // amber-600
+      secondary: "#92400e", // amber-800
+      accent: "#fbbf24", // amber-400
+      background: {
+        from: "#292524", // stone-800
+        via: "#44403c", // stone-700
+        to: "#292524", // stone-800
+      },
+      card: {
+        from: "rgba(68, 64, 60, 0.4)", // stone-700/40
+        to: "rgba(41, 37, 36, 0.4)", // stone-800/40
+      },
+      text: {
+        primary: "#fef3c7", // amber-100
+        secondary: "rgba(254, 243, 199, 0.9)",
+        muted: "rgba(254, 243, 199, 0.6)",
+      },
+      border: "rgba(217, 119, 6, 0.2)",
+      glow: ["#d97706", "#92400e", "#fbbf24"], // amber tones
+    },
+    effects: {
+      glassmorphism: true,
+      particles: false,
+      animations: "slow",
     },
   },
 };

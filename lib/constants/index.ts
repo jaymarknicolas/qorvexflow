@@ -54,6 +54,7 @@ export const STORAGE_KEYS = {
   NOTES: "qorvexflow_notes",
   YOUTUBE: "qorvexflow_youtube",
   LAST_SAVED: "qorvexflow_last_saved",
+  SPOTIFY_SOURCE: "qorvexflow_spotify_source",
 } as const;
 
 // ============================================

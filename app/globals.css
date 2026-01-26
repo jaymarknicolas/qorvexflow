@@ -388,6 +388,101 @@
 }
 
 /* ============================================
+   COFFEE SHOP THEME
+   A warm, cozy aesthetic inspired by
+   coffee shop ambiance and warm browns
+   ============================================ */
+:root[data-theme="coffeeshop"] {
+  /* Background colors - Warm browns */
+  --theme-bg-from: #292524;
+  --theme-bg-via: #44403c;
+  --theme-bg-to: #292524;
+
+  /* Primary colors - Amber/Coffee */
+  --theme-primary: #fbbf24;
+  --theme-primary-hover: #fcd34d;
+  --theme-primary-dark: #d97706;
+
+  /* Secondary colors - Brown */
+  --theme-secondary: #a16207;
+  --theme-secondary-hover: #ca8a04;
+  --theme-secondary-dark: #854d0e;
+
+  /* Accent colors - Cream */
+  --theme-accent: #fed7aa;
+  --theme-accent-hover: #ffedd5;
+
+  /* Text colors - Warm whites and creams */
+  --theme-text: #fef3c7;
+  --theme-text-secondary: #fde68a;
+  --theme-text-muted: rgba(253, 230, 138, 0.6);
+
+  /* Surface colors */
+  --theme-surface: rgba(68, 64, 60, 0.4);
+  --theme-surface-hover: rgba(68, 64, 60, 0.6);
+  --theme-surface-border: rgba(251, 191, 36, 0.2);
+
+  /* Glow effects */
+  --theme-glow-1: #d97706;
+  --theme-glow-2: #92400e;
+  --theme-glow-3: #fbbf24;
+
+  /* Gradient */
+  --theme-gradient-from: #d97706;
+  --theme-gradient-to: #92400e;
+
+  /* Header/Navigation */
+  --theme-header-bg: rgba(41, 37, 36, 0.85);
+  --theme-header-border: rgba(251, 191, 36, 0.1);
+
+  /* Widget specific */
+  --theme-widget-bg: rgba(68, 64, 60, 0.3);
+  --theme-widget-border: rgba(251, 191, 36, 0.15);
+
+  /* Button styles */
+  --theme-btn-primary-from: #d97706;
+  --theme-btn-primary-to: #92400e;
+
+  /* Font */
+  --theme-font-family: "Geist", system-ui, -apple-system, sans-serif;
+  --theme-font-heading: "Geist", system-ui, -apple-system, sans-serif;
+}
+
+/* Coffee Shop Theme Specific Styles */
+:root[data-theme="coffeeshop"] body {
+  font-family: var(--theme-font-family);
+}
+
+:root[data-theme="coffeeshop"] .themed-bg {
+  background: linear-gradient(
+      135deg,
+      rgba(41, 37, 36, 0.95),
+      rgba(68, 64, 60, 0.9),
+      rgba(41, 37, 36, 0.95)
+    );
+}
+
+:root[data-theme="coffeeshop"] .theme-gradient-text {
+  @apply bg-gradient-to-r from-amber-400 via-orange-400 to-amber-600 bg-clip-text text-transparent;
+}
+
+:root[data-theme="coffeeshop"] .theme-primary-button {
+  @apply bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700;
+}
+
+:root[data-theme="coffeeshop"] .theme-glow {
+  box-shadow: 0 0 40px rgba(217, 119, 6, 0.3), 0 0 80px rgba(146, 64, 14, 0.2);
+}
+
+:root[data-theme="coffeeshop"] .theme-card {
+  @apply bg-stone-800/40 border-amber-500/20;
+}
+
+:root[data-theme="coffeeshop"] .theme-accent-text {
+  color: var(--theme-primary);
+}
+
+/* ============================================
    SHARED THEME UTILITIES
    ============================================ */
 

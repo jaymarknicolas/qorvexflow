@@ -122,6 +122,26 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
         mobileMenuBg: "bg-green-950/95",
       };
     }
+    if (theme === "coffeeshop") {
+      return {
+        logoGradient: "from-amber-400 via-orange-500 to-amber-600",
+        logoShadow: "shadow-amber-500/25 group-hover:shadow-amber-500/40",
+        logoGlow: "from-amber-400 to-orange-500",
+        textGradient: "from-amber-400 via-orange-400 to-amber-600",
+        primaryAccent: "text-amber-400",
+        secondaryAccent: "text-orange-400",
+        buttonGradient: "from-amber-600 to-amber-800",
+        buttonHover: "hover:from-amber-500 hover:to-amber-700",
+        badgeBg: "from-amber-500/20 to-orange-500/20",
+        badgeText: "text-amber-400",
+        badgeBorder: "border-amber-500/30",
+        headerBg: "bg-stone-800/80",
+        surfaceBg: "bg-stone-700/30",
+        surfaceHover: "hover:bg-stone-700/50",
+        surfaceBorder: "border-amber-500/20",
+        mobileMenuBg: "bg-stone-800/95",
+      };
+    }
     // Lo-Fi theme (default)
     return {
       logoGradient: "from-violet-400 via-purple-500 to-pink-400",
@@ -274,6 +294,13 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
       description: "Nature & warmth",
       gradient: "from-green-500 to-amber-500",
     },
+    {
+      id: "coffeeshop",
+      label: "Coffee Shop",
+      emoji: "☕",
+      description: "Warm & cozy vibes",
+      gradient: "from-amber-500 to-amber-800",
+    },
   ];
 
   return (
@@ -283,7 +310,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
           "border-b backdrop-blur-xl sticky top-0 z-40 transition-all duration-300",
           scrolled
             ? `${colors.headerBg} shadow-lg shadow-black/20 border-white/10`
-            : "bg-slate-950/50 border-white/5"
+            : "bg-slate-950/50 border-white/5",
         )}
       >
         <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -323,7 +350,10 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         <ChevronRight className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity rotate-90" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-72">
+                    <DropdownMenuContent
+                      align="start"
+                      className="w-72 z-[999] fuck"
+                    >
                       <DropdownMenuLabel className="flex items-center gap-2 normal-case text-sm font-medium text-white/70">
                         {item.icon}
                         {item.label}
@@ -377,7 +407,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     </span>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 z-[999]">
                   <DropdownMenuLabel>Select Layout</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {layoutOptions.map((option) => (
@@ -424,7 +454,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     </span>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 z-[999]">
                   <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {themeOptions.map((option) => (
@@ -486,7 +516,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     <User2 className="relative w-5 h-5 text-white" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuContent className="w-56 z-[999]" align="end">
                   <div className="px-3 py-3 border-b border-white/10">
                     <div className="flex items-center gap-3">
                       <div
@@ -617,7 +647,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                           "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
                           layout === option.id
                             ? `bg-gradient-to-br ${colors.badgeBg} ${colors.badgeBorder} text-white`
-                            : `${colors.surfaceBg} ${colors.surfaceBorder} text-white/60 ${colors.surfaceHover} hover:text-white`
+                            : `${colors.surfaceBg} ${colors.surfaceBorder} text-white/60 ${colors.surfaceHover} hover:text-white`,
                         )}
                       >
                         <option.icon className="w-5 h-5" />
@@ -646,7 +676,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                           "flex items-center gap-3 w-full p-3 rounded-xl border transition-all",
                           theme === option.id
                             ? `bg-gradient-to-r ${colors.badgeBg} ${colors.badgeBorder}`
-                            : `${colors.surfaceBg} ${colors.surfaceBorder} ${colors.surfaceHover}`
+                            : `${colors.surfaceBg} ${colors.surfaceBorder} ${colors.surfaceHover}`,
                         )}
                       >
                         <div

@@ -126,9 +126,7 @@ const DraggableWidgetContent = memo(function DraggableWidgetContent({
         onResetSettings={onResetSettings}
         dragHandleProps={{ ...listeners, ...attributes }}
       />
-      <WidgetErrorBoundary>
-        {renderWidget(widgetType)}
-      </WidgetErrorBoundary>
+      <WidgetErrorBoundary>{renderWidget(widgetType)}</WidgetErrorBoundary>
     </div>
   );
 });
@@ -202,7 +200,7 @@ export default function Home() {
         container.scrollTop += speed;
       }
     },
-    [isMobile]
+    [isMobile],
   );
 
   const handleDragEnd = useCallback(
@@ -229,7 +227,7 @@ export default function Home() {
         }
       }
     },
-    [placeWidget, moveWidget]
+    [placeWidget, moveWidget],
   );
 
   // Handle widget copy
@@ -243,7 +241,7 @@ export default function Home() {
         });
       }
     },
-    [slotWidgets]
+    [slotWidgets],
   );
 
   // Handle widget maximize
@@ -257,7 +255,7 @@ export default function Home() {
       resetSettings(widgetType);
       toast.success("Settings reset to defaults");
     },
-    [resetSettings]
+    [resetSettings],
   );
 
   // Get responsive widget height classes
@@ -278,7 +276,7 @@ export default function Home() {
       onMaximize: () => handleMaximizeWidget(widgetType),
       onResetSettings: () => handleResetSettings(widgetType),
     }),
-    [removeWidget, handleCopyWidget, handleMaximizeWidget, handleResetSettings]
+    [removeWidget, handleCopyWidget, handleMaximizeWidget, handleResetSettings],
   );
 
   // Helper to render a widget slot
@@ -297,7 +295,7 @@ export default function Home() {
         </WorkspaceCanvas>
       );
     },
-    [slotWidgets, getWidgetHeightClass, createWidgetHandlers]
+    [slotWidgets, getWidgetHeightClass, createWidgetHandlers],
   );
 
   // Get layout configuration with new layout types
@@ -510,6 +508,9 @@ export default function Home() {
       )}
       {theme === "lofi" && (
         <CanvasVideoBackground videoSrc="/videos/lofi.mp4" />
+      )}
+      {theme === "coffeeshop" && (
+        <CanvasVideoBackground videoSrc="/videos/coffeeshop.mp4" />
       )}
     </div>
   );
