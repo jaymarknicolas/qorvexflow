@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Bold,
   Italic,
@@ -13,12 +13,51 @@ import {
   ListOrdered,
   Heading1,
   Heading2,
+  FileText,
 } from "lucide-react";
+import { useTheme } from "@/lib/contexts/theme-context";
 
 // Persist notes content in memory across re-mounts
 let persistedNotesContent: string | null = null;
 
 export default function NotesWidgetWYSIWYG() {
+  const { theme } = useTheme();
+
+  // Theme colors
+  const getThemeColors = useCallback(() => {
+    switch (theme) {
+      case "ghibli":
+        return {
+          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          accent: "text-emerald-400",
+          accentBg: "bg-emerald-500/25",
+          border: "border-emerald-400/30",
+          activeBtn: "bg-emerald-500/25 text-emerald-400",
+          iconColor: "text-emerald-400",
+        };
+      case "coffeeshop":
+        return {
+          gradient: "from-stone-900/90 to-amber-950/90",
+          accent: "text-amber-400",
+          accentBg: "bg-amber-500/20",
+          border: "border-amber-500/20",
+          activeBtn: "bg-amber-500/20 text-amber-400",
+          iconColor: "text-amber-400",
+        };
+      default: // lofi
+        return {
+          gradient: "from-indigo-900/90 to-purple-900/90",
+          accent: "text-violet-400",
+          accentBg: "bg-violet-500/20",
+          border: "border-violet-500/20",
+          activeBtn: "bg-violet-500/20 text-violet-400",
+          iconColor: "text-violet-400",
+        };
+    }
+  }, [theme]);
+
+  const colors = getThemeColors();
+
   // Initialize from memory first, then localStorage
   const [content, setContent] = useState(() => {
     if (persistedNotesContent !== null) {
@@ -64,7 +103,7 @@ export default function NotesWidgetWYSIWYG() {
 
   if (!editor) {
     return (
-      <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/10">
+      <div className={`h-full flex items-center justify-center bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border}`}>
         <div className="text-white/40">Loading editor...</div>
       </div>
     );
@@ -75,115 +114,102 @@ export default function NotesWidgetWYSIWYG() {
     localStorage.removeItem("qorvexflow_notes_wysiwyg");
   };
 
+  const ToolbarButton = ({ onClick, isActive, title, children }: {
+    onClick: () => void;
+    isActive: boolean;
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <button
+      onClick={onClick}
+      className={`p-2 rounded transition-colors ${
+        isActive
+          ? colors.activeBtn
+          : "text-white/60 hover:text-white hover:bg-white/10"
+      }`}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+    <div className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border} shadow-2xl overflow-hidden`}>
       {/* Toolbar */}
       <div className="flex-shrink-0 border-b border-white/10 bg-black/20 p-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <button
+            <div className={`p-1.5 rounded-lg ${colors.accentBg} mr-2`}>
+              <FileText className={`w-4 h-4 ${colors.iconColor}`} />
+            </div>
+
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("bold")
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+              isActive={editor.isActive("bold")}
               title="Bold"
             >
               <Bold className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
-            <button
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("italic")
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+              isActive={editor.isActive("italic")}
               title="Italic"
             >
               <Italic className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
-            <button
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("underline")
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+              isActive={editor.isActive("underline")}
               title="Underline"
             >
               <UnderlineIcon className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
-            <button
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("strike")
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+              isActive={editor.isActive("strike")}
               title="Strikethrough"
             >
               <Strikethrough className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
             <div className="w-px h-6 bg-white/10 mx-1" />
 
-            <button
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 1 }).run()
-              }
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("heading", { level: 1 })
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              isActive={editor.isActive("heading", { level: 1 })}
               title="Heading 1"
             >
               <Heading1 className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
-            <button
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 2 }).run()
-              }
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("heading", { level: 2 })
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              isActive={editor.isActive("heading", { level: 2 })}
               title="Heading 2"
             >
               <Heading2 className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
             <div className="w-px h-6 bg-white/10 mx-1" />
 
-            <button
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("bulletList")
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+              isActive={editor.isActive("bulletList")}
               title="Bullet List"
             >
               <List className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
 
-            <button
+            <ToolbarButton
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`p-2 rounded transition-colors ${
-                editor.isActive("orderedList")
-                  ? "bg-cyan-500/20 text-cyan-400"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
-              }`}
+              isActive={editor.isActive("orderedList")}
               title="Numbered List"
             >
               <ListOrdered className="w-4 h-4" />
-            </button>
+            </ToolbarButton>
           </div>
         </div>
       </div>
@@ -200,7 +226,7 @@ export default function NotesWidgetWYSIWYG() {
             WYSIWYG Editor • Auto-saves
           </div>
           <div
-            className="text-xs cursor-pointer text-red-400  rounded  hover:text-red-300 transition-colors"
+            className="text-xs cursor-pointer text-red-400 rounded hover:text-red-300 transition-colors"
             onClick={handleClear}
           >
             Clear all

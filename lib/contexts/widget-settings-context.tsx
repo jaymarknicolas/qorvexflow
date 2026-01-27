@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import type { WidgetType } from "@/types";
 import type { WidgetSettings } from "@/types/widget-settings";
 import { DEFAULT_WIDGET_SETTINGS } from "@/types/widget-settings";
@@ -10,18 +16,22 @@ interface WidgetSettingsContextType {
   getSettings: <T extends WidgetType>(widgetType: T) => WidgetSettings[T];
   updateSettings: <T extends WidgetType>(
     widgetType: T,
-    newSettings: Partial<WidgetSettings[T]>
+    newSettings: Partial<WidgetSettings[T]>,
   ) => void;
   resetSettings: <T extends WidgetType>(widgetType: T) => void;
   resetAllSettings: () => void;
 }
 
-const WidgetSettingsContext = createContext<WidgetSettingsContextType | undefined>(undefined);
+const WidgetSettingsContext = createContext<
+  WidgetSettingsContextType | undefined
+>(undefined);
 
 const STORAGE_KEY = "qorvexflow_widget_settings";
 
 export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<WidgetSettings>(DEFAULT_WIDGET_SETTINGS);
+  const [settings, setSettings] = useState<WidgetSettings>(
+    DEFAULT_WIDGET_SETTINGS,
+  );
   const [isMounted, setIsMounted] = useState(false);
 
   // Load settings from localStorage on mount
@@ -55,13 +65,15 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [settings, isMounted]);
 
-  const getSettings = <T extends WidgetType>(widgetType: T): WidgetSettings[T] => {
+  const getSettings = <T extends WidgetType>(
+    widgetType: T,
+  ): WidgetSettings[T] => {
     return settings[widgetType];
   };
 
   const updateSettings = <T extends WidgetType>(
     widgetType: T,
-    newSettings: Partial<WidgetSettings[T]>
+    newSettings: Partial<WidgetSettings[T]>,
   ) => {
     setSettings((prev) => ({
       ...prev,
@@ -101,7 +113,9 @@ export function WidgetSettingsProvider({ children }: { children: ReactNode }) {
 export function useWidgetSettings() {
   const context = useContext(WidgetSettingsContext);
   if (context === undefined) {
-    throw new Error("useWidgetSettings must be used within a WidgetSettingsProvider");
+    throw new Error(
+      "useWidgetSettings must be used within a WidgetSettingsProvider",
+    );
   }
   return context;
 }

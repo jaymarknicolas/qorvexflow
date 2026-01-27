@@ -11,6 +11,7 @@ import {
   FileText,
   Youtube,
   Quote,
+  Coffee,
   Sparkles,
   GripVertical,
   type LucideIcon,
@@ -19,6 +20,9 @@ import type { WidgetDefinition } from "@/types";
 import { useResponsive } from "@/lib/hooks/useResponsive";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Mark widgets as new (will show NEW badge)
+const newWidgets = new Set(["coffee"]);
 
 const widgets: WidgetDefinition[] = [
   { id: "pomodoro", icon: Timer, label: "Pomodoro" },
@@ -29,6 +33,7 @@ const widgets: WidgetDefinition[] = [
   { id: "notes", icon: FileText, label: "Notes" },
   { id: "youtube", icon: Youtube, label: "YouTube" },
   { id: "quotes", icon: Quote, label: "Quotes" },
+  { id: "coffee", icon: Coffee, label: "Coffee" },
 ];
 
 // Widget color scheme
@@ -73,6 +78,11 @@ const widgetColors: Record<string, { gradient: string; glow: string; icon: strin
     glow: "group-hover:shadow-indigo-500/30",
     icon: "text-indigo-400",
   },
+  coffee: {
+    gradient: "from-amber-600 to-orange-600",
+    glow: "group-hover:shadow-amber-500/30",
+    icon: "text-amber-400",
+  },
 };
 
 interface WidgetIconProps {
@@ -81,9 +91,10 @@ interface WidgetIconProps {
   label: string;
   isMobile?: boolean;
   showLabel?: boolean;
+  isNew?: boolean;
 }
 
-function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false }: WidgetIconProps) {
+function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false, isNew = false }: WidgetIconProps) {
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id,
     data: { from: "sidebar" },
@@ -104,6 +115,19 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
         isDragging ? "opacity-50 scale-95" : ""
       }`}
     >
+      {/* NEW Badge */}
+      {isNew && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -top-1 -right-1 z-20"
+        >
+          <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full shadow-lg shadow-pink-500/30 animate-pulse">
+            NEW
+          </span>
+        </motion.div>
+      )}
+
       {/* Background gradient on hover */}
       <div
         className={`absolute inset-0 rounded-xl bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
@@ -137,6 +161,11 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
           <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
             {label}
           </span>
+          {isNew && (
+            <span className="ml-2 px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full">
+              NEW
+            </span>
+          )}
         </span>
       )}
     </motion.div>
@@ -310,6 +339,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                         label={w.label}
                         isMobile={true}
                         showLabel={true}
+                        isNew={newWidgets.has(w.id)}
                       />
                     </motion.div>
                   ))}
@@ -343,7 +373,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05 }}
           >
-            <WidgetIcon id={w.id} icon={w.icon} label={w.label} />
+            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} />
           </motion.div>
         ))}
       </motion.aside>
@@ -375,7 +405,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.05 }}
         >
-          <WidgetIcon id={w.id} icon={w.icon} label={w.label} />
+          <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} />
         </motion.div>
       ))}
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Youtube, Link as LinkIcon, Play } from "lucide-react";
+import { useTheme } from "@/lib/contexts/theme-context";
 
 // Persist YouTube widget state in memory across re-mounts
 let persistedYouTubeState: {
@@ -30,6 +31,52 @@ const convertToEmbedUrl = (url: string): string => {
 };
 
 export default function YouTubeWidgetInput() {
+  const { theme } = useTheme();
+
+  // Theme colors
+  const getThemeColors = useCallback(() => {
+    switch (theme) {
+      case "ghibli":
+        return {
+          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          accent: "text-emerald-400",
+          accentBg: "bg-emerald-500/25",
+          border: "border-emerald-400/30",
+          buttonGradient: "from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500",
+          buttonShadow: "shadow-emerald-500/20",
+          inputFocus: "focus:ring-emerald-500/50",
+          iconBg: "bg-emerald-500/25",
+          iconColor: "text-emerald-400",
+        };
+      case "coffeeshop":
+        return {
+          gradient: "from-stone-900/90 to-amber-950/90",
+          accent: "text-amber-400",
+          accentBg: "bg-amber-500/20",
+          border: "border-amber-500/20",
+          buttonGradient: "from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500",
+          buttonShadow: "shadow-amber-500/20",
+          inputFocus: "focus:ring-amber-500/50",
+          iconBg: "bg-amber-500/20",
+          iconColor: "text-amber-400",
+        };
+      default: // lofi
+        return {
+          gradient: "from-indigo-900/90 to-purple-900/90",
+          accent: "text-violet-400",
+          accentBg: "bg-violet-500/20",
+          border: "border-violet-500/20",
+          buttonGradient: "from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500",
+          buttonShadow: "shadow-violet-500/20",
+          inputFocus: "focus:ring-violet-500/50",
+          iconBg: "bg-violet-500/20",
+          iconColor: "text-violet-400",
+        };
+    }
+  }, [theme]);
+
+  const colors = getThemeColors();
+
   // Initialize from memory first, then localStorage
   const [videoUrl, setVideoUrl] = useState(() => {
     if (persistedYouTubeState !== null) {
@@ -87,8 +134,8 @@ export default function YouTubeWidgetInput() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-      {/* Input Form - Extra top padding to avoid widget actions overlap */}
+    <div className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border} shadow-2xl overflow-hidden`}>
+      {/* Input Form */}
       <div className="flex-shrink-0 p-3 pr-10 border-b border-white/10 bg-black/20">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <div className="flex-1 relative">
@@ -97,13 +144,13 @@ export default function YouTubeWidgetInput() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Paste YouTube URL here..."
-              className="w-full px-3 py-2 pl-10 bg-black/30 border border-white/10 rounded-lg text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className={`w-full px-3 py-2 pl-10 bg-black/30 border ${colors.border} rounded-lg text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2 ${colors.inputFocus}`}
             />
             <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
           </div>
           <button
             type="submit"
-            className="px-4 py-2 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-purple-500/20"
+            className={`px-4 py-2 bg-gradient-to-r ${colors.buttonGradient} text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 shadow-lg ${colors.buttonShadow}`}
           >
             <Play className="w-4 h-4" />
             Load
@@ -112,7 +159,7 @@ export default function YouTubeWidgetInput() {
             <button
               type="button"
               onClick={handleClear}
-              className="px-4 py-2 bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-white rounded-lg text-sm font-medium transition-all duration-200 border border-white/10"
+              className={`px-4 py-2 bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-white rounded-lg text-sm font-medium transition-all duration-200 border ${colors.border}`}
             >
               Clear
             </button>
@@ -136,8 +183,8 @@ export default function YouTubeWidgetInput() {
           />
         ) : (
           <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-20 h-20 mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-              <Youtube className="w-10 h-10 text-red-400" />
+            <div className={`w-20 h-20 mb-4 rounded-full ${colors.iconBg} flex items-center justify-center`}>
+              <Youtube className={`w-10 h-10 ${colors.iconColor}`} />
             </div>
             <h3 className="text-lg font-bold text-white mb-2">
               YouTube Video Player

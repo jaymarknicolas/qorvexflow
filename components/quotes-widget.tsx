@@ -1,368 +1,551 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { RefreshCw, Quote, Heart, Copy, Check } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  RefreshCw,
+  Quote,
+  Heart,
+  Copy,
+  Check,
+  Share2,
+  Sparkles,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+} from "lucide-react";
+import { useTheme } from "@/lib/contexts/theme-context";
 
 interface QuoteData {
-  text: string;
+  _id: string;
+  content: string;
   author: string;
-  category: string;
+  tags: string[];
+  authorSlug: string;
+  length: number;
 }
 
-const MOTIVATIONAL_QUOTES: QuoteData[] = [
+// Fallback quotes for offline/error states
+const FALLBACK_QUOTES: QuoteData[] = [
   {
-    text: "The only way to do great work is to love what you do.",
+    _id: "fallback-1",
+    content: "The only way to do great work is to love what you do.",
     author: "Steve Jobs",
-    category: "Work",
+    tags: ["Motivation", "Work"],
+    authorSlug: "steve-jobs",
+    length: 52,
   },
   {
-    text: "Believe you can and you're halfway there.",
+    _id: "fallback-2",
+    content: "Believe you can and you're halfway there.",
     author: "Theodore Roosevelt",
-    category: "Belief",
+    tags: ["Belief", "Motivation"],
+    authorSlug: "theodore-roosevelt",
+    length: 42,
   },
   {
-    text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    _id: "fallback-3",
+    content: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
     author: "Winston Churchill",
-    category: "Perseverance",
+    tags: ["Perseverance", "Success"],
+    authorSlug: "winston-churchill",
+    length: 85,
   },
   {
-    text: "The future belongs to those who believe in the beauty of their dreams.",
+    _id: "fallback-4",
+    content: "The future belongs to those who believe in the beauty of their dreams.",
     author: "Eleanor Roosevelt",
-    category: "Dreams",
+    tags: ["Dreams", "Future"],
+    authorSlug: "eleanor-roosevelt",
+    length: 70,
   },
   {
-    text: "It does not matter how slowly you go as long as you do not stop.",
+    _id: "fallback-5",
+    content: "It does not matter how slowly you go as long as you do not stop.",
     author: "Confucius",
-    category: "Persistence",
-  },
-  {
-    text: "Everything you've ever wanted is on the other side of fear.",
-    author: "George Addair",
-    category: "Courage",
-  },
-  {
-    text: "Believe in yourself. You are braver than you think, more talented than you know, and capable of more than you imagine.",
-    author: "Roy T. Bennett",
-    category: "Self-belief",
-  },
-  {
-    text: "I learned that courage was not the absence of fear, but the triumph over it.",
-    author: "Nelson Mandela",
-    category: "Courage",
-  },
-  {
-    text: "The only impossible journey is the one you never begin.",
-    author: "Tony Robbins",
-    category: "Action",
-  },
-  {
-    text: "Your limitation—it's only your imagination.",
-    author: "Unknown",
-    category: "Mindset",
-  },
-  {
-    text: "Great things never come from comfort zones.",
-    author: "Unknown",
-    category: "Growth",
-  },
-  {
-    text: "Dream it. Wish it. Do it.",
-    author: "Unknown",
-    category: "Action",
-  },
-  {
-    text: "Success doesn't just find you. You have to go out and get it.",
-    author: "Unknown",
-    category: "Success",
-  },
-  {
-    text: "The harder you work for something, the greater you'll feel when you achieve it.",
-    author: "Unknown",
-    category: "Achievement",
-  },
-  {
-    text: "Dream bigger. Do bigger.",
-    author: "Unknown",
-    category: "Ambition",
-  },
-  {
-    text: "Don't stop when you're tired. Stop when you're done.",
-    author: "Unknown",
-    category: "Persistence",
-  },
-  {
-    text: "Wake up with determination. Go to bed with satisfaction.",
-    author: "Unknown",
-    category: "Discipline",
-  },
-  {
-    text: "Do something today that your future self will thank you for.",
-    author: "Sean Patrick Flanery",
-    category: "Future",
-  },
-  {
-    text: "Little things make big days.",
-    author: "Unknown",
-    category: "Appreciation",
-  },
-  {
-    text: "It's going to be hard, but hard does not mean impossible.",
-    author: "Unknown",
-    category: "Perseverance",
-  },
-  {
-    text: "Don't wait for opportunity. Create it.",
-    author: "Unknown",
-    category: "Opportunity",
-  },
-  {
-    text: "Sometimes we're tested not to show our weaknesses, but to discover our strengths.",
-    author: "Unknown",
-    category: "Strength",
-  },
-  {
-    text: "The key to success is to focus on goals, not obstacles.",
-    author: "Unknown",
-    category: "Focus",
-  },
-  {
-    text: "Dream it. Believe it. Build it.",
-    author: "Unknown",
-    category: "Creation",
-  },
-  {
-    text: "You don't have to be great to start, but you have to start to be great.",
-    author: "Zig Ziglar",
-    category: "Beginning",
-  },
-  {
-    text: "A journey of a thousand miles begins with a single step.",
-    author: "Lao Tzu",
-    category: "Journey",
-  },
-  {
-    text: "The only person you are destined to become is the person you decide to be.",
-    author: "Ralph Waldo Emerson",
-    category: "Self",
-  },
-  {
-    text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
-    author: "Ralph Waldo Emerson",
-    category: "Inner Strength",
-  },
-  {
-    text: "Hardships often prepare ordinary people for an extraordinary destiny.",
-    author: "C.S. Lewis",
-    category: "Destiny",
-  },
-  {
-    text: "You are never too old to set another goal or to dream a new dream.",
-    author: "C.S. Lewis",
-    category: "Goals",
+    tags: ["Persistence", "Progress"],
+    authorSlug: "confucius",
+    length: 64,
   },
 ];
 
-// Persist quotes widget state in memory across re-mounts
-let persistedQuotesState: {
-  quote: QuoteData;
-  isFavorite: boolean;
+const QUOTE_CATEGORIES = [
+  { id: "all", label: "All", icon: Sparkles },
+  { id: "inspirational", label: "Inspire", icon: Sparkles },
+  { id: "wisdom", label: "Wisdom", icon: Sparkles },
+  { id: "love", label: "Love", icon: Heart },
+  { id: "life", label: "Life", icon: Sparkles },
+  { id: "happiness", label: "Happy", icon: Sparkles },
+];
+
+// Persist state across re-mounts
+let persistedState: {
+  quote: QuoteData | null;
+  favorites: string[];
+  category: string;
+  quoteHistory: QuoteData[];
+  historyIndex: number;
 } | null = null;
 
 export default function QuotesWidget() {
-  // Initialize from memory first, then localStorage
-  const [currentQuote, setCurrentQuote] = useState<QuoteData>(() => {
-    if (persistedQuotesState !== null) {
-      return persistedQuotesState.quote;
-    }
-    // Try to load from localStorage
-    if (typeof window !== "undefined") {
-      const savedQuoteIndex = localStorage.getItem("qorvexflow_quote_index");
-      if (savedQuoteIndex) {
-        const index = parseInt(savedQuoteIndex, 10);
-        if (index >= 0 && index < MOTIVATIONAL_QUOTES.length) {
-          return MOTIVATIONAL_QUOTES[index];
-        }
-      }
-    }
-    return MOTIVATIONAL_QUOTES[0];
-  });
+  const { theme } = useTheme();
 
-  const [isFavorite, setIsFavorite] = useState(() => {
-    if (persistedQuotesState !== null) {
-      return persistedQuotesState.isFavorite;
-    }
-    return false;
-  });
-
+  // State
+  const [currentQuote, setCurrentQuote] = useState<QuoteData | null>(
+    () => persistedState?.quote ?? null
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>(
+    () => persistedState?.favorites ?? []
+  );
   const [copied, setCopied] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(
+    () => persistedState?.category ?? "all"
+  );
+  const [showCategories, setShowCategories] = useState(false);
+  const [quoteHistory, setQuoteHistory] = useState<QuoteData[]>(
+    () => persistedState?.quoteHistory ?? []
+  );
+  const [historyIndex, setHistoryIndex] = useState(
+    () => persistedState?.historyIndex ?? -1
+  );
 
-  // Keep memory state in sync
-  useEffect(() => {
-    persistedQuotesState = { quote: currentQuote, isFavorite };
-  }, [currentQuote, isFavorite]);
-
-  // Only run localStorage initialization on first mount when no persisted state
-  useEffect(() => {
-    if (persistedQuotesState !== null && persistedQuotesState.quote !== MOTIVATIONAL_QUOTES[0]) {
-      // Already initialized from memory
-      return;
+  // Theme colors
+  const getThemeColors = useCallback(() => {
+    switch (theme) {
+      case "ghibli":
+        return {
+          gradient: "from-emerald-900/90 to-teal-900/90",
+          accent: "text-emerald-400",
+          accentBg: "bg-emerald-500/20",
+          button: "from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500",
+          buttonShadow: "shadow-emerald-500/20",
+          border: "border-emerald-500/20",
+          tagBg: "bg-emerald-500/20 text-emerald-300",
+          skeleton: "bg-emerald-500/20",
+        };
+      case "coffeeshop":
+        return {
+          gradient: "from-amber-900/90 to-stone-900/90",
+          accent: "text-amber-400",
+          accentBg: "bg-amber-500/20",
+          button: "from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500",
+          buttonShadow: "shadow-amber-500/20",
+          border: "border-amber-500/20",
+          tagBg: "bg-amber-500/20 text-amber-300",
+          skeleton: "bg-amber-500/20",
+        };
+      default: // lofi
+        return {
+          gradient: "from-indigo-900/90 to-purple-900/90",
+          accent: "text-indigo-400",
+          accentBg: "bg-indigo-500/20",
+          button: "from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500",
+          buttonShadow: "shadow-indigo-500/20",
+          border: "border-indigo-500/20",
+          tagBg: "bg-indigo-500/20 text-indigo-300",
+          skeleton: "bg-indigo-500/20",
+        };
     }
+  }, [theme]);
 
-    const today = new Date().toDateString();
-    const savedDate = localStorage.getItem("qorvexflow_quote_date");
-    const savedQuoteIndex = localStorage.getItem("qorvexflow_quote_index");
+  const colors = getThemeColors();
 
-    if (savedDate === today && savedQuoteIndex) {
-      const index = parseInt(savedQuoteIndex, 10);
-      if (index >= 0 && index < MOTIVATIONAL_QUOTES.length) {
-        setCurrentQuote(MOTIVATIONAL_QUOTES[index]);
-      }
-    } else {
-      // New day, pick a random quote
-      const randomIndex = Math.floor(
-        Math.random() * MOTIVATIONAL_QUOTES.length
-      );
-      setCurrentQuote(MOTIVATIONAL_QUOTES[randomIndex]);
-      localStorage.setItem("qorvexflow_quote_date", today);
-      localStorage.setItem("qorvexflow_quote_index", randomIndex.toString());
-    }
+  // Persist state
+  useEffect(() => {
+    persistedState = {
+      quote: currentQuote,
+      favorites,
+      category: selectedCategory,
+      quoteHistory,
+      historyIndex,
+    };
+  }, [currentQuote, favorites, selectedCategory, quoteHistory, historyIndex]);
 
-    // Load favorites
-    const favorites = localStorage.getItem("qorvexflow_quote_favorites");
-    if (favorites) {
-      const favList = JSON.parse(favorites);
-      setIsFavorite(favList.includes(currentQuote.text));
+  // Load favorites from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem("qorvexflow_quote_favorites_v2");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
     }
   }, []);
 
-  const handleRandomize = () => {
+  // Fetch quote from API
+  const fetchQuote = useCallback(async (category?: string) => {
+    setIsLoading(true);
+    setError(null);
     setIsAnimating(true);
-    const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
-    const newQuote = MOTIVATIONAL_QUOTES[randomIndex];
 
-    setTimeout(() => {
-      setCurrentQuote(newQuote);
-      localStorage.setItem("qorvexflow_quote_index", randomIndex.toString());
+    try {
+      const tag = category && category !== "all" ? `&tags=${category}` : "";
+      const response = await fetch(
+        `https://api.quotable.io/random?maxLength=150${tag}`,
+        { cache: "no-store" }
+      );
 
-      // Check if new quote is favorite
-      const favorites = localStorage.getItem("qorvexflow_quote_favorites");
-      if (favorites) {
-        const favList = JSON.parse(favorites);
-        setIsFavorite(favList.includes(newQuote.text));
-      } else {
-        setIsFavorite(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch quote");
       }
 
-      setIsAnimating(false);
-    }, 300);
+      const data: QuoteData = await response.json();
+
+      setTimeout(() => {
+        setCurrentQuote(data);
+        setQuoteHistory((prev) => {
+          const newHistory = [...prev.slice(0, historyIndex + 1), data];
+          return newHistory.slice(-20); // Keep last 20 quotes
+        });
+        setHistoryIndex((prev) => Math.min(prev + 1, 19));
+        setIsAnimating(false);
+        setIsLoading(false);
+      }, 300);
+    } catch (err) {
+      // Use fallback quotes on error
+      const fallback = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+      setTimeout(() => {
+        setCurrentQuote(fallback);
+        setError("Using offline quotes");
+        setIsAnimating(false);
+        setIsLoading(false);
+      }, 300);
+    }
+  }, [historyIndex]);
+
+  // Initial load
+  useEffect(() => {
+    if (!currentQuote && !isLoading) {
+      // Check if we should load a daily quote
+      const today = new Date().toDateString();
+      const savedDate = localStorage.getItem("qorvexflow_quote_date_v2");
+      const savedQuote = localStorage.getItem("qorvexflow_daily_quote_v2");
+
+      if (savedDate === today && savedQuote) {
+        try {
+          const parsed = JSON.parse(savedQuote);
+          setCurrentQuote(parsed);
+          setQuoteHistory([parsed]);
+          setHistoryIndex(0);
+        } catch {
+          fetchQuote(selectedCategory);
+        }
+      } else {
+        fetchQuote(selectedCategory);
+      }
+    }
+  }, []);
+
+  // Save daily quote
+  useEffect(() => {
+    if (currentQuote && !currentQuote._id.startsWith("fallback")) {
+      localStorage.setItem("qorvexflow_quote_date_v2", new Date().toDateString());
+      localStorage.setItem("qorvexflow_daily_quote_v2", JSON.stringify(currentQuote));
+    }
+  }, [currentQuote]);
+
+  // Navigation through history
+  const goBack = () => {
+    if (historyIndex > 0) {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setHistoryIndex((prev) => prev - 1);
+        setCurrentQuote(quoteHistory[historyIndex - 1]);
+        setIsAnimating(false);
+      }, 200);
+    }
+  };
+
+  const goForward = () => {
+    if (historyIndex < quoteHistory.length - 1) {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setHistoryIndex((prev) => prev + 1);
+        setCurrentQuote(quoteHistory[historyIndex + 1]);
+        setIsAnimating(false);
+      }, 200);
+    }
+  };
+
+  // Actions
+  const handleNewQuote = () => {
+    fetchQuote(selectedCategory);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setShowCategories(false);
+    fetchQuote(category);
   };
 
   const handleToggleFavorite = () => {
-    const favorites = localStorage.getItem("qorvexflow_quote_favorites");
-    let favList: string[] = favorites ? JSON.parse(favorites) : [];
+    if (!currentQuote) return;
 
-    if (isFavorite) {
-      favList = favList.filter((text) => text !== currentQuote.text);
-    } else {
-      favList.push(currentQuote.text);
-    }
+    const newFavorites = favorites.includes(currentQuote._id)
+      ? favorites.filter((id) => id !== currentQuote._id)
+      : [...favorites, currentQuote._id];
 
-    localStorage.setItem("qorvexflow_quote_favorites", JSON.stringify(favList));
-    setIsFavorite(!isFavorite);
+    setFavorites(newFavorites);
+    localStorage.setItem("qorvexflow_quote_favorites_v2", JSON.stringify(newFavorites));
   };
 
-  const handleCopy = () => {
-    const text = `"${currentQuote.text}" — ${currentQuote.author}`;
-    navigator.clipboard.writeText(text);
+  const handleCopy = async () => {
+    if (!currentQuote) return;
+
+    const text = `"${currentQuote.content}" — ${currentQuote.author}`;
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShare = async () => {
+    if (!currentQuote) return;
+
+    const text = `"${currentQuote.content}" — ${currentQuote.author}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Inspirational Quote",
+          text: text,
+        });
+      } catch {
+        // User cancelled or share failed, fall back to copy
+        handleCopy();
+      }
+    } else {
+      handleCopy();
+    }
+  };
+
+  const isFavorite = currentQuote ? favorites.includes(currentQuote._id) : false;
+
+  // Dynamic font size based on quote length
+  const getQuoteFontSize = () => {
+    if (!currentQuote) return "text-lg sm:text-xl md:text-2xl";
+    const length = currentQuote.content.length;
+    if (length < 50) return "text-xl sm:text-2xl md:text-3xl";
+    if (length < 100) return "text-lg sm:text-xl md:text-2xl";
+    return "text-base sm:text-lg md:text-xl";
+  };
+
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-indigo-900/90 to-purple-900/90 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+    <div className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden`}>
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-white/10 bg-black/20 p-4 px-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Quote className="w-5 h-5 text-indigo-400" />
-            <h2 className="text-lg font-bold text-white">Daily Motivation</h2>
+      <div className="flex-shrink-0 border-b border-white/10 bg-black/20 px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={`p-1.5 sm:p-2 rounded-lg ${colors.accentBg}`}>
+              <Quote className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${colors.accent}`} />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-bold text-white truncate">Daily Quote</h2>
+              <p className="text-[10px] sm:text-xs text-white/50 truncate">
+                {error || "Powered by Quotable"}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            {/* Category filter */}
+            <div className="relative">
+              <button
+                onClick={() => setShowCategories(!showCategories)}
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
+                  showCategories
+                    ? `${colors.accentBg} ${colors.accent}`
+                    : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                }`}
+                aria-label="Filter by category"
+              >
+                <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </button>
+
+              {showCategories && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowCategories(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl p-2 min-w-[140px]">
+                    {QUOTE_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => handleCategoryChange(cat.id)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                          selectedCategory === cat.id
+                            ? `${colors.accentBg} ${colors.accent}`
+                            : "text-white/70 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <cat.icon className="w-3.5 h-3.5" />
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
             <button
               onClick={handleToggleFavorite}
-              className={`p-2 rounded-lg transition-all duration-200 ${
+              disabled={!currentQuote}
+              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                 isFavorite
                   ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
                   : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
-              }`}
-              aria-label={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
+              } disabled:opacity-50`}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart
-                className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`}
-              />
+              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFavorite ? "fill-current" : ""}`} />
             </button>
+
             <button
               onClick={handleCopy}
-              className="p-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200"
+              disabled={!currentQuote}
+              className="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50"
               aria-label="Copy quote"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-green-400" />
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
               ) : (
-                <Copy className="w-4 h-4" />
+                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               )}
+            </button>
+
+            <button
+              onClick={handleShare}
+              disabled={!currentQuote}
+              className="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50 hidden sm:flex"
+              aria-label="Share quote"
+            >
+              <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Quote Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden min-h-0">
         {/* Decorative background */}
-        <div className="absolute inset-0 opacity-10">
-          <Quote className="absolute top-4 left-4 w-20 h-20 text-white transform rotate-12" />
-          <Quote className="absolute bottom-4 right-4 w-20 h-20 text-white transform -rotate-12" />
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <Quote className="absolute top-2 left-2 sm:top-4 sm:left-4 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white transform rotate-12" />
+          <Quote className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white transform -rotate-12" />
         </div>
 
-        {/* Quote Text */}
-        <div
-          className={`relative z-10 text-center transition-all duration-300 ${
-            isAnimating ? "opacity-0 scale-95" : "opacity-100 scale-100"
-          }`}
-        >
-          <Quote className="w-8 h-8 text-indigo-400 mx-auto mb-4" />
-          <blockquote className="text-xl md:text-2xl font-medium text-white leading-relaxed mb-6 px-4">
-            "{currentQuote.text}"
-          </blockquote>
-          <div className="flex flex-col items-center gap-2">
-            <cite className="text-base text-indigo-300 not-italic font-semibold">
-              — {currentQuote.author}
-            </cite>
-            <span className="text-xs text-white/40 px-3 py-1 bg-white/10 rounded-full">
-              {currentQuote.category}
-            </span>
+        {/* Loading skeleton */}
+        {isLoading && !currentQuote && (
+          <div className="relative z-10 w-full max-w-md space-y-4 animate-pulse">
+            <div className={`h-6 ${colors.skeleton} rounded-lg w-3/4 mx-auto`} />
+            <div className={`h-6 ${colors.skeleton} rounded-lg w-full`} />
+            <div className={`h-6 ${colors.skeleton} rounded-lg w-2/3 mx-auto`} />
+            <div className={`h-4 ${colors.skeleton} rounded-lg w-1/3 mx-auto mt-6`} />
           </div>
-        </div>
+        )}
+
+        {/* Error state */}
+        {error && !currentQuote && (
+          <div className="relative z-10 text-center">
+            <AlertCircle className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
+            <p className="text-white/60 mb-4">{error}</p>
+            <button
+              onClick={handleNewQuote}
+              className={`px-4 py-2 bg-gradient-to-r ${colors.button} text-white rounded-lg text-sm font-medium`}
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Quote */}
+        {currentQuote && (
+          <div
+            className={`relative z-10 text-center w-full max-w-lg transition-all duration-300 ${
+              isAnimating ? "opacity-0 scale-95 translate-y-2" : "opacity-100 scale-100 translate-y-0"
+            }`}
+          >
+            <Quote className={`w-6 h-6 sm:w-8 sm:h-8 ${colors.accent} mx-auto mb-3 sm:mb-4`} />
+
+            <blockquote className={`${getQuoteFontSize()} font-medium text-white leading-relaxed mb-4 sm:mb-6 px-2`}>
+              "{currentQuote.content}"
+            </blockquote>
+
+            <div className="flex flex-col items-center gap-2">
+              <cite className={`text-sm sm:text-base ${colors.accent} not-italic font-semibold`}>
+                — {currentQuote.author}
+              </cite>
+
+              {currentQuote.tags && currentQuote.tags.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1.5 mt-1">
+                  {currentQuote.tags.slice(0, 3).map((tag) => (
+                    <span
+                      key={tag}
+                      className={`text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full ${colors.tagBg}`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="flex-shrink-0 border-t border-white/10 bg-black/20 p-4">
-        <button
-          onClick={handleRandomize}
-          disabled={isAnimating}
-          className="w-full px-4 py-3 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 disabled:opacity-50"
-        >
-          <RefreshCw
-            className={`w-4 h-4 ${isAnimating ? "animate-spin" : ""}`}
-          />
-          Get New Quote
-        </button>
-        <p className="text-xs text-white/40 text-center mt-2">
-          {MOTIVATIONAL_QUOTES.length} quotes available
-        </p>
+      <div className="flex-shrink-0 border-t border-white/10 bg-black/20 p-3 sm:p-4">
+        {/* Navigation and New Quote */}
+        <div className="flex items-center gap-2">
+          {/* History navigation */}
+          <button
+            onClick={goBack}
+            disabled={historyIndex <= 0 || isLoading}
+            className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Previous quote"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
+          {/* New Quote button */}
+          <button
+            onClick={handleNewQuote}
+            disabled={isLoading}
+            className={`flex-1 px-3 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r ${colors.button} text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg ${colors.buttonShadow} disabled:opacity-50 text-sm sm:text-base`}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isLoading ? "animate-spin" : ""}`} />
+            <span className="hidden xs:inline">New Quote</span>
+            <span className="xs:hidden">New</span>
+          </button>
+
+          <button
+            onClick={goForward}
+            disabled={historyIndex >= quoteHistory.length - 1 || isLoading}
+            className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            aria-label="Next quote"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+        </div>
+
+        {/* History indicator */}
+        {quoteHistory.length > 1 && (
+          <div className="flex items-center justify-center gap-1 mt-2">
+            {quoteHistory.slice(-7).map((_, idx) => {
+              const actualIdx = Math.max(0, quoteHistory.length - 7) + idx;
+              return (
+                <div
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                    actualIdx === historyIndex
+                      ? `${colors.accent} w-3`
+                      : "bg-white/20"
+                  }`}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

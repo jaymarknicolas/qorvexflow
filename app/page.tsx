@@ -35,10 +35,12 @@ import {
   FileText,
   Youtube,
   Quote,
+  Coffee,
 } from "lucide-react";
 import NotesWidgetWYSIWYG from "@/components/notes-widget-wysiwyg";
 import YouTubeWidgetInput from "@/components/youtube-widget-input";
 import QuotesWidget from "@/components/quotes-widget";
+import CoffeeCounterWidget from "@/components/coffee-counter-widget";
 import CanvasVideoBackground from "@/components/canvas-video-background";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useResponsive } from "@/lib/hooks/useResponsive";
@@ -53,6 +55,7 @@ const MemoizedCalendarWidget = memo(CalendarWidget);
 const MemoizedNotesWidgetWYSIWYG = memo(NotesWidgetWYSIWYG);
 const MemoizedYouTubeWidgetInput = memo(YouTubeWidgetInput);
 const MemoizedQuotesWidget = memo(QuotesWidget);
+const MemoizedCoffeeCounterWidget = memo(CoffeeCounterWidget);
 
 // Widget icon mapping
 const getWidgetIcon = (widgetType: WidgetType | string | null) => {
@@ -73,6 +76,8 @@ const getWidgetIcon = (widgetType: WidgetType | string | null) => {
       return Youtube;
     case "quotes":
       return Quote;
+    case "coffee":
+      return Coffee;
     default:
       return Timer;
   }
@@ -535,6 +540,8 @@ function renderWidget(type: WidgetType | null) {
       return <MemoizedYouTubeWidgetInput />;
     case "quotes":
       return <MemoizedQuotesWidget />;
+    case "coffee":
+      return <MemoizedCoffeeCounterWidget />;
     default:
       return null;
   }

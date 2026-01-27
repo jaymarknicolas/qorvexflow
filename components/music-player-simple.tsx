@@ -19,10 +19,17 @@ import {
   WifiOff,
   LogIn,
   LogOut,
+  Search,
+  X,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useSpotifyAuth } from "@/lib/hooks/useSpotifyAuth";
 import { useSpotifyPlayback } from "@/lib/hooks/useSpotifyPlayback";
+import { useYouTubePlayer } from "@/lib/hooks/useYouTubePlayer";
+import {
+  useYouTubeSearch,
+  YouTubeSearchResult,
+} from "@/lib/hooks/useYouTubeSearch";
 
 // Music source type
 type MusicSourceType = "youtube" | "spotify";
@@ -34,103 +41,70 @@ const SpotifyIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// 10 Lofi tracks/streams
-const LOFI_TRACKS = [
-  { id: 1, name: "Rainy Day Vibes", artist: "Lofi Girl", duration: "∞" },
-  { id: 2, name: "Midnight Coffee", artist: "Chillhop", duration: "∞" },
-  { id: 3, name: "Study Session", artist: "Lofi Fruits", duration: "∞" },
-  { id: 4, name: "Dreamy Nights", artist: "Sleepy Fish", duration: "∞" },
-  { id: 5, name: "Cozy Fireplace", artist: "The Jazz Hop Café", duration: "∞" },
-  { id: 6, name: "Ocean Waves", artist: "Kupla", duration: "∞" },
-  { id: 7, name: "Autumn Leaves", artist: "SwuM", duration: "∞" },
-  { id: 8, name: "Morning Dew", artist: "Idealism", duration: "∞" },
-  { id: 9, name: "Starry Sky", artist: "In Love With A Ghost", duration: "∞" },
-  { id: 10, name: "Peaceful Mind", artist: "Jinsang", duration: "∞" },
+// Preset video IDs for each theme (extracted from URLs)
+const LOFI_VIDEO_IDS = [
+  { id: "cIZhlFIyJ_Y", name: "Night lofi playlist", artist: "HITO" },
+  { id: "sF80I-TQiW0", name: "90's Chill Lofi", artist: "The Japanese Town" },
+  { id: "rjYm7L9B7R0", name: "Night Balcony Lofi", artist: "Retro-Rhythm" },
+  { id: "mQAJDULghEw", name: "Deep Flow Coding", artist: "Cosmic Hippo" },
+  {
+    id: "rhrCG0Vtx3g",
+    name: "High-Rise Urban Studio",
+    artist: "CraftCozy Roomx",
+  },
 ];
 
-// YouTube stream URLs
-const STREAM_URLS = [
-  "https://www.youtube.com/embed/OK2WVZprlJE?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/CBSlu_VMS9U?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/sF80I-TQiW0?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/9kzE8isXlQY?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/BrnDlRmW5hs?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/S-4hwfyK-XQ?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/VUQfT3gNT3g?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/Y9mRoCerrpY?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/lTRiuFIWV54?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/BCxTQq0UiFs?autoplay=1&mute=0",
+const GHIBLI_VIDEO_IDS = [
+  { id: "7lq6e4Lu4B8", name: "GHIBLI Jazz", artist: "JazzNe" },
+  {
+    id: "HGl75kurxok",
+    name: "Piano Ghibli Collection",
+    artist: "Vangakuz ヴァンガクズ",
+  },
+  {
+    id: "FrX7tnM80M8",
+    name: "Studio Ghibli Experience",
+    artist: "Joe Hisaishi Official",
+  },
+  {
+    id: "I4fxYapxu5M",
+    name: "3 hour of Studio Ghibli",
+    artist: "Ghibli Music BGM",
+  },
+  {
+    id: "SEzAoQJZOhc",
+    name: "RELAXING STUDIO GHIBLI",
+    artist: "Sound of Nature",
+  },
 ];
 
-// 10 Ghibli-themed tracks
-const GHIBLI_TRACKS = [
-  { id: 1, name: "Spirited Away", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 2, name: "My Neighbor Totoro", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 3, name: "Princess Mononoke", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 4, name: "Kiki's Delivery Service", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 5, name: "Castle in the Sky", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 6, name: "Howl's Moving Castle", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 7, name: "Ponyo", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 8, name: "Laputa", artist: "Joe Hisaishi", duration: "∞" },
-  { id: 9, name: "Arrietty", artist: "Cécile Corbel", duration: "∞" },
-  { id: 10, name: "The Wind Rises", artist: "Joe Hisaishi", duration: "∞" },
+const COFFEESHOP_VIDEO_IDS = [
+  {
+    id: "MYPVQccHhAQ",
+    name: "Cozy Coffee Shop",
+    artist: "Relaxing Jazz Piano",
+  },
+  { id: "2RKbS2khgEM", name: "Coffee House Songs", artist: "Coffee Smiley" },
+  {
+    id: "ENSB1we3sGM",
+    name: "Warm Winter Night",
+    artist: "Relaxing Jazz Cafe",
+  },
+  { id: "ELd23Hll3is", name: "Cafe Playlist", artist: "Cherry Music" },
+  { id: "-Gc76-sPJKk", name: "Spring R&B Cafe", artist: "Too Good For Mood" },
 ];
 
-// YouTube stream URLs for Ghibli tracks
-const GHIBLI_STREAMS = [
-  "https://www.youtube.com/embed/HGl75kurxok?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/hgUGe1cf3So?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/3jWRrafhO7M?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/oCV-C8_VFdk?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/7lq6e4Lu4B8?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/xTY0SlyVfCQ?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/ASCMw-UCafA?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/whLvb0yvIFo?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/jvM3rO4Ihd4?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/I4fxYapxu5M?autoplay=1&mute=0",
-];
-
-// 10 Coffee Shop themed tracks
-const COFFEESHOP_TRACKS = [
-  { id: 1, name: "Morning Brew", artist: "Cafe Beats", duration: "∞" },
-  { id: 2, name: "Espresso Dreams", artist: "Jazz Café", duration: "∞" },
-  { id: 3, name: "Rainy Café", artist: "Cozy Sounds", duration: "∞" },
-  { id: 4, name: "Latte Afternoons", artist: "Chill Barista", duration: "∞" },
-  { id: 5, name: "Acoustic Corner", artist: "Coffee House", duration: "∞" },
-  { id: 6, name: "Warm Conversations", artist: "Café Lounge", duration: "∞" },
-  { id: 7, name: "Sunday Morning", artist: "Mellow Beans", duration: "∞" },
-  { id: 8, name: "French Press", artist: "Paris Café", duration: "∞" },
-  { id: 9, name: "Bookstore Vibes", artist: "Quiet Hours", duration: "∞" },
-  { id: 10, name: "Closing Time", artist: "Night Café", duration: "∞" },
-];
-
-// YouTube stream URLs for Coffee Shop tracks
-const COFFEESHOP_STREAMS = [
-  "https://www.youtube.com/embed/MYPVQccHhAQ?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/ySOE2d9-BKE?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/2RKbS2khgEM?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/h2zkV-l_TbY?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/c0_ejQQcrwI?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/DSGyEsJ17cI?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/gaGrHUekGrc?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/VMAPTo7RVCo?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/dFpzSmjgwao?autoplay=1&mute=0",
-  "https://www.youtube.com/embed/Dx5qFachd3A?autoplay=1&mute=0",
-];
-
-// Track state for each theme to preserve playback position
+// Track state for each theme
 interface ThemeState {
   lofi: { track: number; isPlaying: boolean };
   ghibli: { track: number; isPlaying: boolean };
   coffeeshop: { track: number; isPlaying: boolean };
 }
 
-// Persist music player state in memory across re-mounts
+// Persist state
 let persistedMusicState: {
-  isPlaying: boolean;
   currentTrack: number;
   volume: number;
-  isMuted: boolean;
   isShuffleOn: boolean;
   isRepeatOn: boolean;
   themeState: ThemeState;
@@ -138,12 +112,12 @@ let persistedMusicState: {
   musicSource: MusicSourceType;
 } | null = null;
 
-// Format milliseconds to mm:ss
-function formatTime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+// Format seconds to mm:ss
+function formatTime(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 export default function MusicPlayerSimple() {
@@ -152,81 +126,68 @@ export default function MusicPlayerSimple() {
   // Spotify hooks
   const spotifyAuth = useSpotifyAuth();
   const [musicSource, setMusicSource] = useState<MusicSourceType>(
-    () => persistedMusicState?.musicSource ?? "youtube"
+    () => persistedMusicState?.musicSource ?? "youtube",
   );
   const spotifyPlayback = useSpotifyPlayback(
     spotifyAuth.accessToken,
-    musicSource === "spotify"
+    musicSource === "spotify",
   );
 
-  // Use refs to track the previous theme and preserve state
+  // YouTube hooks
+  const youtubePlayer = useYouTubePlayer("youtube-player-container");
+  const youtubeSearch = useYouTubeSearch();
+
+  // Local state
+  const [currentTrack, setCurrentTrack] = useState(
+    () => persistedMusicState?.currentTrack ?? 0,
+  );
+  const [volume, setVolume] = useState(() => persistedMusicState?.volume ?? 70);
+  const [isShuffleOn, setIsShuffleOn] = useState(
+    () => persistedMusicState?.isShuffleOn ?? false,
+  );
+  const [isRepeatOn, setIsRepeatOn] = useState(
+    () => persistedMusicState?.isRepeatOn ?? false,
+  );
+  const [waveformOffset, setWaveformOffset] = useState(0);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [playHistory, setPlayHistory] = useState<number[]>([]);
+
   const prevThemeRef = useRef(persistedMusicState?.currentTheme ?? theme);
   const themeStateRef = useRef<ThemeState>(
     persistedMusicState?.themeState ?? {
       lofi: { track: 0, isPlaying: false },
       ghibli: { track: 0, isPlaying: false },
       coffeeshop: { track: 0, isPlaying: false },
-    }
+    },
   );
 
-  // Initialize state from persisted memory or defaults
-  const [isPlaying, setIsPlaying] = useState(
-    () => persistedMusicState?.isPlaying ?? false
-  );
-  const [currentTrack, setCurrentTrack] = useState(
-    () => persistedMusicState?.currentTrack ?? 0
-  );
-  const [volume, setVolume] = useState(() => persistedMusicState?.volume ?? 70);
-  const [isMuted, setIsMuted] = useState(
-    () => persistedMusicState?.isMuted ?? false
-  );
-  const [isShuffleOn, setIsShuffleOn] = useState(
-    () => persistedMusicState?.isShuffleOn ?? false
-  );
-  const [isRepeatOn, setIsRepeatOn] = useState(
-    () => persistedMusicState?.isRepeatOn ?? false
-  );
-  const [waveformOffset, setWaveformOffset] = useState(0);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const [playHistory, setPlayHistory] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showSourceMenu, setShowSourceMenu] = useState(false);
+  // Get current theme's video list
+  const VIDEO_LIST =
+    theme === "ghibli"
+      ? GHIBLI_VIDEO_IDS
+      : theme === "coffeeshop"
+        ? COFFEESHOP_VIDEO_IDS
+        : LOFI_VIDEO_IDS;
 
-  // Track the current stream key to prevent unnecessary iframe reloads
-  const [streamKey, setStreamKey] = useState(0);
-
-  // Persist music player state to memory on changes
+  // Persist state
   useEffect(() => {
     persistedMusicState = {
-      isPlaying,
       currentTrack,
       volume,
-      isMuted,
       isShuffleOn,
       isRepeatOn,
       themeState: themeStateRef.current,
       currentTheme: theme,
       musicSource,
     };
-  }, [isPlaying, currentTrack, volume, isMuted, isShuffleOn, isRepeatOn, theme, musicSource]);
+  }, [currentTrack, volume, isShuffleOn, isRepeatOn, theme, musicSource]);
 
-  // Choose the right track list & stream URLs
-  const TRACKS =
-    theme === "ghibli"
-      ? GHIBLI_TRACKS
-      : theme === "coffeeshop"
-        ? COFFEESHOP_TRACKS
-        : LOFI_TRACKS;
-  const STREAMS =
-    theme === "ghibli"
-      ? GHIBLI_STREAMS
-      : theme === "coffeeshop"
-        ? COFFEESHOP_STREAMS
-        : STREAM_URLS;
-
-  // Handle theme changes - preserve playing state and track position per theme
+  // Handle theme changes
   useEffect(() => {
-    if (prevThemeRef.current !== theme) {
+    if (prevThemeRef.current !== theme && musicSource === "youtube") {
       const prevThemeKey =
         prevThemeRef.current === "ghibli"
           ? "ghibli"
@@ -235,7 +196,7 @@ export default function MusicPlayerSimple() {
             : "lofi";
       themeStateRef.current[prevThemeKey] = {
         track: currentTrack,
-        isPlaying: isPlaying,
+        isPlaying: youtubePlayer.isPlaying,
       };
 
       const newThemeKey =
@@ -245,17 +206,32 @@ export default function MusicPlayerSimple() {
             ? "coffeeshop"
             : "lofi";
       const savedState = themeStateRef.current[newThemeKey];
-
       setCurrentTrack(savedState.track);
 
-      if (isPlaying && musicSource === "youtube") {
-        setIsLoading(true);
-        setStreamKey((prev) => prev + 1);
+      // Load the new theme's track
+      const newVideoList =
+        theme === "ghibli"
+          ? GHIBLI_VIDEO_IDS
+          : theme === "coffeeshop"
+            ? COFFEESHOP_VIDEO_IDS
+            : LOFI_VIDEO_IDS;
+      const video = newVideoList[savedState.track];
+      if (video && youtubePlayer.isReady) {
+        youtubePlayer.loadVideo(video.id, {
+          title: video.name,
+          artist: video.artist,
+        });
       }
 
       prevThemeRef.current = theme;
     }
-  }, [theme, currentTrack, isPlaying, musicSource]);
+  }, [
+    theme,
+    currentTrack,
+    youtubePlayer.isPlaying,
+    youtubePlayer.isReady,
+    musicSource,
+  ]);
 
   // Theme colors
   const getThemeColors = () => {
@@ -300,31 +276,52 @@ export default function MusicPlayerSimple() {
 
   const colors = getThemeColors();
 
-  // Animate waveform when playing
+  // Animate waveform using requestAnimationFrame for smoother animation
   useEffect(() => {
     const shouldAnimate =
-      musicSource === "youtube" ? isPlaying : spotifyPlayback.isPlaying;
+      musicSource === "youtube"
+        ? youtubePlayer.isPlaying && !youtubePlayer.isLoading
+        : spotifyPlayback.isPlaying && !spotifyPlayback.isLoading;
+
     if (!shouldAnimate) return;
 
-    const interval = setInterval(() => {
-      setWaveformOffset((prev) => (prev + 0.15) % (Math.PI * 2));
-    }, 50);
+    let animationId: number;
+    let lastTime = 0;
 
-    return () => clearInterval(interval);
-  }, [isPlaying, spotifyPlayback.isPlaying, musicSource]);
+    const animate = (currentTime: number) => {
+      if (currentTime - lastTime >= 50) {
+        setWaveformOffset((prev) => (prev + 0.15) % (Math.PI * 2));
+        lastTime = currentTime;
+      }
+      animationId = requestAnimationFrame(animate);
+    };
 
-  // Enhanced waveform bars with varying characteristics
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [
+    youtubePlayer.isPlaying,
+    youtubePlayer.isLoading,
+    spotifyPlayback.isPlaying,
+    spotifyPlayback.isLoading,
+    musicSource,
+  ]);
+
+  // Waveform bars - generate once on mount with stable values
   const waveformBars = useMemo(() => {
-    return Array.from({ length: 32 }, (_, i) => ({
+    return Array.from({ length: 34 }, (_, i) => ({
       id: i,
-      baseHeight: Math.sin(i * 0.4) * 15 + 25,
-      frequency: 0.3 + Math.random() * 0.4,
-      phase: Math.random() * Math.PI * 2,
-      colorIndex: i % colors.waveColors.length,
+      baseHeight: Math.sin(i * 0.5) * 20 + 100,
+      frequency: 0.3 + (Math.sin(i * 1.5) * 0.5 + 0.5) * 0.4,
+      phase: (i * 0.7) % (Math.PI * 2),
     }));
-  }, [colors.waveColors.length]);
+  }, []);
 
-  // YouTube playback handlers
+  // Playback handlers
   const handlePlayPause = () => {
     if (musicSource === "spotify") {
       if (spotifyPlayback.isPlaying) {
@@ -333,40 +330,24 @@ export default function MusicPlayerSimple() {
         spotifyPlayback.play();
       }
     } else {
-      if (!isPlaying) {
-        setIsLoading(true);
-        setIsPlaying(true);
-      } else {
-        setIsPlaying(false);
-      }
+      youtubePlayer.togglePlay();
     }
   };
-
-  const handleIframeLoad = () => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-  };
-
-  const getNextTrack = useCallback(() => {
-    if (isShuffleOn) {
-      let next;
-      do {
-        next = Math.floor(Math.random() * TRACKS.length);
-      } while (next === currentTrack && TRACKS.length > 1);
-      return next;
-    }
-    return (currentTrack + 1) % TRACKS.length;
-  }, [currentTrack, isShuffleOn, TRACKS.length]);
 
   const handleNext = async () => {
     if (musicSource === "spotify") {
       await spotifyPlayback.skipNext();
     } else {
-      setIsLoading(true);
+      const nextTrack = isShuffleOn
+        ? Math.floor(Math.random() * VIDEO_LIST.length)
+        : (currentTrack + 1) % VIDEO_LIST.length;
       setPlayHistory((prev) => [...prev, currentTrack]);
-      setCurrentTrack(getNextTrack());
-      if (!isPlaying) setIsPlaying(true);
+      setCurrentTrack(nextTrack);
+      const video = VIDEO_LIST[nextTrack];
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
     }
   };
 
@@ -374,114 +355,137 @@ export default function MusicPlayerSimple() {
     if (musicSource === "spotify") {
       await spotifyPlayback.skipPrevious();
     } else {
-      setIsLoading(true);
+      let prevTrack;
       if (playHistory.length > 0) {
-        const prevTrack = playHistory[playHistory.length - 1];
+        prevTrack = playHistory[playHistory.length - 1];
         setPlayHistory((prev) => prev.slice(0, -1));
-        setCurrentTrack(prevTrack);
       } else {
-        setCurrentTrack((prev) => (prev - 1 + TRACKS.length) % TRACKS.length);
+        prevTrack = (currentTrack - 1 + VIDEO_LIST.length) % VIDEO_LIST.length;
       }
-      if (!isPlaying) setIsPlaying(true);
+      setCurrentTrack(prevTrack);
+      const video = VIDEO_LIST[prevTrack];
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
     }
-  };
-
-  const handleShuffle = () => {
-    setIsShuffleOn(!isShuffleOn);
-    setPlayHistory([]);
-  };
-
-  const handleRepeat = () => {
-    setIsRepeatOn(!isRepeatOn);
-  };
-
-  const handleToggleMute = () => {
-    setIsMuted(!isMuted);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
-    if (musicSource === "spotify") {
+    if (musicSource === "youtube") {
+      youtubePlayer.setVolume(newVolume);
+    } else {
       spotifyPlayback.setVolume(newVolume);
-    }
-    if (newVolume > 0 && isMuted) {
-      setIsMuted(false);
     }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (musicSource === "spotify" && spotifyPlayback.currentTrack) {
-      const seekPosition = parseFloat(e.target.value);
-      spotifyPlayback.seek(seekPosition);
+    const seekTime = parseFloat(e.target.value);
+    if (musicSource === "youtube") {
+      youtubePlayer.seekTo(seekTime);
+    } else if (spotifyPlayback.currentTrack) {
+      spotifyPlayback.seek(seekTime * 1000);
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      youtubeSearch.search(searchQuery);
+    }
+  };
+
+  const handleSelectSearchResult = (result: YouTubeSearchResult) => {
+    youtubePlayer.loadVideo(result.videoId, {
+      title: result.title,
+      artist: result.channelTitle,
+      duration: result.duration,
+    });
+    setShowSearch(false);
+    setSearchQuery("");
+    youtubeSearch.clearResults();
+  };
+
+  const handleSourceChange = (source: MusicSourceType) => {
+    if (source === "spotify" && !spotifyAuth.isConnected) {
+      spotifyAuth.connect();
+      return;
+    }
+    if (musicSource === "youtube" && source === "spotify") {
+      youtubePlayer.pause();
+    }
+    setMusicSource(source);
+    setShowSourceMenu(false);
+  };
+
+  // Load initial video when player is ready
+  useEffect(() => {
+    if (
+      youtubePlayer.isReady &&
+      !youtubePlayer.currentTrack &&
+      musicSource === "youtube"
+    ) {
+      const video = VIDEO_LIST[currentTrack];
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
+    }
+  }, [youtubePlayer.isReady, musicSource]);
+
   const getVolumeIcon = () => {
-    if (isMuted || volume === 0) return VolumeX;
+    if (volume === 0) return VolumeX;
     if (volume < 50) return Volume1;
     return Volume2;
   };
 
   const VolumeIcon = getVolumeIcon();
 
-  // Current track data
-  const currentTrackData = TRACKS[currentTrack];
-
-  // Only set random track on first ever mount (when no persisted state)
-  const hasInitializedRef = useRef(persistedMusicState !== null);
-  useEffect(() => {
-    if (!hasInitializedRef.current) {
-      const randomIndex = Math.floor(Math.random() * LOFI_TRACKS.length);
-      setCurrentTrack(randomIndex);
-      hasInitializedRef.current = true;
-    }
-  }, []);
-
-  // Handle source change
-  const handleSourceChange = (source: MusicSourceType) => {
-    if (source === "spotify" && !spotifyAuth.isConnected) {
-      spotifyAuth.connect();
-      return;
-    }
-
-    // If switching away from YouTube, stop playback
-    if (musicSource === "youtube" && source === "spotify") {
-      setIsPlaying(false);
-    }
-
-    setMusicSource(source);
-    setShowSourceMenu(false);
-  };
-
-  // Determine effective playing state and track info
+  // Determine effective state
   const effectiveIsPlaying =
-    musicSource === "spotify" ? spotifyPlayback.isPlaying : isPlaying;
+    musicSource === "youtube"
+      ? youtubePlayer.isPlaying
+      : spotifyPlayback.isPlaying;
   const effectiveIsLoading =
-    musicSource === "spotify" ? spotifyPlayback.isLoading : isLoading;
+    musicSource === "youtube"
+      ? youtubePlayer.isLoading
+      : spotifyPlayback.isLoading;
+
+  const currentTrackInfo =
+    musicSource === "youtube"
+      ? youtubePlayer.currentTrack
+      : spotifyPlayback.currentTrack;
+
+  const currentProgress =
+    musicSource === "youtube"
+      ? youtubePlayer.currentTime
+      : (spotifyPlayback.progress_ms || 0) / 1000;
+
+  const totalDuration =
+    musicSource === "youtube"
+      ? youtubePlayer.duration
+      : (spotifyPlayback.currentTrack?.duration_ms || 0) / 1000;
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {/* Hidden iframe for YouTube playback */}
-      {musicSource === "youtube" && isPlaying && (
-        <iframe
-          key={`stream-${currentTrack}-${streamKey}`}
-          src={STREAMS[currentTrack % STREAMS.length]}
-          className="absolute"
-          style={{
-            width: "1px",
-            height: "1px",
-            opacity: 0,
-            pointerEvents: "none",
-            position: "absolute",
-            top: -9999,
-          }}
-          allow="autoplay"
-          onLoad={handleIframeLoad}
-        />
-      )}
+      {/* Hidden YouTube player container - kept in viewport to prevent browser power-saving pause */}
+      <div
+        id="youtube-player-container"
+        className="absolute overflow-hidden"
+        style={{
+          width: 256,
+          height: 144,
+          opacity: 0,
+          pointerEvents: "none",
+          bottom: 0,
+          right: 0,
+          zIndex: -1,
+        }}
+      />
 
-      {/* Background glow effect */}
+      {/* Background glow */}
       <div
         className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none`}
       />
@@ -489,6 +493,81 @@ export default function MusicPlayerSimple() {
       <div
         className={`relative h-full bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-xl border ${colors.border} rounded-2xl p-4 sm:p-5 flex flex-col overflow-hidden`}
       >
+        {/* Search Overlay */}
+        {showSearch && (
+          <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl z-40 p-4 pt-12 flex flex-col rounded-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-white">
+                Search YouTube Music
+              </h3>
+              <button
+                onClick={() => {
+                  setShowSearch(false);
+                  youtubeSearch.clearResults();
+                }}
+                className="p-1 hover:bg-white/10 rounded-lg"
+              >
+                <X className="w-4 h-4 text-white/60" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for songs..."
+                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={youtubeSearch.isSearching}
+                className={`px-3 py-2 bg-gradient-to-r ${colors.primary} rounded-lg text-white text-sm font-medium disabled:opacity-50`}
+              >
+                {youtubeSearch.isSearching ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
+              </button>
+            </form>
+
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {youtubeSearch.results.map((result) => (
+                <button
+                  key={result.videoId}
+                  onClick={() => handleSelectSearchResult(result)}
+                  className="w-full flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                >
+                  <img
+                    src={result.thumbnail}
+                    alt={result.title}
+                    className="w-12 h-12 rounded object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white truncate">
+                      {result.title}
+                    </p>
+                    <p className="text-xs text-white/50 truncate">
+                      {result.channelTitle}
+                    </p>
+                  </div>
+                  {result.duration && (
+                    <span className="text-xs text-white/40">
+                      {formatTime(result.duration)}
+                    </span>
+                  )}
+                </button>
+              ))}
+              {youtubeSearch.error && (
+                <p className="text-center text-red-400 text-sm">
+                  {youtubeSearch.error}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -512,7 +591,7 @@ export default function MusicPlayerSimple() {
                 {effectiveIsLoading ? (
                   <span className="flex items-center gap-1">
                     <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                    {musicSource === "spotify" ? "Connecting..." : "Loading stream..."}
+                    Loading...
                   </span>
                 ) : musicSource === "spotify" ? (
                   spotifyPlayback.hasActiveDevice ? (
@@ -527,17 +606,25 @@ export default function MusicPlayerSimple() {
                     </span>
                   )
                 ) : (
-                  <>
-                    {isPlaying ? "Now Playing" : "Paused"} • Track{" "}
-                    {currentTrack + 1}/{TRACKS.length}
-                  </>
+                  <>{effectiveIsPlaying ? "Now Playing" : "Paused"}</>
                 )}
               </p>
             </div>
           </div>
 
-          {/* Source Toggle & Volume */}
+          {/* Controls */}
           <div className="flex items-center gap-1">
+            {/* Search (YouTube only) */}
+            {musicSource === "youtube" && (
+              <button
+                onClick={() => setShowSearch(true)}
+                className={`p-2 rounded-lg hover:bg-white/10 transition-colors ${colors.accent}`}
+                aria-label="Search"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Source Toggle */}
             <div className="relative">
               <button
@@ -545,23 +632,20 @@ export default function MusicPlayerSimple() {
                 className={`p-2 rounded-lg hover:bg-white/10 transition-colors ${
                   musicSource === "spotify" ? "text-green-400" : colors.accent
                 }`}
-                aria-label="Change music source"
               >
                 {musicSource === "spotify" ? (
-                  <SpotifyIcon className="w-4 h-4" />
-                ) : (
                   <Youtube className="w-4 h-4" />
+                ) : (
+                  <SpotifyIcon className="w-4 h-4" />
                 )}
               </button>
 
-              {/* Source Menu */}
               {showSourceMenu && (
                 <div className="absolute right-0 top-full mt-2 p-2 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl z-30 min-w-[180px]">
                   <div className="text-[10px] text-white/40 uppercase tracking-wider px-2 pb-1 mb-1 border-b border-white/10">
                     Music Source
                   </div>
 
-                  {/* YouTube Option */}
                   <button
                     onClick={() => handleSourceChange("youtube")}
                     className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors ${
@@ -571,10 +655,9 @@ export default function MusicPlayerSimple() {
                     }`}
                   >
                     <Youtube className="w-4 h-4" />
-                    <span className="text-sm">YouTube Streams</span>
+                    <span className="text-sm">YouTube Music</span>
                   </button>
 
-                  {/* Spotify Option */}
                   <button
                     onClick={() => handleSourceChange("spotify")}
                     className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 ${
@@ -585,7 +668,9 @@ export default function MusicPlayerSimple() {
                   >
                     <SpotifyIcon className="w-4 h-4" />
                     <span className="text-sm flex-1 text-left">
-                      {spotifyAuth.isConnected ? "Spotify Connect" : "Connect Spotify"}
+                      {spotifyAuth.isConnected
+                        ? "Spotify Connect"
+                        : "Connect Spotify"}
                     </span>
                     {spotifyAuth.isConnected ? (
                       <Wifi className="w-3 h-3 text-green-400" />
@@ -594,36 +679,32 @@ export default function MusicPlayerSimple() {
                     )}
                   </button>
 
-                  {/* Disconnect Spotify */}
                   {spotifyAuth.isConnected && (
                     <button
                       onClick={() => {
                         spotifyAuth.disconnect();
-                        if (musicSource === "spotify") {
+                        if (musicSource === "spotify")
                           setMusicSource("youtube");
-                        }
                         setShowSourceMenu(false);
                       }}
                       className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 hover:bg-red-500/10 text-red-400"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span className="text-sm">Disconnect Spotify</span>
+                      <span className="text-sm">Disconnect</span>
                     </button>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Volume Control */}
+            {/* Volume */}
             <div
               className="relative"
               onMouseEnter={() => setShowVolumeSlider(true)}
               onMouseLeave={() => setShowVolumeSlider(false)}
             >
               <button
-                onClick={handleToggleMute}
                 className={`p-2 rounded-lg hover:bg-white/10 transition-colors ${colors.accent}`}
-                aria-label={isMuted ? "Unmute" : "Mute"}
               >
                 <VolumeIcon className="w-4 h-4" />
               </button>
@@ -640,13 +721,11 @@ export default function MusicPlayerSimple() {
                     type="range"
                     min="0"
                     max="100"
-                    value={isMuted ? 0 : volume}
+                    value={volume}
                     onChange={handleVolumeChange}
                     className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer"
                     style={{
-                      background: `linear-gradient(to right, ${colors.progressBg} ${
-                        isMuted ? 0 : volume
-                      }%, rgba(255,255,255,0.2) ${isMuted ? 0 : volume}%)`,
+                      background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, rgba(255,255,255,0.2) ${volume}%)`,
                     }}
                   />
                 </div>
@@ -654,41 +733,44 @@ export default function MusicPlayerSimple() {
             </div>
           </div>
         </div>
-
-        {/* Album Art / Visualizer */}
+        {/* Album Art */}
         <div className="relative mb-4 flex items-center justify-center flex-shrink-0">
           <div className="relative w-24 h-24 sm:w-28 sm:h-28">
-            {/* Outer glow ring */}
             <div
-              className={`absolute inset-0 rounded-full bg-gradient-to-br ${
-                colors.primary
-              } opacity-20 ${effectiveIsPlaying && !effectiveIsLoading ? "animate-pulse" : ""}`}
+              className={`absolute inset-0 rounded-full bg-gradient-to-br ${colors.primary} opacity-20 ${
+                effectiveIsPlaying && !effectiveIsLoading ? "animate-pulse" : ""
+              }`}
               style={{ animationDuration: "2s" }}
             />
 
-            {/* Album disc or Spotify album art */}
             <div
-              className={`absolute inset-2 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 border-2 ${
-                colors.border
-              } flex items-center justify-center overflow-hidden ${
+              className={`absolute inset-2 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
                 effectiveIsPlaying && !effectiveIsLoading ? "animate-spin" : ""
               }`}
               style={{ animationDuration: "4s" }}
             >
-              {musicSource === "spotify" && spotifyPlayback.currentTrack?.albumArt ? (
+              {/* Spotify album art */}
+              {musicSource === "spotify" &&
+              spotifyPlayback.currentTrack?.albumArt ? (
                 <img
                   src={spotifyPlayback.currentTrack.albumArt}
-                  alt={spotifyPlayback.currentTrack.album}
+                  alt="Album art"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : /* YouTube album art - check if currentTrackInfo exists and has thumbnail */
+              musicSource === "youtube" &&
+                currentTrackInfo &&
+                (currentTrackInfo as any)?.thumbnail ? (
+                <img
+                  src={(currentTrackInfo as any).thumbnail}
+                  alt="Album art"
                   className="w-full h-full object-cover rounded-full"
                 />
               ) : (
                 <>
-                  {/* Vinyl grooves */}
                   <div className="absolute inset-4 rounded-full border border-white/5" />
                   <div className="absolute inset-6 rounded-full border border-white/5" />
                   <div className="absolute inset-8 rounded-full border border-white/5" />
-
-                  {/* Center label */}
                   <div
                     className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${colors.primary} flex items-center justify-center shadow-lg ${colors.glow}`}
                   >
@@ -702,102 +784,86 @@ export default function MusicPlayerSimple() {
               )}
             </div>
 
-            {/* Loading indicator overlay */}
-            {effectiveIsLoading && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div
-                  className={`absolute inset-0 rounded-full border-2 border-t-transparent bg-gradient-to-br ${colors.primary} opacity-30 animate-spin`}
-                  style={{ animationDuration: "1s" }}
-                />
-              </div>
-            )}
-
-            {/* Playing indicator rings */}
             {effectiveIsPlaying && !effectiveIsLoading && (
               <>
                 <div
                   className={`absolute inset-0 rounded-full border-2 ${colors.border} animate-ping`}
                   style={{ animationDuration: "2s" }}
                 />
-                <div
-                  className={`absolute -inset-2 rounded-full border ${colors.border} animate-ping`}
-                  style={{ animationDuration: "3s", animationDelay: "0.5s" }}
-                />
               </>
             )}
           </div>
         </div>
-
         {/* Track Info */}
-        <div className="text-center mb-4 flex-shrink-0 px-2">
+        <div className="text-center mb-2 flex-shrink-0 px-2">
           <h3 className="text-base sm:text-lg font-bold text-white truncate">
-            {musicSource === "spotify" && spotifyPlayback.currentTrack
-              ? spotifyPlayback.currentTrack.name
-              : currentTrackData.name}
+            {musicSource === "spotify"
+              ? spotifyPlayback.currentTrack?.name || "Not Playing"
+              : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
+                VIDEO_LIST[currentTrack]?.name ||
+                "Loading..."}
           </h3>
           <p className={`text-xs sm:text-sm ${colors.accent} truncate`}>
-            {musicSource === "spotify" && spotifyPlayback.currentTrack
-              ? spotifyPlayback.currentTrack.artist
-              : currentTrackData.artist}
+            {musicSource === "spotify"
+              ? spotifyPlayback.currentTrack?.artist || "-"
+              : (currentTrackInfo && (currentTrackInfo as any)?.artist) ||
+                VIDEO_LIST[currentTrack]?.artist ||
+                "YouTube"}
           </p>
         </div>
-
-        {/* Progress Bar (Spotify only) */}
-        {musicSource === "spotify" && spotifyPlayback.currentTrack && (
-          <div className="mb-4 px-2">
+        {/* Progress Bar */}
+        {totalDuration > 0 && (
+          <div className=" px-2">
             <input
               type="range"
               min="0"
-              max={spotifyPlayback.currentTrack.duration_ms}
-              value={spotifyPlayback.progress_ms}
+              max={totalDuration}
+              value={currentProgress}
               onChange={handleSeek}
               className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer"
               style={{
                 background: `linear-gradient(to right, ${colors.progressBg} ${
-                  (spotifyPlayback.progress_ms / spotifyPlayback.currentTrack.duration_ms) * 100
-                }%, rgba(255,255,255,0.2) ${
-                  (spotifyPlayback.progress_ms / spotifyPlayback.currentTrack.duration_ms) * 100
-                }%)`,
+                  (currentProgress / totalDuration) * 100
+                }%, rgba(255,255,255,0.2) ${(currentProgress / totalDuration) * 100}%)`,
               }}
             />
             <div className="flex justify-between mt-1 text-[10px] text-white/50">
-              <span>{formatTime(spotifyPlayback.progress_ms)}</span>
-              <span>{formatTime(spotifyPlayback.currentTrack.duration_ms)}</span>
+              <span>{formatTime(currentProgress)}</span>
+              <span>{formatTime(totalDuration)}</span>
             </div>
           </div>
         )}
-
         {/* Main Controls */}
         <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
-          {/* Shuffle */}
           <button
-            onClick={handleShuffle}
+            onClick={() => {
+              setIsShuffleOn(!isShuffleOn);
+              setPlayHistory([]);
+            }}
             className={`p-2 rounded-lg transition-all ${
               isShuffleOn
                 ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
                 : "hover:bg-white/10 text-white/60 hover:text-white"
             }`}
-            aria-label={isShuffleOn ? "Shuffle on" : "Shuffle off"}
           >
             <Shuffle className="w-4 h-4" />
           </button>
 
-          {/* Previous */}
           <button
             onClick={handlePrev}
             disabled={effectiveIsLoading}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Previous track"
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white disabled:opacity-50"
           >
             <SkipBack className="w-5 h-5" />
           </button>
 
-          {/* Play/Pause */}
           <button
             onClick={handlePlayPause}
-            disabled={effectiveIsLoading || (musicSource === "spotify" && !spotifyPlayback.hasActiveDevice)}
-            className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100`}
-            aria-label={effectiveIsLoading ? "Loading" : effectiveIsPlaying ? "Pause" : "Play"}
+            disabled={
+              effectiveIsLoading ||
+              (musicSource === "spotify" && !spotifyPlayback.hasActiveDevice)
+            }
+            className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100`}
           >
             {effectiveIsLoading ? (
               <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
@@ -808,83 +874,46 @@ export default function MusicPlayerSimple() {
             )}
           </button>
 
-          {/* Next */}
           <button
             onClick={handleNext}
             disabled={effectiveIsLoading}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Next track"
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white disabled:opacity-50"
           >
             <SkipForward className="w-5 h-5" />
           </button>
 
-          {/* Repeat */}
           <button
-            onClick={handleRepeat}
+            onClick={() => setIsRepeatOn(!isRepeatOn)}
             className={`p-2 rounded-lg transition-all ${
               isRepeatOn
                 ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
                 : "hover:bg-white/10 text-white/60 hover:text-white"
             }`}
-            aria-label={isRepeatOn ? "Repeat on" : "Repeat off"}
           >
             <Repeat className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Animated Waveform */}
-        <div className="mt-auto flex items-end justify-center gap-[2px] h-12 sm:h-14 flex-shrink-0 px-2">
-          {waveformBars.map((bar) => {
-            const isAnimating = effectiveIsPlaying && !effectiveIsLoading;
-            const height = isAnimating
-              ? Math.sin(bar.id * bar.frequency + waveformOffset + bar.phase) * 25 + 35
-              : bar.baseHeight;
-
-            const colorIndex = Math.floor(
-              (bar.id + Math.floor(waveformOffset * 2)) % colors.waveColors.length
-            );
-
-            return (
-              <div
-                key={bar.id}
-                className="flex-1 rounded-full transition-all duration-75"
-                style={{
-                  height: `${height}%`,
-                  background: isAnimating
-                    ? `linear-gradient(to top, ${colors.waveColors[colorIndex]}, ${
-                        colors.waveColors[(colorIndex + 1) % colors.waveColors.length]
-                      })`
-                    : `linear-gradient(to top, ${colors.waveColors[0]}40, ${colors.waveColors[2]}40)`,
-                  opacity: isAnimating ? 0.9 : 0.4,
-                  boxShadow: isAnimating
-                    ? `0 0 8px ${colors.waveColors[colorIndex]}60`
-                    : "none",
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {/* Track indicator dots (YouTube only) / Device indicator (Spotify) */}
+        {/* Footer */}
         <div className="flex items-center justify-center gap-1 mt-3 flex-shrink-0">
           {musicSource === "youtube" ? (
-            TRACKS.slice(0, 10).map((_, idx) => (
+            VIDEO_LIST.map((_, idx) => (
               <button
                 key={idx}
-                disabled={isLoading}
+                disabled={effectiveIsLoading}
                 onClick={() => {
-                  if (currentTrack !== idx) {
-                    setIsLoading(true);
-                    setCurrentTrack(idx);
-                    if (!isPlaying) setIsPlaying(true);
-                  }
+                  setCurrentTrack(idx);
+                  const video = VIDEO_LIST[idx];
+                  youtubePlayer.loadVideo(video.id, {
+                    title: video.name,
+                    artist: video.artist,
+                  });
                 }}
                 className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
                   currentTrack === idx
                     ? `bg-gradient-to-r ${colors.primary} w-4`
-                    : "bg-white/20 hover:bg-white/40 disabled:hover:bg-white/20"
+                    : "bg-white/20 hover:bg-white/40"
                 }`}
-                aria-label={`Play track ${idx + 1}`}
               />
             ))
           ) : (
@@ -898,9 +927,51 @@ export default function MusicPlayerSimple() {
             </div>
           )}
         </div>
+        {/* Waveform */}
+        {totalDuration > 0 && (
+          <div className="mt-2 absolute flex items-end justify-center gap-[3px] h-1/2 sm:h-16 flex-shrink-0 w-full -z-1 -bottom-1 opacity-30 pointer-events-none left-0 right-0">
+            {waveformBars.map((bar) => {
+              const isAnimating = effectiveIsPlaying && !effectiveIsLoading;
+              const height = isAnimating
+                ? Math.sin(
+                    bar.id * bar.frequency + waveformOffset + bar.phase,
+                  ) *
+                    25 +
+                  35
+                : bar.baseHeight;
+              const colorIndex = bar.id % colors.waveColors.length;
+              const animatedColorIndex = isAnimating
+                ? Math.floor(
+                    (bar.id + Math.floor(waveformOffset * 2)) %
+                      colors.waveColors.length,
+                  )
+                : colorIndex;
+
+              return (
+                <div
+                  key={bar.id}
+                  className="rounded-full"
+                  style={{
+                    width: "16px",
+                    minWidth: "4px",
+                    height: `${Math.max(height, 15)}%`,
+                    minHeight: "16px",
+                    backgroundColor: isAnimating
+                      ? colors.waveColors[animatedColorIndex]
+                      : colors.waveColors[colorIndex],
+                    opacity: isAnimating ? 1 : 0.5,
+                    boxShadow: isAnimating
+                      ? `0 0 8px ${colors.waveColors[animatedColorIndex]}80`
+                      : "none",
+                    transition: "height 100ms ease-out, opacity 200ms ease",
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Click outside to close source menu */}
       {showSourceMenu && (
         <div
           className="fixed inset-0 z-20"

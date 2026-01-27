@@ -26,8 +26,10 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  MessageSquarePlus,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import FeedbackModal from "@/components/feedback-modal";
 import clsx from "clsx";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useLayout } from "@/lib/contexts/layout-context";
@@ -65,6 +67,7 @@ interface HeaderProps {
 export default function Header({ onLayoutClick }: HeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { layout, setLayout } = useLayout();
 
@@ -445,7 +448,6 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   <button
                     className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
                   >
-                    <Palette className={`w-4 h-4 ${colors.secondaryAccent}`} />
                     <span className="text-sm font-medium hidden md:inline">
                       {themeOptions.find((t) => t.id === theme)?.emoji}{" "}
                       <span className="hidden lg:inline">
@@ -489,6 +491,15 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Feedback Button - Desktop */}
+              <button
+                onClick={() => setFeedbackModalOpen(true)}
+                className={`hidden lg:flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                title="Send Feedback"
+              >
+                <MessageSquarePlus className="w-4 h-4" />
+              </button>
 
               {/* Notifications - Desktop */}
               <button
@@ -760,6 +771,16 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                       <span className="font-medium">Settings</span>
                     </button>
                     <button
+                      onClick={() => {
+                        setFeedbackModalOpen(true);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                    >
+                      <MessageSquarePlus className="w-5 h-5" />
+                      <span className="font-medium">Send Feedback</span>
+                    </button>
+                    <button
                       className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
                     >
                       <HelpCircle className="w-5 h-5" />
@@ -776,6 +797,12 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
           </>
         )}
       </AnimatePresence>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+      />
     </>
   );
 }

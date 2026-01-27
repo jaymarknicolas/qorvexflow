@@ -11,3 +11,5 @@ export type { UseTasksReturn } from "./useTasks";
 export { useWorkspace } from "./useWorkspace";
 export type { UseWorkspaceReturn } from "./useWorkspace";
 export { useDynamicScale } from "./useDynamicScale";
+export { useCoffeeCounter } from "./useCoffeeCounter";
+export type { UseCoffeeCounterReturn } from "./useCoffeeCounter";
