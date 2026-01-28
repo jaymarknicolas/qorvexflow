@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   Play,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { usePomodoro } from "@/lib/hooks";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import PomodoroSettingsModal from "./pomodoro-settings-modal";
 
 interface PomodoroWidgetProps {
@@ -23,7 +24,10 @@ export default function PomodoroWidget({
   onSessionComplete,
 }: PomodoroWidgetProps) {
   const { theme } = useTheme();
+  const focusTracker = useFocusTrackerContext();
   const [showSettings, setShowSettings] = useState(false);
+  const prevIsRunning = useRef(false);
+  const prevMode = useRef<"work" | "short-break" | "long-break">("work");
 
   const {
     isRunning,
@@ -41,7 +45,36 @@ export default function PomodoroWidget({
     testSound,
   } = usePomodoro();
 
-  // Theme colors for container
+  // Track focus sessions with the focus tracker
+  useEffect(() => {
+    // Started a work session
+    if (isRunning && mode === "work" && !prevIsRunning.current) {
+      focusTracker.startSession("work");
+    }
+    // Started a break session
+    else if (isRunning && mode !== "work" && !prevIsRunning.current) {
+      focusTracker.startSession("break");
+    }
+    // Stopped/paused any session
+    else if (!isRunning && prevIsRunning.current) {
+      focusTracker.endSession();
+    }
+    // Mode changed while running (session completed)
+    else if (isRunning && mode !== prevMode.current) {
+      focusTracker.endSession();
+      // Start new session for the new mode
+      if (mode === "work") {
+        focusTracker.startSession("work");
+      } else {
+        focusTracker.startSession("break");
+      }
+    }
+
+    prevIsRunning.current = isRunning;
+    prevMode.current = mode;
+  }, [isRunning, mode, focusTracker]);
+
+  // Theme colors - consistent with other widgets
   const getThemeColors = useCallback(() => {
     switch (theme) {
       case "ghibli":
@@ -50,35 +83,35 @@ export default function PomodoroWidget({
           glowFrom: "from-green-500/30",
           glowTo: "to-amber-500/20",
           accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/25",
+          accentBg: "bg-emerald-500/20",
           border: "border-emerald-400/30",
           iconColor: "text-emerald-400",
           buttonBg: "bg-emerald-500/15 hover:bg-emerald-500/25",
-          buttonHoverText: "hover:text-emerald-400",
+          buttonHoverText: "hover:text-emerald-300",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/90 to-amber-950/90",
+          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
           glowFrom: "from-amber-500/20",
           glowTo: "to-orange-500/20",
           accent: "text-amber-400",
           accentBg: "bg-amber-500/20",
           border: "border-amber-500/20",
           iconColor: "text-amber-400",
-          buttonBg: "bg-white/10 hover:bg-amber-500/20",
-          buttonHoverText: "hover:text-amber-400",
+          buttonBg: "bg-amber-500/15 hover:bg-amber-500/25",
+          buttonHoverText: "hover:text-amber-300",
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/90 to-purple-900/90",
+          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
           glowFrom: "from-violet-500/20",
           glowTo: "to-pink-500/20",
           accent: "text-violet-400",
           accentBg: "bg-violet-500/20",
           border: "border-violet-500/20",
           iconColor: "text-violet-400",
-          buttonBg: "bg-white/10 hover:bg-violet-500/20",
-          buttonHoverText: "hover:text-violet-400",
+          buttonBg: "bg-violet-500/15 hover:bg-violet-500/25",
+          buttonHoverText: "hover:text-violet-300",
         };
     }
   }, [theme]);
@@ -122,72 +155,74 @@ export default function PomodoroWidget({
 
   return (
     <>
-      <div className="relative h-full w-full overflow-hidden">
+      <div className="relative group h-full w-full overflow-hidden">
         {/* Background glow effect */}
         <div
-          className={`absolute inset-0 bg-gradient-to-r ${themeColors.glowFrom} ${themeColors.glowTo} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none`}
-        ></div>
+          className={`absolute inset-0 bg-gradient-to-r ${themeColors.glowFrom} ${themeColors.glowTo} rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100 pointer-events-none`}
+        />
 
         {/* Main container */}
-        <div className={`relative bg-gradient-to-br ${themeColors.gradient} backdrop-blur-xl border ${themeColors.border} rounded-2xl p-4 sm:p-6 lg:p-8 h-full w-full flex flex-col overflow-hidden`}>
+        <div
+          className={`relative bg-gradient-to-br ${themeColors.gradient} backdrop-blur-xl border ${themeColors.border} rounded-2xl p-3 sm:p-4 md:p-5 h-full w-full flex flex-col overflow-hidden`}
+        >
           {/* Header */}
-          <div className="flex items-start justify-between mb-4 sm:mb-6 pt-8 sm:pt-0 flex-shrink-0">
-            <div className="min-w-0 flex-1 pr-2">
-              <div className="flex items-center gap-2 mb-1">
-                <div className={`p-1.5 rounded-lg ${themeColors.accentBg}`}>
-                  <Timer className={`w-4 h-4 ${themeColors.iconColor}`} />
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold text-white truncate">
+          <div className="flex items-center justify-between mb-2 sm:mb-3 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+              <div className={`p-1 sm:p-1.5 rounded-lg ${themeColors.accentBg} shrink-0`}>
+                <Timer className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${themeColors.iconColor}`} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base font-bold text-white truncate">
                   {mode === "work"
                     ? "Focus Time"
                     : mode === "long-break"
                     ? "Long Break"
                     : "Short Break"}
                 </h2>
+                <p className="text-[10px] sm:text-xs text-white/50 truncate hidden sm:block">
+                  {mode === "work"
+                    ? `${cycleCount}/${settings.longBreakInterval} until long break`
+                    : mode === "long-break"
+                    ? "Great job! Take a longer rest"
+                    : "Relax and recharge"}
+                </p>
               </div>
-              <p className="text-xs text-white/60 mt-1 truncate pl-8">
-                {mode === "work"
-                  ? `Stay focused! (${cycleCount}/${settings.longBreakInterval} until long break)`
-                  : mode === "long-break"
-                  ? "Great job! Take a longer rest"
-                  : "Relax and recharge"}
-              </p>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   testSound();
                 }}
-                className={`p-1.5 sm:p-2 ${themeColors.buttonBg} text-white/60 ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
+                className={`p-1.5 ${themeColors.buttonBg} text-white/60 ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
                 aria-label="Test notification sound"
                 title="Test notification sound"
               >
-                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Volume2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowSettings(true);
                 }}
-                className={`p-1.5 sm:p-2 ${themeColors.buttonBg} text-white/60 ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
+                className={`p-1.5 ${themeColors.buttonBg} text-white/60 ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
                 aria-label="Pomodoro settings"
               >
-                <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Timer Circle */}
-          <div className="flex items-center justify-center flex-1 min-h-0 py-2 mb-6">
-            <div className="relative w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40">
+          {/* Timer Circle - flexible center area */}
+          <div className="flex items-center justify-center flex-1 min-h-0 py-1 sm:py-2">
+            <div className="relative w-full max-w-[120px] sm:max-w-[140px] md:max-w-[160px] aspect-square">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
                 <circle
                   cx="80"
                   cy="80"
                   r="70"
                   fill="none"
-                  stroke="rgb(30, 41, 59)"
+                  stroke="rgba(255,255,255,0.1)"
                   strokeWidth="8"
                 />
                 <circle
@@ -216,10 +251,10 @@ export default function PomodoroWidget({
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-3xl sm:text-4xl font-bold text-white font-mono">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-mono">
                   {displayTime}
                 </div>
-                <div className="text-xs sm:text-sm text-white/60 mt-1">
+                <div className="text-[10px] sm:text-xs text-white/50 mt-0.5">
                   {sessions} sessions
                 </div>
               </div>
@@ -227,9 +262,9 @@ export default function PomodoroWidget({
           </div>
 
           {/* Mode Indicators */}
-          <div className="flex justify-center gap-1 sm:gap-2 mb-4 flex-shrink-0 flex-wrap">
+          <div className="flex justify-center gap-1 sm:gap-1.5 mb-2 sm:mb-3 shrink-0">
             <div
-              className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium transition-all border ${
+              className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium transition-all border ${
                 mode === "work"
                   ? modeColors.badge
                   : "bg-white/5 text-white/40 border-transparent"
@@ -238,7 +273,7 @@ export default function PomodoroWidget({
               Focus
             </div>
             <div
-              className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium transition-all border ${
+              className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium transition-all border ${
                 mode === "short-break"
                   ? "bg-green-500/20 text-green-400 border-green-500/30"
                   : "bg-white/5 text-white/40 border-transparent"
@@ -247,7 +282,7 @@ export default function PomodoroWidget({
               Short
             </div>
             <div
-              className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium transition-all border ${
+              className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium transition-all border ${
                 mode === "long-break"
                   ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
                   : "bg-white/5 text-white/40 border-transparent"
@@ -258,23 +293,23 @@ export default function PomodoroWidget({
           </div>
 
           {/* Controls */}
-          <div className="flex gap-2 sm:gap-3 justify-center flex-shrink-0">
+          <div className="flex gap-1.5 sm:gap-2 justify-center shrink-0">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 isRunning ? pause() : start();
               }}
-              className={`flex-1 max-w-[200px] px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r ${modeColors.ring} text-white rounded-xl font-semibold hover:shadow-lg ${modeColors.shadow} transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base`}
+              className={`flex-1 max-w-[100px] sm:max-w-[120px] px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${modeColors.ring} text-white rounded-xl font-semibold hover:shadow-lg ${modeColors.shadow} transition-all duration-300 flex items-center justify-center gap-1 text-xs sm:text-sm`}
               aria-label={isRunning ? "Pause timer" : "Start timer"}
             >
               {isRunning ? (
                 <>
-                  <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="hidden xs:inline">Pause</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="hidden xs:inline">Start</span>
                 </>
               )}
@@ -285,10 +320,10 @@ export default function PomodoroWidget({
                 e.stopPropagation();
                 reset();
               }}
-              className={`px-3 sm:px-4 py-2 sm:py-3 ${themeColors.buttonBg} text-white rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 ${themeColors.buttonBg} text-white rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
               aria-label="Reset timer"
             >
-              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             <button
@@ -296,19 +331,19 @@ export default function PomodoroWidget({
                 e.stopPropagation();
                 skip();
               }}
-              className={`px-3 sm:px-4 py-2 sm:py-3 ${themeColors.buttonBg} text-white rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 ${themeColors.buttonBg} text-white rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
               aria-label="Skip to next phase"
             >
-              <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
+              <SkipForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
 
           {/* Settings Info */}
-          <div className="flex justify-center gap-2 sm:gap-4 mt-3 sm:mt-4 text-[10px] sm:text-xs text-white/40 flex-shrink-0 flex-wrap">
+          <div className="hidden sm:flex justify-center gap-2 sm:gap-3 mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-white/40 shrink-0">
             <span>{settings.workDuration}m focus</span>
-            <span className="hidden sm:inline">·</span>
+            <span>·</span>
             <span>{settings.breakDuration}m break</span>
-            <span className="hidden sm:inline">·</span>
+            <span>·</span>
             <span>{settings.longBreakDuration}m long</span>
           </div>
         </div>

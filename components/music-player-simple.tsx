@@ -239,13 +239,17 @@ export default function MusicPlayerSimple() {
       return {
         primary: "from-green-400 to-emerald-500",
         secondary: "from-amber-400 to-orange-500",
-        accent: "text-green-400",
+        accent: "text-emerald-400",
         accentSecondary: "text-amber-400",
         glow: "shadow-green-500/50",
         waveColors: ["#22c55e", "#10b981", "#059669", "#fbbf24", "#f59e0b"],
-        bg: "from-green-900/30 to-emerald-900/30",
-        border: "border-green-500/20",
+        gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+        glowFrom: "from-green-500/30",
+        glowTo: "to-amber-500/20",
+        border: "border-emerald-400/30",
         progressBg: "#22c55e",
+        accentBg: "bg-emerald-500/20",
+        iconColor: "text-emerald-400",
       };
     }
     if (theme === "coffeeshop") {
@@ -256,9 +260,13 @@ export default function MusicPlayerSimple() {
         accentSecondary: "text-orange-400",
         glow: "shadow-amber-500/50",
         waveColors: ["#fbbf24", "#f59e0b", "#d97706", "#b45309", "#92400e"],
-        bg: "from-stone-800/30 to-stone-900/30",
+        gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+        glowFrom: "from-amber-500/20",
+        glowTo: "to-orange-500/20",
         border: "border-amber-500/20",
         progressBg: "#d97706",
+        accentBg: "bg-amber-500/20",
+        iconColor: "text-amber-400",
       };
     }
     return {
@@ -268,9 +276,13 @@ export default function MusicPlayerSimple() {
       accentSecondary: "text-pink-400",
       glow: "shadow-violet-500/50",
       waveColors: ["#8b5cf6", "#a855f7", "#c084fc", "#ec4899", "#f472b6"],
-      bg: "from-violet-900/30 to-purple-900/30",
+      gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+      glowFrom: "from-violet-500/20",
+      glowTo: "to-pink-500/20",
       border: "border-violet-500/20",
       progressBg: "#8b5cf6",
+      accentBg: "bg-violet-500/20",
+      iconColor: "text-violet-400",
     };
   };
 
@@ -469,7 +481,7 @@ export default function MusicPlayerSimple() {
       : (spotifyPlayback.currentTrack?.duration_ms || 0) / 1000;
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative group h-full w-full overflow-hidden">
       {/* Hidden YouTube player container - kept in viewport to prevent browser power-saving pause */}
       <div
         id="youtube-player-container"
@@ -485,13 +497,13 @@ export default function MusicPlayerSimple() {
         }}
       />
 
-      {/* Background glow */}
+      {/* Background glow effect */}
       <div
-        className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none`}
+        className={`absolute inset-0 bg-gradient-to-r ${colors.glowFrom} ${colors.glowTo} rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100 pointer-events-none`}
       />
 
       <div
-        className={`relative h-full bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-xl border ${colors.border} rounded-2xl p-4 sm:p-5 flex flex-col overflow-hidden`}
+        className={`relative h-full bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl p-4 sm:p-5 flex flex-col overflow-hidden`}
       >
         {/* Search Overlay */}
         {showSearch && (
@@ -571,10 +583,8 @@ export default function MusicPlayerSimple() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div
-              className={`p-2 rounded-lg bg-gradient-to-br ${colors.primary} bg-opacity-20`}
-            >
-              <Music2 className="w-4 h-4 text-white" />
+            <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
+              <Music2 className={`w-4 h-4 ${colors.iconColor}`} />
             </div>
             <div>
               <h2 className="text-sm font-bold text-white">

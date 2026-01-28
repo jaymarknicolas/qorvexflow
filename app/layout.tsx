@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/contexts/theme-context";
 import { LayoutProvider } from "@/lib/contexts/layout-context";
 import { WidgetSettingsProvider } from "@/lib/contexts/widget-settings-context";
+import { FocusTrackerProvider } from "@/lib/contexts/focus-tracker-context";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -36,8 +37,10 @@ export default function RootLayout({
         <ThemeProvider>
           <LayoutProvider>
             <WidgetSettingsProvider>
-              {children}
-              <Toaster position="bottom-right" richColors />
+              <FocusTrackerProvider>
+                {children}
+                <Toaster position="bottom-right" richColors />
+              </FocusTrackerProvider>
             </WidgetSettingsProvider>
           </LayoutProvider>
         </ThemeProvider>

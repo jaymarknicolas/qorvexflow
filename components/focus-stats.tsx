@@ -1,25 +1,38 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
+  Area,
+  AreaChart,
 } from "recharts";
-import { TrendingUp, Info, BarChart3 } from "lucide-react";
+import {
+  TrendingUp,
+  Flame,
+  Target,
+  Clock,
+  BarChart3,
+  Calendar,
+  Award,
+} from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface FocusDay {
-  day: string;
-  hours: number;
-}
+type ViewMode = "week" | "month";
 
 export default function FocusStats() {
   const { theme } = useTheme();
+  const focusTracker = useFocusTrackerContext();
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
 
   // Theme colors
   const getThemeColors = useCallback(() => {
@@ -32,153 +45,285 @@ export default function FocusStats() {
           accent: "text-emerald-400",
           accentBg: "bg-emerald-500/25",
           border: "border-emerald-400/30",
-          lineStart: "rgb(16, 185, 129)", // emerald-500
-          lineEnd: "rgb(20, 184, 166)", // teal-500
+          lineStart: "rgb(16, 185, 129)",
+          lineEnd: "rgb(20, 184, 166)",
           dotColor: "#10b981",
+          barColor: "#10b981",
+          areaFill: "rgba(16, 185, 129, 0.3)",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/90 to-amber-950/90",
+          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
           glowFrom: "from-amber-500/20",
           glowTo: "to-orange-500/20",
           accent: "text-amber-400",
           accentBg: "bg-amber-500/20",
           border: "border-amber-500/20",
-          lineStart: "rgb(245, 158, 11)", // amber-500
-          lineEnd: "rgb(249, 115, 22)", // orange-500
+          lineStart: "rgb(245, 158, 11)",
+          lineEnd: "rgb(249, 115, 22)",
           dotColor: "#f59e0b",
+          barColor: "#f59e0b",
+          areaFill: "rgba(245, 158, 11, 0.3)",
         };
-      default: // lofi
+      default:
         return {
-          gradient: "from-indigo-900/90 to-purple-900/90",
+          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
           glowFrom: "from-violet-500/20",
           glowTo: "to-pink-500/20",
           accent: "text-violet-400",
           accentBg: "bg-violet-500/20",
           border: "border-violet-500/20",
-          lineStart: "rgb(139, 92, 246)", // violet-500
-          lineEnd: "rgb(236, 72, 153)", // pink-500
+          lineStart: "rgb(139, 92, 246)",
+          lineEnd: "rgb(236, 72, 153)",
           dotColor: "#8b5cf6",
+          barColor: "#8b5cf6",
+          areaFill: "rgba(139, 92, 246, 0.3)",
         };
     }
   }, [theme]);
 
   const colors = getThemeColors();
+  const gradientId = `areaGrad-${theme}`;
 
-  // Note: This is sample data. In production, this would come from actual tracking
-  const data: FocusDay[] = [
-    { day: "Mon", hours: 4.2 },
-    { day: "Tue", hours: 5.1 },
-    { day: "Wed", hours: 3.8 },
-    { day: "Thu", hours: 6.2 },
-    { day: "Fri", hours: 7.1 },
-    { day: "Sat", hours: 5.5 },
-    { day: "Sun", hours: 4.5 },
-  ];
+  // Prepare chart data based on view mode
+  const chartData = useMemo(() => {
+    if (viewMode === "week") {
+      return focusTracker.stats.thisWeek.map((day) => ({
+        name: new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }),
+        hours: Math.round((day.totalMinutes / 60) * 10) / 10,
+        sessions: day.sessions,
+        date: day.date,
+      }));
+    } else {
+      // Monthly view - group by week or show daily
+      const monthData = focusTracker.stats.thisMonth;
+      // Show last 4 weeks
+      const weeks: { name: string; hours: number; sessions: number }[] = [];
+      for (let i = 0; i < 4; i++) {
+        const weekStart = monthData.length - (4 - i) * 7;
+        const weekEnd = weekStart + 7;
+        const weekDays = monthData.slice(Math.max(0, weekStart), Math.min(monthData.length, weekEnd));
+        const totalMinutes = weekDays.reduce((sum, d) => sum + d.totalMinutes, 0);
+        const totalSessions = weekDays.reduce((sum, d) => sum + d.sessions, 0);
+        weeks.push({
+          name: `W${i + 1}`,
+          hours: Math.round((totalMinutes / 60) * 10) / 10,
+          sessions: totalSessions,
+        });
+      }
+      return weeks;
+    }
+  }, [viewMode, focusTracker.stats]);
 
-  const totalHours = data.reduce((sum, d) => sum + d.hours, 0);
-  const dailyAverage = totalHours / data.length;
-  const maxDay = data.reduce((max, d) => (d.hours > max.hours ? d : max), data[0]);
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const { thisWeek, today, currentStreak, longestStreak, bestDay, totalHoursAllTime } =
+      focusTracker.stats;
 
-  // Create unique gradient ID for this theme
-  const gradientId = `lineGrad-${theme}`;
+    const weekTotal = thisWeek.reduce((sum, d) => sum + d.totalMinutes, 0) / 60;
+    const weekAvg = weekTotal / 7;
+    const activeDaysThisWeek = thisWeek.filter((d) => d.totalMinutes > 0).length;
+
+    // Calculate trend (compare this week vs last week)
+    const thisWeekTotal = weekTotal;
+    // For trend, we'd need last week data - simplified for now
+    const trend = thisWeekTotal > 0 ? "up" : "neutral";
+
+    return {
+      todayHours: Math.round((today.totalMinutes / 60) * 10) / 10,
+      todaySessions: today.sessions,
+      weekTotal: Math.round(weekTotal * 10) / 10,
+      weekAvg: Math.round(weekAvg * 10) / 10,
+      activeDays: activeDaysThisWeek,
+      currentStreak,
+      longestStreak,
+      bestDayHours: bestDay ? Math.round((bestDay.totalMinutes / 60) * 10) / 10 : 0,
+      totalAllTime: Math.round(totalHoursAllTime * 10) / 10,
+      trend,
+    };
+  }, [focusTracker.stats]);
+
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-slate-900/95 border border-white/10 rounded-lg px-3 py-2 shadow-xl">
+          <p className="text-white font-medium text-sm">{label}</p>
+          <p className={`text-sm ${colors.accent}`}>
+            {payload[0].value}h focused
+          </p>
+          {payload[0].payload.sessions > 0 && (
+            <p className="text-white/50 text-xs">
+              {payload[0].payload.sessions} sessions
+            </p>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="relative group h-full">
-      <div className={`absolute inset-0 bg-gradient-to-r ${colors.glowFrom} ${colors.glowTo} rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100`} />
+      <div
+        className={`absolute inset-0 bg-gradient-to-r ${colors.glowFrom} ${colors.glowTo} rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100`}
+      />
 
-      <div className={`relative bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl p-4 sm:p-6 lg:p-8 h-full flex flex-col`}>
+      <div
+        className={`relative bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl p-4 sm:p-5 h-full flex flex-col overflow-hidden`}
+      >
         {/* Header */}
-        <div className="flex items-start justify-between mb-4 sm:mb-6">
+        <div className="flex items-start justify-between mb-3 shrink-0">
           <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg ${colors.accentBg}`}>
+            <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
               <BarChart3 className={`w-4 h-4 ${colors.accent}`} />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">Focus Stats</h2>
-              <p className="text-xs sm:text-sm text-white/60 mt-0.5">
-                Hours focused this week
+              <h2 className="text-base sm:text-lg font-bold text-white">
+                Focus Stats
+              </h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {/* View toggle */}
+            <div className={`flex rounded-lg p-0.5 ${colors.accentBg}`}>
+              <button
+                onClick={() => setViewMode("week")}
+                className={`px-2 py-1 text-[10px] font-medium rounded-md transition-all ${
+                  viewMode === "week"
+                    ? "bg-white/20 text-white"
+                    : "text-white/50 hover:text-white"
+                }`}
+              >
+                Week
+              </button>
+              <button
+                onClick={() => setViewMode("month")}
+                className={`px-2 py-1 text-[10px] font-medium rounded-md transition-all ${
+                  viewMode === "month"
+                    ? "bg-white/20 text-white"
+                    : "text-white/50 hover:text-white"
+                }`}
+              >
+                Month
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Today's highlight */}
+        <div
+          className={`flex items-center justify-between p-3 rounded-xl ${colors.accentBg} mb-3 shrink-0`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-white/10">
+              <Clock className={`w-4 h-4 ${colors.accent}`} />
+            </div>
+            <div>
+              <p className="text-[10px] text-white/50 uppercase tracking-wide">
+                Today
+              </p>
+              <p className="text-xl font-bold text-white">
+                {stats.todayHours}h
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <TrendingUp className={`w-5 h-5 ${colors.accent}`} />
-            <button
-              className="p-1 hover:bg-white/10 rounded transition-colors group/info"
-              aria-label="Sample data"
-            >
-              <Info className="w-4 h-4 text-white/40 group-hover/info:text-white/60" />
-            </button>
+          <div className="text-right">
+            <div className="flex items-center gap-1 justify-end">
+              <Flame className="w-4 h-4 text-orange-400" />
+              <span className="text-lg font-bold text-white">
+                {stats.currentStreak}
+              </span>
+            </div>
+            <p className="text-[10px] text-white/50">day streak</p>
           </div>
         </div>
 
         {/* Chart */}
-        <div className="h-32 sm:h-40 -mx-2 mb-4 sm:mb-6">
+        <div className="flex-1 min-h-0 -mx-2 mb-3">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
+            <AreaChart
+              data={chartData}
               margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
             >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.1)"
-              />
-              <XAxis
-                dataKey="day"
-                stroke="rgba(255,255,255,0.4)"
-                style={{ fontSize: "12px" }}
-              />
-              <YAxis
-                stroke="rgba(255,255,255,0.4)"
-                style={{ fontSize: "12px" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "rgba(15, 23, 42, 0.9)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "8px",
-                  color: "#fff",
-                }}
-                labelStyle={{ color: "#fff" }}
-              />
-              <Line
-                type="monotone"
-                dataKey="hours"
-                stroke={`url(#${gradientId})`}
-                strokeWidth={3}
-                dot={{ fill: colors.dotColor, strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
-                isAnimationActive={true}
-              />
               <defs>
-                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor={colors.lineStart} />
-                  <stop offset="100%" stopColor={colors.lineEnd} />
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={colors.lineStart} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={colors.lineEnd} stopOpacity={0} />
                 </linearGradient>
               </defs>
-            </LineChart>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="name"
+                stroke="rgba(255,255,255,0.3)"
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                stroke="rgba(255,255,255,0.3)"
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                width={30}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="hours"
+                stroke={colors.lineStart}
+                strokeWidth={2}
+                fill={`url(#${gradientId})`}
+                dot={{ fill: colors.dotColor, strokeWidth: 0, r: 3 }}
+                activeDot={{ r: 5, fill: colors.dotColor }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Stats */}
-        <div className={`grid grid-cols-3 gap-2 sm:gap-4 mt-auto pt-4 sm:pt-6 border-t ${colors.border}`}>
-          <div className="text-center sm:text-left">
-            <div className="text-xl sm:text-2xl font-bold text-white">
-              {totalHours.toFixed(1)}h
+        {/* Stats grid */}
+        <div
+          className={`grid grid-cols-4 gap-2 pt-3 border-t ${colors.border} shrink-0`}
+        >
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Target className="w-3 h-3 text-white/40" />
             </div>
-            <div className="text-[10px] sm:text-xs text-white/60 mt-1">This week</div>
+            <p className="text-sm font-bold text-white mt-1">
+              {stats.weekTotal}h
+            </p>
+            <p className="text-[9px] text-white/40">this week</p>
           </div>
-          <div className="text-center sm:text-left">
-            <div className="text-xl sm:text-2xl font-bold text-white">
-              {dailyAverage.toFixed(1)}h
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <TrendingUp className="w-3 h-3 text-green-400" />
             </div>
-            <div className="text-[10px] sm:text-xs text-white/60 mt-1">Daily avg</div>
+            <p className="text-sm font-bold text-white mt-1">
+              {stats.weekAvg}h
+            </p>
+            <p className="text-[9px] text-white/40">daily avg</p>
           </div>
-          <div className="text-center sm:text-left">
-            <div className="text-xl sm:text-2xl font-bold text-white">
-              {maxDay.hours.toFixed(1)}h
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Award className="w-3 h-3 text-amber-400" />
             </div>
-            <div className="text-[10px] sm:text-xs text-white/60 mt-1">Best day</div>
+            <p className="text-sm font-bold text-white mt-1">
+              {stats.bestDayHours}h
+            </p>
+            <p className="text-[9px] text-white/40">best day</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Calendar className="w-3 h-3 text-white/40" />
+            </div>
+            <p className="text-sm font-bold text-white mt-1">
+              {stats.activeDays}
+            </p>
+            <p className="text-[9px] text-white/40">active days</p>
           </div>
         </div>
       </div>

@@ -24,6 +24,9 @@ import { motion, AnimatePresence } from "framer-motion";
 // Mark widgets as new (will show NEW badge)
 const newWidgets = new Set(["coffee"]);
 
+// Mark widgets as updated (will show UPDATED badge)
+const updatedWidgets = new Set(["calendar", "stats"]);
+
 const widgets: WidgetDefinition[] = [
   { id: "pomodoro", icon: Timer, label: "Pomodoro" },
   { id: "tasks", icon: ListTodo, label: "Tasks" },
@@ -92,9 +95,10 @@ interface WidgetIconProps {
   isMobile?: boolean;
   showLabel?: boolean;
   isNew?: boolean;
+  isUpdated?: boolean;
 }
 
-function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false, isNew = false }: WidgetIconProps) {
+function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false, isNew = false, isUpdated = false }: WidgetIconProps) {
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id,
     data: { from: "sidebar" },
@@ -124,6 +128,19 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
         >
           <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full shadow-lg shadow-pink-500/30 animate-pulse">
             NEW
+          </span>
+        </motion.div>
+      )}
+
+      {/* UPDATED Badge */}
+      {isUpdated && !isNew && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -top-1 -right-1 z-20"
+        >
+          <span className="px-1 py-0.5 text-[7px] font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full shadow-lg shadow-cyan-500/30">
+            UPD
           </span>
         </motion.div>
       )}
@@ -164,6 +181,11 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
           {isNew && (
             <span className="ml-2 px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full">
               NEW
+            </span>
+          )}
+          {isUpdated && !isNew && (
+            <span className="ml-2 px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full">
+              UPDATED
             </span>
           )}
         </span>
@@ -340,6 +362,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                         isMobile={true}
                         showLabel={true}
                         isNew={newWidgets.has(w.id)}
+                        isUpdated={updatedWidgets.has(w.id)}
                       />
                     </motion.div>
                   ))}
@@ -373,7 +396,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05 }}
           >
-            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} />
+            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} isUpdated={updatedWidgets.has(w.id)} />
           </motion.div>
         ))}
       </motion.aside>
@@ -405,7 +428,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.05 }}
         >
-          <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} />
+          <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} isUpdated={updatedWidgets.has(w.id)} />
         </motion.div>
       ))}
 

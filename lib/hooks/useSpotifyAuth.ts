@@ -14,6 +14,13 @@ interface UseSpotifyAuthReturn {
   error: string | null;
 }
 
+// Helper to get storage - uses sessionStorage for better security
+// Token is cleared when tab closes, reducing XSS attack window
+function getStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage;
+}
+
 export function useSpotifyAuth(): UseSpotifyAuthReturn {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +28,8 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
 
   // Check for existing token and extract from URL hash on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    const storage = getStorage();
+    if (!storage) return;
 
     // First, check URL hash for new token (OAuth callback)
     const hash = window.location.hash;
@@ -36,10 +44,10 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
         // Clean up URL
         window.history.replaceState(null, "", window.location.pathname);
       } else if (token && expiresIn) {
-        // Store token with expiry
+        // Store token with expiry in sessionStorage (more secure)
         const expiryTime = Date.now() + parseInt(expiresIn, 10) * 1000;
-        localStorage.setItem(SPOTIFY_TOKEN_KEY, token);
-        localStorage.setItem(SPOTIFY_EXPIRY_KEY, expiryTime.toString());
+        storage.setItem(SPOTIFY_TOKEN_KEY, token);
+        storage.setItem(SPOTIFY_EXPIRY_KEY, expiryTime.toString());
         setAccessToken(token);
         setError(null);
 
@@ -48,9 +56,9 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
       }
     }
 
-    // Check for existing valid token in localStorage
-    const storedToken = localStorage.getItem(SPOTIFY_TOKEN_KEY);
-    const storedExpiry = localStorage.getItem(SPOTIFY_EXPIRY_KEY);
+    // Check for existing valid token in sessionStorage
+    const storedToken = storage.getItem(SPOTIFY_TOKEN_KEY);
+    const storedExpiry = storage.getItem(SPOTIFY_EXPIRY_KEY);
 
     if (storedToken && storedExpiry) {
       const expiryTime = parseInt(storedExpiry, 10);
@@ -58,8 +66,8 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
         setAccessToken(storedToken);
       } else {
         // Token expired, clear it
-        localStorage.removeItem(SPOTIFY_TOKEN_KEY);
-        localStorage.removeItem(SPOTIFY_EXPIRY_KEY);
+        storage.removeItem(SPOTIFY_TOKEN_KEY);
+        storage.removeItem(SPOTIFY_EXPIRY_KEY);
       }
     }
 
@@ -97,10 +105,11 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
 
   // Disconnect from Spotify
   const disconnect = useCallback(() => {
-    if (typeof window === "undefined") return;
+    const storage = getStorage();
+    if (!storage) return;
 
-    localStorage.removeItem(SPOTIFY_TOKEN_KEY);
-    localStorage.removeItem(SPOTIFY_EXPIRY_KEY);
+    storage.removeItem(SPOTIFY_TOKEN_KEY);
+    storage.removeItem(SPOTIFY_EXPIRY_KEY);
     setAccessToken(null);
     setError(null);
   }, []);
@@ -110,7 +119,10 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
     if (!accessToken) return;
 
     const checkValidity = () => {
-      const storedExpiry = localStorage.getItem(SPOTIFY_EXPIRY_KEY);
+      const storage = getStorage();
+      if (!storage) return;
+
+      const storedExpiry = storage.getItem(SPOTIFY_EXPIRY_KEY);
       if (storedExpiry) {
         const expiryTime = parseInt(storedExpiry, 10);
         if (Date.now() >= expiryTime) {

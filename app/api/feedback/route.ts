@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 
 // Rate limiting map (in-memory, resets on server restart)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -105,19 +104,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check which email service to use
-    const resendApiKey = process.env.RESEND_API_KEY;
+    // Check email service configuration
     const gmailUser = process.env.GMAIL_USER;
     const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
     const feedbackRecipient =
       process.env.FEEDBACK_RECIPIENT_EMAIL || gmailUser || "";
 
-    const useResend = !!resendApiKey;
-    const useGmail = !useResend && !!gmailUser && !!gmailAppPassword;
-
-    if (!useResend && !useGmail) {
+    if (!gmailUser || !gmailAppPassword) {
       console.error(
-        "No email service configured. Set RESEND_API_KEY or GMAIL_USER + GMAIL_APP_PASSWORD",
+        "Email service not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD environment variables.",
       );
       return NextResponse.json(
         { error: "Email service not configured" },
@@ -265,41 +260,27 @@ User Agent: ${userAgent || "Not available"}
 This feedback was submitted through Qorvex Productivity Flow
     `;
 
-    // Send email using the configured service
-    if (useResend) {
-      // Use Resend
-      const resend = new Resend(resendApiKey);
-      await resend.emails.send({
-        from: "Qorvex Feedback <onboarding@resend.dev>",
-        to: feedbackRecipient,
-        replyTo: email || undefined,
-        subject: subject,
-        text: textContent,
-        html: htmlContent,
-      });
-      console.log("Email sent via Resend");
-    } else {
-      // Use Gmail SMTP
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: gmailUser,
-          pass: gmailAppPassword,
-        },
-      });
+    // Send email using Gmail SMTP
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: gmailUser,
+        pass: gmailAppPassword,
+      },
+    });
 
-      await transporter.sendMail({
-        from: `"Qorvex Feedback" <${gmailUser}>`,
-        to: feedbackRecipient,
-        replyTo: email || undefined,
-        subject: subject,
-        text: textContent,
-        html: htmlContent,
-      });
-      console.log("Email sent via Gmail SMTP");
-    }
+    await transporter.sendMail({
+      from: `"Qorvex Feedback" <${gmailUser}>`,
+      to: feedbackRecipient,
+      replyTo: email || undefined,
+      subject: subject,
+      text: textContent,
+      html: htmlContent,
+    });
+
+    console.log("Feedback email sent successfully");
 
     return NextResponse.json(
       { success: true, message: "Feedback sent successfully" },
@@ -315,13 +296,28 @@ This feedback was submitted through Qorvex Productivity Flow
 }
 
 // Handle OPTIONS for CORS preflight
-export async function OPTIONS() {
+// Note: In production, the allowed origin should match your deployed domain
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get("origin") || "";
+
+  // Allow localhost for development and production domain
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    process.env.NEXT_PUBLIC_APP_URL || "",
+  ].filter(Boolean);
+
+  const isAllowed = allowedOrigins.includes(origin) ||
+    origin.endsWith(".vercel.app") || // Allow Vercel preview deployments
+    process.env.NODE_ENV === "development";
+
   return new NextResponse(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": isAllowed ? origin : allowedOrigins[0],
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400", // Cache preflight for 24 hours
     },
   });
 }

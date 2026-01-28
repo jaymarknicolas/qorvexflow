@@ -64,6 +64,13 @@ export interface QuotesWidgetSettings {
   showCategory: boolean;
 }
 
+export interface CoffeeWidgetSettings {
+  dailyLimit: number;
+  caffeineLimit: number; // mg
+  resetHour: number; // 0-23
+  showStreak: boolean;
+}
+
 export type WidgetSettings = {
   pomodoro: PomodoroWidgetSettings;
   tasks: TasksWidgetSettings;
@@ -73,6 +80,7 @@ export type WidgetSettings = {
   youtube: YouTubeWidgetSettings;
   stats: StatsWidgetSettings;
   quotes: QuotesWidgetSettings;
+  coffee: CoffeeWidgetSettings;
 };
 
 export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {
@@ -129,5 +137,11 @@ export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {
     rotateInterval: 60,
     showAuthor: true,
     showCategory: true,
+  },
+  coffee: {
+    dailyLimit: 4,
+    caffeineLimit: 400,
+    resetHour: 4,
+    showStreak: true,
   },
 };

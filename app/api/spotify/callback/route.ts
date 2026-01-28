@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Valid Spotify OAuth error codes
+const VALID_SPOTIFY_ERRORS = [
+  "access_denied",
+  "invalid_scope",
+  "invalid_request",
+  "unauthorized_client",
+  "server_error",
+  "temporarily_unavailable",
+] as const;
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
@@ -9,9 +19,16 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
 
   if (error) {
-    // Redirect to home with error message
+    // Validate error against known Spotify error codes to prevent open redirect
+    const safeError = VALID_SPOTIFY_ERRORS.includes(
+      error as (typeof VALID_SPOTIFY_ERRORS)[number]
+    )
+      ? error
+      : "unknown_error";
+
+    // Redirect to home with sanitized error message
     return NextResponse.redirect(
-      new URL(`/?spotify_error=${error}`, request.url)
+      new URL(`/?spotify_error=${encodeURIComponent(safeError)}`, request.url)
     );
   }
 

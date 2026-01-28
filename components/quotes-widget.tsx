@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   RefreshCw,
   Quote,
@@ -89,6 +89,26 @@ let persistedState: {
 
 export default function QuotesWidget() {
   const { theme } = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isCompact, setIsCompact] = useState(false);
+  const [isVeryCompact, setIsVeryCompact] = useState(false);
+
+  // Detect compact mode based on container size
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { height, width } = entry.contentRect;
+        setIsVeryCompact(height < 280 || width < 280);
+        setIsCompact(height < 360 || width < 320);
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   // State
   const [currentQuote, setCurrentQuote] = useState<QuoteData | null>(
@@ -112,41 +132,53 @@ export default function QuotesWidget() {
     () => persistedState?.historyIndex ?? -1
   );
 
-  // Theme colors
+  // Theme colors - consistent with other widgets
   const getThemeColors = useCallback(() => {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-emerald-900/90 to-teal-900/90",
+          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          glowFrom: "from-green-500/30",
+          glowTo: "to-amber-500/20",
           accent: "text-emerald-400",
           accentBg: "bg-emerald-500/20",
-          button: "from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500",
-          buttonShadow: "shadow-emerald-500/20",
-          border: "border-emerald-500/20",
+          button: "from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400",
+          buttonShadow: "shadow-emerald-500/30",
+          border: "border-emerald-400/30",
           tagBg: "bg-emerald-500/20 text-emerald-300",
           skeleton: "bg-emerald-500/20",
+          iconColor: "text-emerald-400",
+          hoverBg: "hover:bg-emerald-500/20",
         };
       case "coffeeshop":
         return {
-          gradient: "from-amber-900/90 to-stone-900/90",
+          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+          glowFrom: "from-amber-500/20",
+          glowTo: "to-orange-500/20",
           accent: "text-amber-400",
           accentBg: "bg-amber-500/20",
-          button: "from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500",
-          buttonShadow: "shadow-amber-500/20",
+          button: "from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400",
+          buttonShadow: "shadow-amber-500/30",
           border: "border-amber-500/20",
           tagBg: "bg-amber-500/20 text-amber-300",
           skeleton: "bg-amber-500/20",
+          iconColor: "text-amber-400",
+          hoverBg: "hover:bg-amber-500/20",
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/90 to-purple-900/90",
-          accent: "text-indigo-400",
-          accentBg: "bg-indigo-500/20",
-          button: "from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500",
-          buttonShadow: "shadow-indigo-500/20",
-          border: "border-indigo-500/20",
-          tagBg: "bg-indigo-500/20 text-indigo-300",
-          skeleton: "bg-indigo-500/20",
+          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+          glowFrom: "from-violet-500/20",
+          glowTo: "to-pink-500/20",
+          accent: "text-violet-400",
+          accentBg: "bg-violet-500/20",
+          button: "from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
+          buttonShadow: "shadow-violet-500/30",
+          border: "border-violet-500/20",
+          tagBg: "bg-violet-500/20 text-violet-300",
+          skeleton: "bg-violet-500/20",
+          iconColor: "text-violet-400",
+          hoverBg: "hover:bg-violet-500/20",
         };
     }
   }, [theme]);
