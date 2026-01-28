@@ -147,13 +147,13 @@ export default function FocusStats() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-900/95 border border-white/10 rounded-lg px-3 py-2 shadow-xl">
-          <p className="text-white font-medium text-sm">{label}</p>
+        <div className="theme-tooltip border rounded-lg px-3 py-2 shadow-xl">
+          <p className="font-medium text-sm">{label}</p>
           <p className={`text-sm ${colors.accent}`}>
             {payload[0].value}h focused
           </p>
           {payload[0].payload.sessions > 0 && (
-            <p className="text-white/50 text-xs">
+            <p className="text-xs opacity-50">
               {payload[0].payload.sessions} sessions
             </p>
           )}

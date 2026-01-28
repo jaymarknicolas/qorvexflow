@@ -43,6 +43,7 @@ import QuotesWidget from "@/components/quotes-widget";
 import CoffeeCounterWidget from "@/components/coffee-counter-widget";
 import CanvasVideoBackground from "@/components/canvas-video-background";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useResponsive } from "@/lib/hooks/useResponsive";
 import { toast } from "sonner";
 
@@ -143,6 +144,7 @@ export default function Home() {
     isOpen: boolean;
   }>({ type: null, isOpen: false });
   const { theme } = useTheme();
+  const { settings } = useAppSettings();
 
   // Reference to workspace content for dynamic scaling
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -519,15 +521,22 @@ export default function Home() {
         widgetType={maximizedWidget.type}
       />
 
-      {/* Theme Video Backgrounds */}
-      {theme === "ghibli" && (
-        <CanvasVideoBackground videoSrc="/videos/ghibli.mp4" />
-      )}
-      {theme === "lofi" && (
-        <CanvasVideoBackground videoSrc="/videos/lofi.mp4" />
-      )}
-      {theme === "coffeeshop" && (
-        <CanvasVideoBackground videoSrc="/videos/coffeeshop.mp4" />
+      {/* Theme Video Backgrounds - Only render when enabled */}
+      {settings.videoBackgroundEnabled ? (
+        <>
+          {theme === "ghibli" && (
+            <CanvasVideoBackground videoSrc="/videos/ghibli.mp4" />
+          )}
+          {theme === "lofi" && (
+            <CanvasVideoBackground videoSrc="/videos/lofi.mp4" />
+          )}
+          {theme === "coffeeshop" && (
+            <CanvasVideoBackground videoSrc="/videos/coffeeshop.mp4" />
+          )}
+        </>
+      ) : (
+        /* Static gradient background when video is disabled */
+        <div className={`absolute inset-0 z-0 static-bg-${theme}`} />
       )}
     </div>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/contexts/theme-context";
+import { AppSettingsProvider } from "@/lib/contexts/app-settings-context";
 import { LayoutProvider } from "@/lib/contexts/layout-context";
 import { WidgetSettingsProvider } from "@/lib/contexts/widget-settings-context";
 import { FocusTrackerProvider } from "@/lib/contexts/focus-tracker-context";
@@ -35,14 +36,16 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <LayoutProvider>
-            <WidgetSettingsProvider>
-              <FocusTrackerProvider>
-                {children}
-                <Toaster position="bottom-right" richColors />
-              </FocusTrackerProvider>
-            </WidgetSettingsProvider>
-          </LayoutProvider>
+          <AppSettingsProvider>
+            <LayoutProvider>
+              <WidgetSettingsProvider>
+                <FocusTrackerProvider>
+                  {children}
+                  <Toaster position="bottom-right" richColors />
+                </FocusTrackerProvider>
+              </WidgetSettingsProvider>
+            </LayoutProvider>
+          </AppSettingsProvider>
         </ThemeProvider>
       </body>
     </html>

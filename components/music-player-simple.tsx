@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useSpotifyAuth } from "@/lib/hooks/useSpotifyAuth";
 import { useSpotifyPlayback } from "@/lib/hooks/useSpotifyPlayback";
 import { useYouTubePlayer } from "@/lib/hooks/useYouTubePlayer";
@@ -122,6 +123,8 @@ function formatTime(seconds: number): string {
 
 export default function MusicPlayerSimple() {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
 
   // Spotify hooks
   const spotifyAuth = useSpotifyAuth();
@@ -233,56 +236,78 @@ export default function MusicPlayerSimple() {
     musicSource,
   ]);
 
-  // Theme colors
+  // Theme colors - light mode aware
   const getThemeColors = () => {
     if (theme === "ghibli") {
       return {
         primary: "from-green-400 to-emerald-500",
         secondary: "from-amber-400 to-orange-500",
-        accent: "text-emerald-400",
-        accentSecondary: "text-amber-400",
+        accent: isLightMode ? "text-green-700" : "text-emerald-400",
+        accentSecondary: isLightMode ? "text-amber-700" : "text-amber-400",
         glow: "shadow-green-500/50",
         waveColors: ["#22c55e", "#10b981", "#059669", "#fbbf24", "#f59e0b"],
-        gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+        gradient: isLightMode
+          ? "from-green-50/95 via-emerald-50/90 to-teal-50/95"
+          : "from-green-900/95 via-emerald-900/90 to-teal-900/95",
         glowFrom: "from-green-500/30",
         glowTo: "to-amber-500/20",
-        border: "border-emerald-400/30",
+        border: isLightMode ? "border-green-300/50" : "border-emerald-400/30",
         progressBg: "#22c55e",
-        accentBg: "bg-emerald-500/20",
-        iconColor: "text-emerald-400",
+        accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/20",
+        iconColor: isLightMode ? "text-green-700" : "text-emerald-400",
+        textPrimary: isLightMode ? "text-green-900" : "text-white",
+        textSecondary: isLightMode ? "text-green-800" : "text-white/80",
+        textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
+        hoverBg: isLightMode ? "hover:bg-green-200/50" : "hover:bg-white/10",
+        surfaceBg: isLightMode ? "bg-green-100/80" : "bg-slate-900/95",
       };
     }
     if (theme === "coffeeshop") {
       return {
         primary: "from-amber-400 to-orange-500",
         secondary: "from-amber-600 to-amber-800",
-        accent: "text-amber-400",
-        accentSecondary: "text-orange-400",
+        accent: isLightMode ? "text-amber-800" : "text-amber-400",
+        accentSecondary: isLightMode ? "text-orange-700" : "text-orange-400",
         glow: "shadow-amber-500/50",
         waveColors: ["#fbbf24", "#f59e0b", "#d97706", "#b45309", "#92400e"],
-        gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+        gradient: isLightMode
+          ? "from-amber-50/95 via-orange-50/90 to-yellow-50/95"
+          : "from-stone-900/95 via-amber-950/90 to-orange-950/95",
         glowFrom: "from-amber-500/20",
         glowTo: "to-orange-500/20",
-        border: "border-amber-500/20",
+        border: isLightMode ? "border-amber-300/50" : "border-amber-500/20",
         progressBg: "#d97706",
-        accentBg: "bg-amber-500/20",
-        iconColor: "text-amber-400",
+        accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
+        iconColor: isLightMode ? "text-amber-700" : "text-amber-400",
+        textPrimary: isLightMode ? "text-amber-950" : "text-white",
+        textSecondary: isLightMode ? "text-amber-900" : "text-white/80",
+        textMuted: isLightMode ? "text-amber-800/70" : "text-white/50",
+        hoverBg: isLightMode ? "hover:bg-amber-200/50" : "hover:bg-white/10",
+        surfaceBg: isLightMode ? "bg-amber-100/80" : "bg-slate-900/95",
       };
     }
+    // lofi theme
     return {
       primary: "from-violet-400 to-purple-500",
       secondary: "from-pink-400 to-rose-500",
-      accent: "text-violet-400",
-      accentSecondary: "text-pink-400",
+      accent: isLightMode ? "text-violet-700" : "text-violet-400",
+      accentSecondary: isLightMode ? "text-pink-700" : "text-pink-400",
       glow: "shadow-violet-500/50",
       waveColors: ["#8b5cf6", "#a855f7", "#c084fc", "#ec4899", "#f472b6"],
-      gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+      gradient: isLightMode
+        ? "from-violet-50/95 via-purple-50/90 to-indigo-50/95"
+        : "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
       glowFrom: "from-violet-500/20",
       glowTo: "to-pink-500/20",
-      border: "border-violet-500/20",
+      border: isLightMode ? "border-violet-300/50" : "border-violet-500/20",
       progressBg: "#8b5cf6",
-      accentBg: "bg-violet-500/20",
-      iconColor: "text-violet-400",
+      accentBg: isLightMode ? "bg-violet-200/50" : "bg-violet-500/20",
+      iconColor: isLightMode ? "text-violet-700" : "text-violet-400",
+      textPrimary: isLightMode ? "text-violet-950" : "text-white",
+      textSecondary: isLightMode ? "text-violet-900" : "text-white/80",
+      textMuted: isLightMode ? "text-violet-800/70" : "text-white/50",
+      hoverBg: isLightMode ? "hover:bg-violet-200/50" : "hover:bg-white/10",
+      surfaceBg: isLightMode ? "bg-violet-100/80" : "bg-slate-900/95",
     };
   };
 
@@ -507,9 +532,9 @@ export default function MusicPlayerSimple() {
       >
         {/* Search Overlay */}
         {showSearch && (
-          <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl z-40 p-4 pt-12 flex flex-col rounded-2xl">
+          <div className={`absolute inset-0 ${colors.surfaceBg} backdrop-blur-xl z-40 p-4 pt-12 flex flex-col rounded-2xl`}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white">
+              <h3 className={`text-sm font-bold ${colors.textPrimary}`}>
                 Search YouTube Music
               </h3>
               <button
@@ -517,9 +542,9 @@ export default function MusicPlayerSimple() {
                   setShowSearch(false);
                   youtubeSearch.clearResults();
                 }}
-                className="p-1 hover:bg-white/10 rounded-lg"
+                className={`p-1 ${colors.hoverBg} rounded-lg`}
               >
-                <X className="w-4 h-4 text-white/60" />
+                <X className={`w-4 h-4 ${colors.textMuted}`} />
               </button>
             </div>
 
@@ -529,7 +554,7 @@ export default function MusicPlayerSimple() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for songs..."
-                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                className={`flex-1 ${colors.accentBg} border ${colors.border} rounded-lg px-3 py-2 text-sm ${colors.textPrimary} placeholder:${colors.textMuted} focus:outline-none focus:border-current`}
                 autoFocus
               />
               <button
@@ -550,7 +575,7 @@ export default function MusicPlayerSimple() {
                 <button
                   key={result.videoId}
                   onClick={() => handleSelectSearchResult(result)}
-                  className="w-full flex items-center gap-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                  className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
                 >
                   <img
                     src={result.thumbnail}
@@ -558,15 +583,15 @@ export default function MusicPlayerSimple() {
                     className="w-12 h-12 rounded object-cover"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">
+                    <p className={`text-sm ${colors.textPrimary} truncate`}>
                       {result.title}
                     </p>
-                    <p className="text-xs text-white/50 truncate">
+                    <p className={`text-xs ${colors.textMuted} truncate`}>
                       {result.channelTitle}
                     </p>
                   </div>
                   {result.duration && (
-                    <span className="text-xs text-white/40">
+                    <span className={`text-xs ${colors.textMuted}`}>
                       {formatTime(result.duration)}
                     </span>
                   )}
@@ -587,7 +612,7 @@ export default function MusicPlayerSimple() {
               <Music2 className={`w-4 h-4 ${colors.iconColor}`} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">
+              <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
                 {musicSource === "spotify"
                   ? "Spotify"
                   : theme === "lofi"
@@ -597,7 +622,7 @@ export default function MusicPlayerSimple() {
                       : "Ghibli"}{" "}
                 {musicSource === "spotify" ? "Connect" : "Beats"}
               </h2>
-              <p className="text-[10px] text-white/50">
+              <p className={`text-[10px] ${colors.textMuted}`}>
                 {effectiveIsLoading ? (
                   <span className="flex items-center gap-1">
                     <Loader2 className="w-2.5 h-2.5 animate-spin" />
@@ -628,7 +653,7 @@ export default function MusicPlayerSimple() {
             {musicSource === "youtube" && (
               <button
                 onClick={() => setShowSearch(true)}
-                className={`p-2 rounded-lg hover:bg-white/10 transition-colors ${colors.accent}`}
+                className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
                 aria-label="Search"
               >
                 <Search className="w-4 h-4" />
@@ -639,8 +664,8 @@ export default function MusicPlayerSimple() {
             <div className="relative">
               <button
                 onClick={() => setShowSourceMenu(!showSourceMenu)}
-                className={`p-2 rounded-lg hover:bg-white/10 transition-colors ${
-                  musicSource === "spotify" ? "text-green-400" : colors.accent
+                className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${
+                  musicSource === "spotify" ? "text-green-500" : colors.accent
                 }`}
               >
                 {musicSource === "spotify" ? (
@@ -651,8 +676,8 @@ export default function MusicPlayerSimple() {
               </button>
 
               {showSourceMenu && (
-                <div className="absolute right-0 top-full mt-2 p-2 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl z-30 min-w-[180px]">
-                  <div className="text-[10px] text-white/40 uppercase tracking-wider px-2 pb-1 mb-1 border-b border-white/10">
+                <div className={`absolute right-0 top-full mt-2 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-30 min-w-[180px]`}>
+                  <div className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}>
                     Music Source
                   </div>
 
@@ -661,7 +686,7 @@ export default function MusicPlayerSimple() {
                     className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors ${
                       musicSource === "youtube"
                         ? `bg-gradient-to-r ${colors.primary} text-white`
-                        : "hover:bg-white/10 text-white/70"
+                        : `${colors.hoverBg} ${colors.textSecondary}`
                     }`}
                   >
                     <Youtube className="w-4 h-4" />
@@ -672,8 +697,8 @@ export default function MusicPlayerSimple() {
                     onClick={() => handleSourceChange("spotify")}
                     className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 ${
                       musicSource === "spotify"
-                        ? "bg-green-500/20 text-green-400"
-                        : "hover:bg-white/10 text-white/70"
+                        ? "bg-green-500/20 text-green-600"
+                        : `${colors.hoverBg} ${colors.textSecondary}`
                     }`}
                   >
                     <SpotifyIcon className="w-4 h-4" />
@@ -683,7 +708,7 @@ export default function MusicPlayerSimple() {
                         : "Connect Spotify"}
                     </span>
                     {spotifyAuth.isConnected ? (
-                      <Wifi className="w-3 h-3 text-green-400" />
+                      <Wifi className="w-3 h-3 text-green-500" />
                     ) : (
                       <LogIn className="w-3 h-3" />
                     )}
@@ -697,7 +722,7 @@ export default function MusicPlayerSimple() {
                           setMusicSource("youtube");
                         setShowSourceMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 hover:bg-red-500/10 text-red-400"
+                      className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 hover:bg-red-500/10 text-red-500"
                     >
                       <LogOut className="w-4 h-4" />
                       <span className="text-sm">Disconnect</span>
@@ -714,16 +739,16 @@ export default function MusicPlayerSimple() {
               onMouseLeave={() => setShowVolumeSlider(false)}
             >
               <button
-                className={`p-2 rounded-lg hover:bg-white/10 transition-colors ${colors.accent}`}
+                className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
               >
                 <VolumeIcon className="w-4 h-4" />
               </button>
 
               {showVolumeSlider && (
-                <div className="absolute right-0 top-full mt-2 p-3 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl z-20 min-w-[140px]">
+                <div className={`absolute right-0 top-full mt-2 p-3 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-20 min-w-[140px]`}>
                   <div className="flex items-center gap-2 mb-2">
                     <VolumeIcon className={`w-3 h-3 ${colors.accent}`} />
-                    <span className="text-xs text-white/70">
+                    <span className={`text-xs ${colors.textSecondary}`}>
                       {Math.round(volume)}%
                     </span>
                   </div>
@@ -733,9 +758,9 @@ export default function MusicPlayerSimple() {
                     max="100"
                     value={volume}
                     onChange={handleVolumeChange}
-                    className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer"
+                    className={`w-full h-1.5 ${isLightMode ? 'bg-black/10' : 'bg-white/20'} rounded-full appearance-none cursor-pointer`}
                     style={{
-                      background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, rgba(255,255,255,0.2) ${volume}%)`,
+                      background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'} ${volume}%)`,
                     }}
                   />
                 </div>
@@ -754,7 +779,7 @@ export default function MusicPlayerSimple() {
             />
 
             <div
-              className={`absolute inset-2 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
+              className={`absolute inset-2 rounded-full ${isLightMode ? 'bg-white/80' : 'bg-gradient-to-br from-slate-800 to-slate-900'} border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
                 effectiveIsPlaying && !effectiveIsLoading ? "animate-spin" : ""
               }`}
               style={{ animationDuration: "4s" }}
@@ -806,7 +831,7 @@ export default function MusicPlayerSimple() {
         </div>
         {/* Track Info */}
         <div className="text-center mb-2 flex-shrink-0 px-2">
-          <h3 className="text-base sm:text-lg font-bold text-white truncate">
+          <h3 className={`text-base sm:text-lg font-bold ${colors.textPrimary} truncate`}>
             {musicSource === "spotify"
               ? spotifyPlayback.currentTrack?.name || "Not Playing"
               : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
@@ -830,14 +855,14 @@ export default function MusicPlayerSimple() {
               max={totalDuration}
               value={currentProgress}
               onChange={handleSeek}
-              className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer"
+              className={`w-full h-1 ${isLightMode ? 'bg-black/10' : 'bg-white/20'} rounded-full appearance-none cursor-pointer`}
               style={{
                 background: `linear-gradient(to right, ${colors.progressBg} ${
                   (currentProgress / totalDuration) * 100
-                }%, rgba(255,255,255,0.2) ${(currentProgress / totalDuration) * 100}%)`,
+                }%, ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'} ${(currentProgress / totalDuration) * 100}%)`,
               }}
             />
-            <div className="flex justify-between mt-1 text-[10px] text-white/50">
+            <div className={`flex justify-between mt-1 text-[10px] ${colors.textMuted}`}>
               <span>{formatTime(currentProgress)}</span>
               <span>{formatTime(totalDuration)}</span>
             </div>
@@ -853,7 +878,7 @@ export default function MusicPlayerSimple() {
             className={`p-2 rounded-lg transition-all ${
               isShuffleOn
                 ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                : "hover:bg-white/10 text-white/60 hover:text-white"
+                : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
             }`}
           >
             <Shuffle className="w-4 h-4" />
@@ -862,7 +887,7 @@ export default function MusicPlayerSimple() {
           <button
             onClick={handlePrev}
             disabled={effectiveIsLoading}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white disabled:opacity-50"
+            className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
           >
             <SkipBack className="w-5 h-5" />
           </button>
@@ -887,7 +912,7 @@ export default function MusicPlayerSimple() {
           <button
             onClick={handleNext}
             disabled={effectiveIsLoading}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/80 hover:text-white disabled:opacity-50"
+            className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
           >
             <SkipForward className="w-5 h-5" />
           </button>
@@ -897,7 +922,7 @@ export default function MusicPlayerSimple() {
             className={`p-2 rounded-lg transition-all ${
               isRepeatOn
                 ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                : "hover:bg-white/10 text-white/60 hover:text-white"
+                : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
             }`}
           >
             <Repeat className="w-4 h-4" />
@@ -922,12 +947,12 @@ export default function MusicPlayerSimple() {
                 className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
                   currentTrack === idx
                     ? `bg-gradient-to-r ${colors.primary} w-4`
-                    : "bg-white/20 hover:bg-white/40"
+                    : `${isLightMode ? 'bg-black/20 hover:bg-black/40' : 'bg-white/20 hover:bg-white/40'}`
                 }`}
               />
             ))
           ) : (
-            <div className="flex items-center gap-2 text-[10px] text-white/40">
+            <div className={`flex items-center gap-2 text-[10px] ${colors.textMuted}`}>
               <Smartphone className="w-3 h-3" />
               <span>
                 {spotifyPlayback.hasActiveDevice

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { usePomodoro } from "@/lib/hooks";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import PomodoroSettingsModal from "./pomodoro-settings-modal";
 
@@ -24,6 +25,8 @@ export default function PomodoroWidget({
   onSessionComplete,
 }: PomodoroWidgetProps) {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
   const focusTracker = useFocusTrackerContext();
   const [showSettings, setShowSettings] = useState(false);
   const prevIsRunning = useRef(false);
@@ -74,47 +77,68 @@ export default function PomodoroWidget({
     prevMode.current = mode;
   }, [isRunning, mode, focusTracker]);
 
-  // Theme colors - consistent with other widgets
+  // Theme colors - consistent with other widgets, light mode aware
   const getThemeColors = useCallback(() => {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          gradient: isLightMode
+            ? "from-green-50/95 via-emerald-50/90 to-teal-50/95"
+            : "from-green-900/95 via-emerald-900/90 to-teal-900/95",
           glowFrom: "from-green-500/30",
           glowTo: "to-amber-500/20",
-          accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/20",
-          border: "border-emerald-400/30",
-          iconColor: "text-emerald-400",
-          buttonBg: "bg-emerald-500/15 hover:bg-emerald-500/25",
-          buttonHoverText: "hover:text-emerald-300",
+          accent: isLightMode ? "text-green-700" : "text-emerald-400",
+          accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/20",
+          border: isLightMode ? "border-green-300/50" : "border-emerald-400/30",
+          iconColor: isLightMode ? "text-green-700" : "text-emerald-400",
+          buttonBg: isLightMode
+            ? "bg-green-200/50 hover:bg-green-300/50"
+            : "bg-emerald-500/15 hover:bg-emerald-500/25",
+          buttonHoverText: isLightMode ? "hover:text-green-900" : "hover:text-emerald-300",
+          textPrimary: isLightMode ? "text-green-900" : "text-white",
+          textSecondary: isLightMode ? "text-green-800" : "text-white/80",
+          textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+          gradient: isLightMode
+            ? "from-amber-50/95 via-orange-50/90 to-yellow-50/95"
+            : "from-stone-900/95 via-amber-950/90 to-orange-950/95",
           glowFrom: "from-amber-500/20",
           glowTo: "to-orange-500/20",
-          accent: "text-amber-400",
-          accentBg: "bg-amber-500/20",
-          border: "border-amber-500/20",
-          iconColor: "text-amber-400",
-          buttonBg: "bg-amber-500/15 hover:bg-amber-500/25",
-          buttonHoverText: "hover:text-amber-300",
+          accent: isLightMode ? "text-amber-800" : "text-amber-400",
+          accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
+          border: isLightMode ? "border-amber-300/50" : "border-amber-500/20",
+          iconColor: isLightMode ? "text-amber-700" : "text-amber-400",
+          buttonBg: isLightMode
+            ? "bg-amber-200/50 hover:bg-amber-300/50"
+            : "bg-amber-500/15 hover:bg-amber-500/25",
+          buttonHoverText: isLightMode ? "hover:text-amber-900" : "hover:text-amber-300",
+          textPrimary: isLightMode ? "text-amber-950" : "text-white",
+          textSecondary: isLightMode ? "text-amber-900" : "text-white/80",
+          textMuted: isLightMode ? "text-amber-800/70" : "text-white/50",
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+          gradient: isLightMode
+            ? "from-violet-50/95 via-purple-50/90 to-indigo-50/95"
+            : "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
           glowFrom: "from-violet-500/20",
           glowTo: "to-pink-500/20",
-          accent: "text-violet-400",
-          accentBg: "bg-violet-500/20",
-          border: "border-violet-500/20",
-          iconColor: "text-violet-400",
-          buttonBg: "bg-violet-500/15 hover:bg-violet-500/25",
-          buttonHoverText: "hover:text-violet-300",
+          accent: isLightMode ? "text-violet-700" : "text-violet-400",
+          accentBg: isLightMode ? "bg-violet-200/50" : "bg-violet-500/20",
+          border: isLightMode ? "border-violet-300/50" : "border-violet-500/20",
+          iconColor: isLightMode ? "text-violet-700" : "text-violet-400",
+          buttonBg: isLightMode
+            ? "bg-violet-200/50 hover:bg-violet-300/50"
+            : "bg-violet-500/15 hover:bg-violet-500/25",
+          buttonHoverText: isLightMode ? "hover:text-violet-900" : "hover:text-violet-300",
+          textPrimary: isLightMode ? "text-violet-950" : "text-white",
+          textSecondary: isLightMode ? "text-violet-900" : "text-white/80",
+          textMuted: isLightMode ? "text-violet-800/70" : "text-white/50",
         };
     }
-  }, [theme]);
+  }, [theme, isLightMode]);
 
   const themeColors = getThemeColors();
 
@@ -172,14 +196,14 @@ export default function PomodoroWidget({
                 <Timer className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${themeColors.iconColor}`} />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-sm sm:text-base font-bold text-white truncate">
+                <h2 className={`text-sm sm:text-base font-bold ${themeColors.textPrimary} truncate`}>
                   {mode === "work"
                     ? "Focus Time"
                     : mode === "long-break"
                     ? "Long Break"
                     : "Short Break"}
                 </h2>
-                <p className="text-[10px] sm:text-xs text-white/50 truncate hidden sm:block">
+                <p className={`text-[10px] sm:text-xs ${themeColors.textMuted} truncate hidden sm:block`}>
                   {mode === "work"
                     ? `${cycleCount}/${settings.longBreakInterval} until long break`
                     : mode === "long-break"
@@ -194,7 +218,7 @@ export default function PomodoroWidget({
                   e.stopPropagation();
                   testSound();
                 }}
-                className={`p-1.5 ${themeColors.buttonBg} text-white/60 ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
+                className={`p-1.5 ${themeColors.buttonBg} ${themeColors.textMuted} ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
                 aria-label="Test notification sound"
                 title="Test notification sound"
               >
@@ -205,7 +229,7 @@ export default function PomodoroWidget({
                   e.stopPropagation();
                   setShowSettings(true);
                 }}
-                className={`p-1.5 ${themeColors.buttonBg} text-white/60 ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
+                className={`p-1.5 ${themeColors.buttonBg} ${themeColors.textMuted} ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
                 aria-label="Pomodoro settings"
               >
                 <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -222,7 +246,7 @@ export default function PomodoroWidget({
                   cy="80"
                   r="70"
                   fill="none"
-                  stroke="rgba(255,255,255,0.1)"
+                  stroke={isLightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)"}
                   strokeWidth="8"
                 />
                 <circle
@@ -251,10 +275,10 @@ export default function PomodoroWidget({
               </svg>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-mono">
+                <div className={`text-xl sm:text-2xl md:text-3xl font-bold ${themeColors.textPrimary} font-mono`}>
                   {displayTime}
                 </div>
-                <div className="text-[10px] sm:text-xs text-white/50 mt-0.5">
+                <div className={`text-[10px] sm:text-xs ${themeColors.textMuted} mt-0.5`}>
                   {sessions} sessions
                 </div>
               </div>
@@ -267,7 +291,7 @@ export default function PomodoroWidget({
               className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium transition-all border ${
                 mode === "work"
                   ? modeColors.badge
-                  : "bg-white/5 text-white/40 border-transparent"
+                  : `${isLightMode ? 'bg-black/5 text-black/40' : 'bg-white/5 text-white/40'} border-transparent`
               }`}
             >
               Focus
@@ -275,8 +299,8 @@ export default function PomodoroWidget({
             <div
               className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium transition-all border ${
                 mode === "short-break"
-                  ? "bg-green-500/20 text-green-400 border-green-500/30"
-                  : "bg-white/5 text-white/40 border-transparent"
+                  ? `bg-green-500/20 ${isLightMode ? 'text-green-700' : 'text-green-400'} border-green-500/30`
+                  : `${isLightMode ? 'bg-black/5 text-black/40' : 'bg-white/5 text-white/40'} border-transparent`
               }`}
             >
               Short
@@ -284,8 +308,8 @@ export default function PomodoroWidget({
             <div
               className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium transition-all border ${
                 mode === "long-break"
-                  ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
-                  : "bg-white/5 text-white/40 border-transparent"
+                  ? `bg-purple-500/20 ${isLightMode ? 'text-purple-700' : 'text-purple-400'} border-purple-500/30`
+                  : `${isLightMode ? 'bg-black/5 text-black/40' : 'bg-white/5 text-white/40'} border-transparent`
               }`}
             >
               Long
@@ -320,7 +344,7 @@ export default function PomodoroWidget({
                 e.stopPropagation();
                 reset();
               }}
-              className={`px-2 sm:px-3 py-1.5 sm:py-2 ${themeColors.buttonBg} text-white rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 ${themeColors.buttonBg} ${themeColors.textPrimary} rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
               aria-label="Reset timer"
             >
               <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -331,7 +355,7 @@ export default function PomodoroWidget({
                 e.stopPropagation();
                 skip();
               }}
-              className={`px-2 sm:px-3 py-1.5 sm:py-2 ${themeColors.buttonBg} text-white rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
+              className={`px-2 sm:px-3 py-1.5 sm:py-2 ${themeColors.buttonBg} ${themeColors.textPrimary} rounded-xl font-semibold border ${themeColors.border} transition-all duration-300 flex items-center`}
               aria-label="Skip to next phase"
             >
               <SkipForward className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -339,7 +363,7 @@ export default function PomodoroWidget({
           </div>
 
           {/* Settings Info */}
-          <div className="hidden sm:flex justify-center gap-2 sm:gap-3 mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-white/40 shrink-0">
+          <div className={`hidden sm:flex justify-center gap-2 sm:gap-3 mt-2 sm:mt-3 text-[9px] sm:text-[10px] ${themeColors.textMuted} shrink-0`}>
             <span>{settings.workDuration}m focus</span>
             <span>·</span>
             <span>{settings.breakDuration}m break</span>

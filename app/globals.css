@@ -483,6 +483,289 @@
 }
 
 /* ============================================
+   LIGHT MODE THEMES
+   ============================================ */
+
+/* ============================================
+   LO-FI LIGHT THEME
+   A soft, pastel purple-pink aesthetic
+   ============================================ */
+:root[data-theme="lofi"][data-color-scheme="light"] {
+  /* Background colors - Light lavender */
+  --theme-bg-from: #f5f3ff;
+  --theme-bg-via: #ede9fe;
+  --theme-bg-to: #f5f3ff;
+
+  /* Primary colors - Deeper purple for contrast */
+  --theme-primary: #7c3aed;
+  --theme-primary-hover: #6d28d9;
+  --theme-primary-dark: #5b21b6;
+
+  /* Secondary colors - Pink */
+  --theme-secondary: #db2777;
+  --theme-secondary-hover: #be185d;
+  --theme-secondary-dark: #9d174d;
+
+  /* Accent colors */
+  --theme-accent: #6366f1;
+  --theme-accent-hover: #4f46e5;
+
+  /* Text colors - Dark for readability */
+  --theme-text: #1e1b4b;
+  --theme-text-secondary: #4c1d95;
+  --theme-text-muted: rgba(76, 29, 149, 0.6);
+
+  /* Surface colors */
+  --theme-surface: rgba(237, 233, 254, 0.8);
+  --theme-surface-hover: rgba(221, 214, 254, 0.9);
+  --theme-surface-border: rgba(139, 92, 246, 0.3);
+
+  /* Glow effects - Subtle */
+  --theme-glow-1: rgba(139, 92, 246, 0.2);
+  --theme-glow-2: rgba(236, 72, 153, 0.15);
+  --theme-glow-3: rgba(245, 158, 11, 0.15);
+
+  /* Gradient */
+  --theme-gradient-from: #8b5cf6;
+  --theme-gradient-to: #ec4899;
+
+  /* Header/Navigation */
+  --theme-header-bg: rgba(245, 243, 255, 0.95);
+  --theme-header-border: rgba(139, 92, 246, 0.2);
+
+  /* Widget specific */
+  --theme-widget-bg: rgba(255, 255, 255, 0.8);
+  --theme-widget-border: rgba(139, 92, 246, 0.2);
+
+  /* Button styles */
+  --theme-btn-primary-from: #8b5cf6;
+  --theme-btn-primary-to: #ec4899;
+}
+
+:root[data-theme="lofi"][data-color-scheme="light"] .themed-bg {
+  background: linear-gradient(
+    135deg,
+    #f5f3ff,
+    #ede9fe,
+    #f5f3ff
+  );
+}
+
+:root[data-theme="lofi"][data-color-scheme="light"] .theme-card {
+  @apply bg-white/80 border-violet-300/30;
+}
+
+/* ============================================
+   GHIBLI LIGHT THEME
+   A soft, nature-inspired light aesthetic
+   ============================================ */
+:root[data-theme="ghibli"][data-color-scheme="light"] {
+  /* Background colors - Soft cream/green */
+  --theme-bg-from: #f0fdf4;
+  --theme-bg-via: #dcfce7;
+  --theme-bg-to: #f0fdf4;
+
+  /* Primary colors - Forest green */
+  --theme-primary: #16a34a;
+  --theme-primary-hover: #15803d;
+  --theme-primary-dark: #166534;
+
+  /* Secondary colors - Warm amber */
+  --theme-secondary: #d97706;
+  --theme-secondary-hover: #b45309;
+  --theme-secondary-dark: #92400e;
+
+  /* Accent colors - Sky blue */
+  --theme-accent: #0284c7;
+  --theme-accent-hover: #0369a1;
+
+  /* Text colors - Dark green for readability */
+  --theme-text: #14532d;
+  --theme-text-secondary: #166534;
+  --theme-text-muted: rgba(22, 101, 52, 0.6);
+
+  /* Surface colors */
+  --theme-surface: rgba(220, 252, 231, 0.8);
+  --theme-surface-hover: rgba(187, 247, 208, 0.9);
+  --theme-surface-border: rgba(34, 197, 94, 0.3);
+
+  /* Glow effects - Subtle */
+  --theme-glow-1: rgba(34, 197, 94, 0.2);
+  --theme-glow-2: rgba(251, 191, 36, 0.15);
+  --theme-glow-3: rgba(251, 146, 60, 0.15);
+
+  /* Gradient */
+  --theme-gradient-from: #22c55e;
+  --theme-gradient-to: #eab308;
+
+  /* Header/Navigation */
+  --theme-header-bg: rgba(240, 253, 244, 0.95);
+  --theme-header-border: rgba(34, 197, 94, 0.2);
+
+  /* Widget specific */
+  --theme-widget-bg: rgba(255, 255, 255, 0.8);
+  --theme-widget-border: rgba(34, 197, 94, 0.2);
+
+  /* Button styles */
+  --theme-btn-primary-from: #22c55e;
+  --theme-btn-primary-to: #eab308;
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .themed-bg {
+  background: linear-gradient(
+    135deg,
+    #f0fdf4,
+    #dcfce7,
+    #fef9c3
+  );
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .theme-card {
+  @apply bg-white/80 border-green-300/30;
+}
+
+/* ============================================
+   COFFEE SHOP LIGHT THEME
+   A warm, creamy light aesthetic
+   ============================================ */
+:root[data-theme="coffeeshop"][data-color-scheme="light"] {
+  /* Background colors - Warm cream */
+  --theme-bg-from: #fef7ed;
+  --theme-bg-via: #fef3c7;
+  --theme-bg-to: #fef7ed;
+
+  /* Primary colors - Rich amber */
+  --theme-primary: #d97706;
+  --theme-primary-hover: #b45309;
+  --theme-primary-dark: #92400e;
+
+  /* Secondary colors - Brown */
+  --theme-secondary: #78350f;
+  --theme-secondary-hover: #713f12;
+  --theme-secondary-dark: #451a03;
+
+  /* Accent colors - Warm orange */
+  --theme-accent: #ea580c;
+  --theme-accent-hover: #c2410c;
+
+  /* Text colors - Dark brown for readability */
+  --theme-text: #451a03;
+  --theme-text-secondary: #78350f;
+  --theme-text-muted: rgba(120, 53, 15, 0.6);
+
+  /* Surface colors */
+  --theme-surface: rgba(254, 243, 199, 0.8);
+  --theme-surface-hover: rgba(253, 230, 138, 0.9);
+  --theme-surface-border: rgba(217, 119, 6, 0.3);
+
+  /* Glow effects - Subtle */
+  --theme-glow-1: rgba(217, 119, 6, 0.2);
+  --theme-glow-2: rgba(146, 64, 14, 0.15);
+  --theme-glow-3: rgba(251, 191, 36, 0.15);
+
+  /* Gradient */
+  --theme-gradient-from: #d97706;
+  --theme-gradient-to: #92400e;
+
+  /* Header/Navigation */
+  --theme-header-bg: rgba(254, 247, 237, 0.95);
+  --theme-header-border: rgba(217, 119, 6, 0.2);
+
+  /* Widget specific */
+  --theme-widget-bg: rgba(255, 255, 255, 0.8);
+  --theme-widget-border: rgba(217, 119, 6, 0.2);
+
+  /* Button styles */
+  --theme-btn-primary-from: #d97706;
+  --theme-btn-primary-to: #92400e;
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .themed-bg {
+  background: linear-gradient(
+    135deg,
+    #fef7ed,
+    #fef3c7,
+    #fef7ed
+  );
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .theme-card {
+  @apply bg-white/80 border-amber-300/30;
+}
+
+/* ============================================
+   PERFORMANCE MODE STYLES
+   ============================================ */
+
+/* Lightweight mode - reduces animations and effects */
+.lightweight-mode * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.lightweight-mode .animate-pulse,
+.lightweight-mode .animate-bounce,
+.lightweight-mode .animate-spin {
+  animation: none !important;
+}
+
+/* Reduce motion - for accessibility and performance */
+.reduce-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Reduce transparency - reduces backdrop blur and transparency effects */
+.reduce-transparency .backdrop-blur-sm,
+.reduce-transparency .backdrop-blur-md,
+.reduce-transparency .backdrop-blur-lg,
+.reduce-transparency .backdrop-blur-xl,
+.reduce-transparency .backdrop-blur-2xl,
+.reduce-transparency .backdrop-blur-3xl {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.reduce-transparency .bg-white\/5,
+.reduce-transparency .bg-white\/10,
+.reduce-transparency .bg-white\/20 {
+  background-color: rgba(30, 30, 30, 0.95) !important;
+}
+
+:root[data-color-scheme="light"] .reduce-transparency .bg-white\/5,
+:root[data-color-scheme="light"] .reduce-transparency .bg-white\/10,
+:root[data-color-scheme="light"] .reduce-transparency .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Static background for when video is disabled */
+.static-bg-lofi {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+}
+
+.static-bg-ghibli {
+  background: linear-gradient(135deg, #14532d 0%, #166534 50%, #14532d 100%);
+}
+
+.static-bg-coffeeshop {
+  background: linear-gradient(135deg, #292524 0%, #44403c 50%, #292524 100%);
+}
+
+/* Light mode static backgrounds */
+:root[data-color-scheme="light"] .static-bg-lofi {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #f5f3ff 100%);
+}
+
+:root[data-color-scheme="light"] .static-bg-ghibli {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #fef9c3 100%);
+}
+
+:root[data-color-scheme="light"] .static-bg-coffeeshop {
+  background: linear-gradient(135deg, #fef7ed 0%, #fef3c7 50%, #fef7ed 100%);
+}
+
+/* ============================================
    SHARED THEME UTILITIES
    ============================================ */
 
@@ -549,4 +832,652 @@
 /* Ensure smooth theme switching */
 html {
   transition: background-color 0.3s ease;
+}
+
+/* ============================================
+   LIGHT MODE GLOBAL OVERRIDES
+   Override Tailwind utility classes for light mode
+   ============================================ */
+
+/* Light mode text color overrides */
+:root[data-color-scheme="light"] .text-white {
+  color: var(--theme-text) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/40,
+:root[data-color-scheme="light"] .text-white\/50,
+:root[data-color-scheme="light"] .text-white\/60 {
+  color: var(--theme-text-muted) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/70,
+:root[data-color-scheme="light"] .text-white\/80 {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Light mode background overrides */
+:root[data-color-scheme="light"] .bg-white\/5,
+:root[data-color-scheme="light"] .bg-white\/10 {
+  background-color: var(--theme-surface) !important;
+}
+
+:root[data-color-scheme="light"] .bg-white\/20 {
+  background-color: var(--theme-surface-hover) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:bg-white\/5:hover,
+:root[data-color-scheme="light"] .hover\:bg-white\/10:hover {
+  background-color: var(--theme-surface-hover) !important;
+}
+
+/* Light mode border overrides */
+:root[data-color-scheme="light"] .border-white\/5,
+:root[data-color-scheme="light"] .border-white\/10,
+:root[data-color-scheme="light"] .border-white\/20 {
+  border-color: var(--theme-surface-border) !important;
+}
+
+/* Light mode header/navigation */
+:root[data-color-scheme="light"] header {
+  background-color: var(--theme-header-bg) !important;
+  border-color: var(--theme-header-border) !important;
+}
+
+/* Light mode cards and widgets */
+:root[data-color-scheme="light"] .bg-slate-900,
+:root[data-color-scheme="light"] .bg-slate-900\/90,
+:root[data-color-scheme="light"] .bg-slate-800,
+:root[data-color-scheme="light"] .bg-slate-800\/90 {
+  background-color: var(--theme-widget-bg) !important;
+}
+
+:root[data-color-scheme="light"] .from-slate-900,
+:root[data-color-scheme="light"] .from-slate-800 {
+  --tw-gradient-from: var(--theme-widget-bg) !important;
+}
+
+:root[data-color-scheme="light"] .to-slate-900,
+:root[data-color-scheme="light"] .to-slate-800 {
+  --tw-gradient-to: var(--theme-widget-bg) !important;
+}
+
+/* Light mode specific backgrounds */
+:root[data-color-scheme="light"] .bg-indigo-950\/80,
+:root[data-color-scheme="light"] .bg-indigo-950\/40,
+:root[data-color-scheme="light"] .bg-green-950\/80,
+:root[data-color-scheme="light"] .bg-green-950\/40,
+:root[data-color-scheme="light"] .bg-stone-800\/80,
+:root[data-color-scheme="light"] .bg-stone-800\/40 {
+  background-color: var(--theme-surface) !important;
+}
+
+/* Light mode modal backgrounds */
+:root[data-color-scheme="light"] .bg-gradient-to-br.from-slate-900.to-slate-800,
+:root[data-color-scheme="light"] .bg-gradient-to-br.from-slate-800\/95.to-slate-900\/95 {
+  background: var(--theme-widget-bg) !important;
+}
+
+/* Light mode scrollbar */
+:root[data-color-scheme="light"] .custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--theme-surface) !important;
+}
+
+:root[data-color-scheme="light"] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--theme-surface-border) !important;
+}
+
+/* Light mode animated background effects - make them subtle */
+:root[data-color-scheme="light"] .mix-blend-screen {
+  mix-blend-mode: multiply !important;
+  opacity: 0.1 !important;
+}
+
+/* Light mode specific widget card styling */
+:root[data-color-scheme="light"] [class*="rounded-2xl"][class*="border"] {
+  background-color: var(--theme-widget-bg);
+  border-color: var(--theme-widget-border);
+}
+
+/* ============================================
+   DROPDOWN MENU THEME STYLES
+   ============================================ */
+
+/* Dropdown Content */
+.dropdown-menu-content {
+  background-color: var(--theme-widget-bg, rgba(15, 23, 42, 0.95));
+  border-color: var(--theme-surface-border, rgba(255, 255, 255, 0.1));
+  color: var(--theme-text, #ffffff);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+/* Dropdown Item */
+.dropdown-menu-item {
+  color: var(--theme-text-secondary, rgba(255, 255, 255, 0.8));
+}
+
+.dropdown-menu-item:hover,
+.dropdown-menu-item:focus {
+  background-color: var(--theme-surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--theme-text, #ffffff);
+}
+
+.dropdown-menu-item [class*="text-white/"] {
+  color: var(--theme-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+/* Dropdown Label */
+.dropdown-menu-label {
+  color: var(--theme-text-muted, rgba(255, 255, 255, 0.5));
+}
+
+/* Dropdown Separator */
+.dropdown-menu-separator {
+  background-color: var(--theme-surface-border, rgba(255, 255, 255, 0.1));
+}
+
+/* Dropdown Shortcut */
+.dropdown-menu-shortcut {
+  color: var(--theme-text-muted, rgba(255, 255, 255, 0.4));
+}
+
+/* Theme-specific dropdown styles */
+:root[data-theme="lofi"] .dropdown-menu-content {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.98), rgba(49, 46, 129, 0.98));
+  border-color: rgba(167, 139, 250, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.2);
+}
+
+:root[data-theme="lofi"] .dropdown-menu-item:hover,
+:root[data-theme="lofi"] .dropdown-menu-item:focus {
+  background-color: rgba(139, 92, 246, 0.15);
+}
+
+:root[data-theme="ghibli"] .dropdown-menu-content {
+  background: linear-gradient(135deg, rgba(20, 83, 45, 0.98), rgba(22, 101, 52, 0.98));
+  border-color: rgba(134, 239, 172, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(34, 197, 94, 0.2);
+}
+
+:root[data-theme="ghibli"] .dropdown-menu-item:hover,
+:root[data-theme="ghibli"] .dropdown-menu-item:focus {
+  background-color: rgba(34, 197, 94, 0.15);
+}
+
+:root[data-theme="coffeeshop"] .dropdown-menu-content {
+  background: linear-gradient(135deg, rgba(41, 37, 36, 0.98), rgba(68, 64, 60, 0.98));
+  border-color: rgba(251, 191, 36, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.2);
+}
+
+:root[data-theme="coffeeshop"] .dropdown-menu-item:hover,
+:root[data-theme="coffeeshop"] .dropdown-menu-item:focus {
+  background-color: rgba(217, 119, 6, 0.15);
+}
+
+/* Light mode dropdown styles */
+:root[data-color-scheme="light"] .dropdown-menu-content {
+  background: var(--theme-widget-bg) !important;
+  border-color: var(--theme-surface-border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+:root[data-color-scheme="light"] .dropdown-menu-item {
+  color: var(--theme-text-secondary);
+}
+
+:root[data-color-scheme="light"] .dropdown-menu-item:hover,
+:root[data-color-scheme="light"] .dropdown-menu-item:focus {
+  background-color: var(--theme-surface-hover);
+  color: var(--theme-text);
+}
+
+:root[data-color-scheme="light"] .dropdown-menu-label {
+  color: var(--theme-text-muted);
+}
+
+:root[data-color-scheme="light"] .dropdown-menu-separator {
+  background-color: var(--theme-surface-border);
+}
+
+:root[data-color-scheme="light"] .dropdown-menu-shortcut {
+  color: var(--theme-text-muted);
+}
+
+/* Light mode theme-specific dropdown styles */
+:root[data-theme="lofi"][data-color-scheme="light"] .dropdown-menu-content {
+  background: linear-gradient(135deg, rgba(245, 243, 255, 0.98), rgba(237, 233, 254, 0.98)) !important;
+}
+
+:root[data-theme="lofi"][data-color-scheme="light"] .dropdown-menu-item:hover,
+:root[data-theme="lofi"][data-color-scheme="light"] .dropdown-menu-item:focus {
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .dropdown-menu-content {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.98), rgba(220, 252, 231, 0.98)) !important;
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .dropdown-menu-item:hover,
+:root[data-theme="ghibli"][data-color-scheme="light"] .dropdown-menu-item:focus {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .dropdown-menu-content {
+  background: linear-gradient(135deg, rgba(254, 247, 237, 0.98), rgba(254, 243, 199, 0.98)) !important;
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .dropdown-menu-item:hover,
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .dropdown-menu-item:focus {
+  background-color: rgba(217, 119, 6, 0.1);
+}
+
+/* ============================================
+   TOOLTIP THEME STYLES
+   ============================================ */
+
+/* Base tooltip styles */
+.theme-tooltip {
+  background-color: var(--theme-widget-bg, rgba(15, 23, 42, 0.95));
+  border-color: var(--theme-surface-border, rgba(255, 255, 255, 0.1));
+  color: var(--theme-text, #ffffff);
+}
+
+/* Theme-specific tooltip styles */
+:root[data-theme="lofi"] .theme-tooltip {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.98), rgba(49, 46, 129, 0.98));
+  border-color: rgba(167, 139, 250, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.2);
+}
+
+:root[data-theme="ghibli"] .theme-tooltip {
+  background: linear-gradient(135deg, rgba(20, 83, 45, 0.98), rgba(22, 101, 52, 0.98));
+  border-color: rgba(134, 239, 172, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.2);
+}
+
+:root[data-theme="coffeeshop"] .theme-tooltip {
+  background: linear-gradient(135deg, rgba(41, 37, 36, 0.98), rgba(68, 64, 60, 0.98));
+  border-color: rgba(251, 191, 36, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.2);
+}
+
+/* Light mode tooltip styles */
+:root[data-theme="lofi"][data-color-scheme="light"] .theme-tooltip {
+  background: linear-gradient(135deg, rgba(245, 243, 255, 0.98), rgba(237, 233, 254, 0.98));
+  border-color: rgba(139, 92, 246, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.1);
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .theme-tooltip {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.98), rgba(220, 252, 231, 0.98));
+  border-color: rgba(34, 197, 94, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.1);
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .theme-tooltip {
+  background: linear-gradient(135deg, rgba(254, 247, 237, 0.98), rgba(254, 243, 199, 0.98));
+  border-color: rgba(217, 119, 6, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.1);
+}
+
+/* ============================================
+   MODAL/DIALOG THEME STYLES
+   ============================================ */
+
+/* Base modal styles */
+.theme-modal {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+  border-color: var(--theme-surface-border, rgba(255, 255, 255, 0.2));
+  color: var(--theme-text, #ffffff);
+}
+
+.theme-modal-close {
+  color: var(--theme-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+.theme-modal-close:hover {
+  background-color: var(--theme-surface-hover, rgba(255, 255, 255, 0.1));
+  color: var(--theme-text, #ffffff);
+}
+
+.theme-modal-title {
+  color: var(--theme-text, #ffffff);
+}
+
+.theme-modal-description {
+  color: var(--theme-text-muted, rgba(255, 255, 255, 0.6));
+}
+
+/* Theme-specific modal styles */
+:root[data-theme="lofi"] .theme-modal {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.98), rgba(49, 46, 129, 0.98));
+  border-color: rgba(167, 139, 250, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.3);
+}
+
+:root[data-theme="ghibli"] .theme-modal {
+  background: linear-gradient(135deg, rgba(20, 83, 45, 0.98), rgba(22, 101, 52, 0.98));
+  border-color: rgba(134, 239, 172, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(34, 197, 94, 0.3);
+}
+
+:root[data-theme="coffeeshop"] .theme-modal {
+  background: linear-gradient(135deg, rgba(41, 37, 36, 0.98), rgba(68, 64, 60, 0.98));
+  border-color: rgba(251, 191, 36, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.3);
+}
+
+/* Light mode modal styles */
+:root[data-color-scheme="light"] .theme-modal {
+  background: var(--theme-widget-bg) !important;
+  border-color: var(--theme-surface-border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+:root[data-color-scheme="light"] .theme-modal-title {
+  color: var(--theme-text);
+}
+
+:root[data-color-scheme="light"] .theme-modal-description {
+  color: var(--theme-text-muted);
+}
+
+:root[data-color-scheme="light"] .theme-modal-close {
+  color: var(--theme-text-muted);
+}
+
+:root[data-color-scheme="light"] .theme-modal-close:hover {
+  background-color: var(--theme-surface-hover);
+  color: var(--theme-text);
+}
+
+/* Light mode theme-specific modal styles */
+:root[data-theme="lofi"][data-color-scheme="light"] .theme-modal {
+  background: linear-gradient(135deg, rgba(245, 243, 255, 0.98), rgba(237, 233, 254, 0.98)) !important;
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .theme-modal {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.98), rgba(220, 252, 231, 0.98)) !important;
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .theme-modal {
+  background: linear-gradient(135deg, rgba(254, 247, 237, 0.98), rgba(254, 243, 199, 0.98)) !important;
+}
+
+/* ============================================
+   WIDGET ACTION BUTTON THEME STYLES
+   ============================================ */
+
+/* Light mode widget action buttons */
+:root[data-color-scheme="light"] .bg-slate-700\/80 {
+  background-color: var(--theme-surface) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:bg-slate-700:hover {
+  background-color: var(--theme-surface-hover) !important;
+}
+
+/* Light mode hover states for widget action buttons */
+:root[data-color-scheme="light"] .hover\:text-red-400:hover {
+  color: #dc2626 !important;
+}
+
+:root[data-color-scheme="light"] .hover\:text-cyan-400:hover {
+  color: var(--theme-primary) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:text-green-400:hover {
+  color: #16a34a !important;
+}
+
+:root[data-color-scheme="light"] .hover\:text-blue-400:hover {
+  color: #2563eb !important;
+}
+
+:root[data-color-scheme="light"] .hover\:text-purple-400:hover {
+  color: #9333ea !important;
+}
+
+/* Light mode hover border colors for widget actions */
+:root[data-color-scheme="light"] .hover\:border-red-400\/50:hover {
+  border-color: rgba(220, 38, 38, 0.5) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:border-cyan-400\/50:hover {
+  border-color: var(--theme-surface-border) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:border-green-400\/50:hover {
+  border-color: rgba(22, 163, 74, 0.5) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:border-blue-400\/50:hover {
+  border-color: rgba(37, 99, 235, 0.5) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:border-purple-400\/50:hover {
+  border-color: rgba(147, 51, 234, 0.5) !important;
+}
+
+/* ============================================
+   WORKSPACE CANVAS THEME STYLES
+   ============================================ */
+
+/* Light mode workspace canvas */
+:root[data-color-scheme="light"] .ring-cyan-400\/40 {
+  --tw-ring-color: var(--theme-primary) !important;
+  --tw-ring-opacity: 0.4 !important;
+}
+
+/* Light mode text placeholder */
+:root[data-color-scheme="light"] .text-white\/20 {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ============================================
+   COMPREHENSIVE WIDGET LIGHT MODE STYLES
+   Ensures proper contrast and accessibility
+   ============================================ */
+
+/* ----- WIDGET BACKGROUND GRADIENTS ----- */
+
+/* Lo-Fi theme widget backgrounds */
+:root[data-theme="lofi"][data-color-scheme="light"] .from-indigo-900\/95,
+:root[data-theme="lofi"][data-color-scheme="light"] .via-purple-900\/90,
+:root[data-theme="lofi"][data-color-scheme="light"] .to-violet-900\/95 {
+  --tw-gradient-from: rgba(245, 243, 255, 0.95) !important;
+  --tw-gradient-via: rgba(237, 233, 254, 0.9) !important;
+  --tw-gradient-to: rgba(245, 243, 255, 0.95) !important;
+}
+
+:root[data-theme="lofi"][data-color-scheme="light"] .bg-gradient-to-br.from-indigo-900\/95 {
+  background: linear-gradient(to bottom right, rgba(245, 243, 255, 0.98), rgba(237, 233, 254, 0.95), rgba(245, 243, 255, 0.98)) !important;
+}
+
+/* Ghibli theme widget backgrounds */
+:root[data-theme="ghibli"][data-color-scheme="light"] .from-green-900\/95,
+:root[data-theme="ghibli"][data-color-scheme="light"] .via-emerald-900\/90,
+:root[data-theme="ghibli"][data-color-scheme="light"] .to-teal-900\/95 {
+  --tw-gradient-from: rgba(240, 253, 244, 0.95) !important;
+  --tw-gradient-via: rgba(220, 252, 231, 0.9) !important;
+  --tw-gradient-to: rgba(240, 253, 244, 0.95) !important;
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"] .bg-gradient-to-br.from-green-900\/95 {
+  background: linear-gradient(to bottom right, rgba(240, 253, 244, 0.98), rgba(220, 252, 231, 0.95), rgba(240, 253, 244, 0.98)) !important;
+}
+
+/* Coffee Shop theme widget backgrounds */
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .from-stone-900\/95,
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .via-amber-950\/90,
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .to-orange-950\/95 {
+  --tw-gradient-from: rgba(254, 247, 237, 0.95) !important;
+  --tw-gradient-via: rgba(254, 243, 199, 0.9) !important;
+  --tw-gradient-to: rgba(254, 247, 237, 0.95) !important;
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .bg-gradient-to-br.from-stone-900\/95 {
+  background: linear-gradient(to bottom right, rgba(254, 247, 237, 0.98), rgba(254, 243, 199, 0.95), rgba(254, 247, 237, 0.98)) !important;
+}
+
+/* ----- WIDGET TEXT COLORS ----- */
+
+/* White text -> Theme text (dark) for readability */
+:root[data-color-scheme="light"] .text-white {
+  color: var(--theme-text) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/90 {
+  color: var(--theme-text) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/80 {
+  color: var(--theme-text-secondary) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/70 {
+  color: var(--theme-text-secondary) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/60 {
+  color: var(--theme-text-muted) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/50 {
+  color: var(--theme-text-muted) !important;
+}
+
+:root[data-color-scheme="light"] .text-white\/40 {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ----- WIDGET BORDERS ----- */
+
+/* Lo-Fi theme borders in light mode */
+:root[data-theme="lofi"][data-color-scheme="light"] .border-violet-500\/20,
+:root[data-theme="lofi"][data-color-scheme="light"] .border-violet-400\/30 {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Ghibli theme borders in light mode */
+:root[data-theme="ghibli"][data-color-scheme="light"] .border-emerald-400\/30,
+:root[data-theme="ghibli"][data-color-scheme="light"] .border-emerald-500\/20 {
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+/* Coffee Shop theme borders in light mode */
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .border-amber-500\/20,
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .border-amber-400\/30 {
+  border-color: rgba(217, 119, 6, 0.3) !important;
+}
+
+/* ----- WIDGET ACCENT BACKGROUNDS ----- */
+
+/* Lo-Fi accent backgrounds */
+:root[data-theme="lofi"][data-color-scheme="light"] .bg-violet-500\/20,
+:root[data-theme="lofi"][data-color-scheme="light"] .bg-violet-500\/15 {
+  background-color: rgba(139, 92, 246, 0.15) !important;
+}
+
+/* Ghibli accent backgrounds */
+:root[data-theme="ghibli"][data-color-scheme="light"] .bg-emerald-500\/20,
+:root[data-theme="ghibli"][data-color-scheme="light"] .bg-emerald-500\/15 {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+/* Coffee Shop accent backgrounds */
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .bg-amber-500\/20,
+:root[data-theme="coffeeshop"][data-color-scheme="light"] .bg-amber-500\/15 {
+  background-color: rgba(217, 119, 6, 0.15) !important;
+}
+
+/* ----- HOVER BACKGROUNDS ----- */
+
+:root[data-color-scheme="light"] .hover\:bg-white\/10:hover {
+  background-color: var(--theme-surface-hover) !important;
+}
+
+:root[data-color-scheme="light"] .hover\:bg-white\/5:hover {
+  background-color: var(--theme-surface) !important;
+}
+
+/* ----- OVERLAY/SEARCH BACKGROUNDS ----- */
+
+:root[data-color-scheme="light"] .bg-slate-900\/95 {
+  background-color: var(--theme-widget-bg) !important;
+}
+
+:root[data-color-scheme="light"] .bg-slate-900\/90 {
+  background-color: var(--theme-widget-bg) !important;
+}
+
+:root[data-color-scheme="light"] .bg-slate-800 {
+  background-color: var(--theme-surface) !important;
+}
+
+/* ----- INPUT/FORM ELEMENTS ----- */
+
+:root[data-color-scheme="light"] input.bg-white\/10 {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+}
+
+:root[data-color-scheme="light"] input.border-white\/20 {
+  border-color: var(--theme-surface-border) !important;
+}
+
+:root[data-color-scheme="light"] input::placeholder {
+  color: var(--theme-text-muted) !important;
+}
+
+:root[data-color-scheme="light"] .placeholder-white\/40::placeholder {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ----- ALBUM ART / DISC BACKGROUNDS ----- */
+
+:root[data-color-scheme="light"] .from-slate-800,
+:root[data-color-scheme="light"] .to-slate-900 {
+  --tw-gradient-from: var(--theme-surface) !important;
+  --tw-gradient-to: var(--theme-surface-hover) !important;
+}
+
+:root[data-color-scheme="light"] .bg-gradient-to-br.from-slate-800 {
+  background: var(--theme-surface) !important;
+}
+
+/* ----- BADGE/TAG BACKGROUNDS ----- */
+
+:root[data-color-scheme="light"] .bg-white\/5 {
+  background-color: var(--theme-surface) !important;
+}
+
+:root[data-color-scheme="light"] .bg-cyan-500\/20 {
+  background-color: rgba(6, 182, 212, 0.2) !important;
+}
+
+:root[data-color-scheme="light"] .bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+:root[data-color-scheme="light"] .bg-purple-500\/20 {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+/* ----- PROGRESS BARS ----- */
+
+:root[data-color-scheme="light"] .bg-white\/20 {
+  background-color: var(--theme-surface-border) !important;
+}
+
+/* ----- POPUP/DROPDOWN WITHIN WIDGETS ----- */
+
+:root[data-color-scheme="light"] .bg-slate-900\/95.backdrop-blur-xl {
+  background: var(--theme-widget-bg) !important;
+}
+
+/* ----- FOCUS RING COLORS ----- */
+
+:root[data-color-scheme="light"] .focus\:border-white\/40:focus {
+  border-color: var(--theme-primary) !important;
 }

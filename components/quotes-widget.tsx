@@ -15,6 +15,7 @@ import {
   Filter,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 
 interface QuoteData {
   _id: string;
@@ -91,6 +92,8 @@ let persistedState: {
 
 export default function QuotesWidget() {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCompact, setIsCompact] = useState(false);
   const [isVeryCompact, setIsVeryCompact] = useState(false);
@@ -134,47 +137,68 @@ export default function QuotesWidget() {
     () => persistedState?.historyIndex ?? -1,
   );
 
-  // Theme colors
+  // Theme colors - light mode aware
   const getThemeColors = useCallback(() => {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-emerald-900/90 to-teal-900/90",
-          accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/20",
+          gradient: isLightMode
+            ? "from-green-50/90 to-emerald-50/90"
+            : "from-emerald-900/90 to-teal-900/90",
+          accent: isLightMode ? "text-green-700" : "text-emerald-400",
+          accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/20",
           button:
             "from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500",
           buttonShadow: "shadow-emerald-500/20",
-          border: "border-emerald-500/20",
-          tagBg: "bg-emerald-500/20 text-emerald-300",
-          skeleton: "bg-emerald-500/20",
+          border: isLightMode ? "border-green-300/50" : "border-emerald-500/20",
+          tagBg: isLightMode ? "bg-green-200/50 text-green-700" : "bg-emerald-500/20 text-emerald-300",
+          skeleton: isLightMode ? "bg-green-200/50" : "bg-emerald-500/20",
+          textPrimary: isLightMode ? "text-green-900" : "text-white",
+          textSecondary: isLightMode ? "text-green-800" : "text-white/80",
+          textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
+          bgOverlay: isLightMode ? "bg-green-100/50" : "bg-black/20",
+          hoverBg: isLightMode ? "bg-green-200/50 hover:bg-green-300/50" : "bg-white/10 hover:bg-white/20",
         };
       case "coffeeshop":
         return {
-          gradient: "from-amber-900/90 to-stone-900/90",
-          accent: "text-amber-400",
-          accentBg: "bg-amber-500/20",
+          gradient: isLightMode
+            ? "from-amber-50/90 to-orange-50/90"
+            : "from-amber-900/90 to-stone-900/90",
+          accent: isLightMode ? "text-amber-800" : "text-amber-400",
+          accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
           button:
             "from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500",
           buttonShadow: "shadow-amber-500/20",
-          border: "border-amber-500/20",
-          tagBg: "bg-amber-500/20 text-amber-300",
-          skeleton: "bg-amber-500/20",
+          border: isLightMode ? "border-amber-300/50" : "border-amber-500/20",
+          tagBg: isLightMode ? "bg-amber-200/50 text-amber-800" : "bg-amber-500/20 text-amber-300",
+          skeleton: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
+          textPrimary: isLightMode ? "text-amber-950" : "text-white",
+          textSecondary: isLightMode ? "text-amber-900" : "text-white/80",
+          textMuted: isLightMode ? "text-amber-800/70" : "text-white/50",
+          bgOverlay: isLightMode ? "bg-amber-100/50" : "bg-black/20",
+          hoverBg: isLightMode ? "bg-amber-200/50 hover:bg-amber-300/50" : "bg-white/10 hover:bg-white/20",
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/90 to-purple-900/90",
-          accent: "text-indigo-400",
-          accentBg: "bg-indigo-500/20",
+          gradient: isLightMode
+            ? "from-violet-50/90 to-purple-50/90"
+            : "from-indigo-900/90 to-purple-900/90",
+          accent: isLightMode ? "text-violet-700" : "text-indigo-400",
+          accentBg: isLightMode ? "bg-violet-200/50" : "bg-indigo-500/20",
           button:
             "from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500",
           buttonShadow: "shadow-indigo-500/20",
-          border: "border-indigo-500/20",
-          tagBg: "bg-indigo-500/20 text-indigo-300",
-          skeleton: "bg-indigo-500/20",
+          border: isLightMode ? "border-violet-300/50" : "border-indigo-500/20",
+          tagBg: isLightMode ? "bg-violet-200/50 text-violet-700" : "bg-indigo-500/20 text-indigo-300",
+          skeleton: isLightMode ? "bg-violet-200/50" : "bg-indigo-500/20",
+          textPrimary: isLightMode ? "text-violet-950" : "text-white",
+          textSecondary: isLightMode ? "text-violet-900" : "text-white/80",
+          textMuted: isLightMode ? "text-violet-800/70" : "text-white/50",
+          bgOverlay: isLightMode ? "bg-violet-100/50" : "bg-black/20",
+          hoverBg: isLightMode ? "bg-violet-200/50 hover:bg-violet-300/50" : "bg-white/10 hover:bg-white/20",
         };
     }
-  }, [theme]);
+  }, [theme, isLightMode]);
 
   const colors = getThemeColors();
 
@@ -388,11 +412,11 @@ export default function QuotesWidget() {
   return (
     <div
       ref={containerRef}
-      className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden`}
+      className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border} shadow-2xl overflow-hidden`}
     >
       {/* Header */}
       <div
-        className={`flex-shrink-0 border-b border-white/10 bg-black/20 ${
+        className={`flex-shrink-0 border-b ${colors.border} ${colors.bgOverlay} ${
           isVeryCompact ? "px-2 py-1.5" : isCompact ? "px-3 py-2" : "px-4 py-3"
         }`}
       >
@@ -407,7 +431,7 @@ export default function QuotesWidget() {
             </div>
             <div className="min-w-0">
               <h2
-                className={`font-bold text-white truncate ${
+                className={`font-bold ${colors.textPrimary} truncate ${
                   isVeryCompact
                     ? "text-xs"
                     : isCompact
@@ -419,7 +443,7 @@ export default function QuotesWidget() {
               </h2>
               {!isVeryCompact && (
                 <p
-                  className={`text-white/50 truncate ${isCompact ? "text-[9px]" : "text-xs"}`}
+                  className={`${colors.textMuted} truncate ${isCompact ? "text-[9px]" : "text-xs"}`}
                 >
                   {error || "Powered by Quotable"}
                 </p>
@@ -440,7 +464,7 @@ export default function QuotesWidget() {
                 } ${
                   showCategories
                     ? `${colors.accentBg} ${colors.accent}`
-                    : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                    : `${colors.hoverBg} ${colors.textMuted}`
                 }`}
                 aria-label="Filter by category"
               >
@@ -453,7 +477,7 @@ export default function QuotesWidget() {
                     className="fixed inset-0 z-40"
                     onClick={() => setShowCategories(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 z-50 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl p-2 min-w-[140px]">
+                  <div className={`absolute right-0 top-full mt-2 z-50 ${isLightMode ? 'bg-white/95' : 'bg-slate-900/95'} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl p-2 min-w-[140px]`}>
                     {QUOTE_CATEGORIES.map((cat) => (
                       <button
                         key={cat.id}
@@ -461,7 +485,7 @@ export default function QuotesWidget() {
                         className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                           selectedCategory === cat.id
                             ? `${colors.accentBg} ${colors.accent}`
-                            : "text-white/70 hover:bg-white/10 hover:text-white"
+                            : `${colors.textSecondary} ${colors.hoverBg}`
                         }`}
                       >
                         <cat.icon className="w-3.5 h-3.5" />
@@ -480,8 +504,8 @@ export default function QuotesWidget() {
                 isVeryCompact ? "p-1" : "p-1.5"
               } ${
                 isFavorite
-                  ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                  : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                  ? "bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                  : `${colors.hoverBg} ${colors.textMuted}`
               } disabled:opacity-50`}
               aria-label={
                 isFavorite ? "Remove from favorites" : "Add to favorites"
@@ -495,14 +519,14 @@ export default function QuotesWidget() {
             <button
               onClick={handleCopy}
               disabled={!currentQuote}
-              className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50 ${
+              className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-50 ${
                 isVeryCompact ? "p-1" : "p-1.5"
               }`}
               aria-label="Copy quote"
             >
               {copied ? (
                 <Check
-                  className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} text-green-400`}
+                  className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} text-green-500`}
                 />
               ) : (
                 <Copy className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
@@ -513,7 +537,7 @@ export default function QuotesWidget() {
               <button
                 onClick={handleShare}
                 disabled={!currentQuote}
-                className="p-1.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50"
+                className={`p-1.5 ${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-50`}
                 aria-label="Share quote"
               >
                 <Share2 className="w-3.5 h-3.5" />
@@ -533,12 +557,12 @@ export default function QuotesWidget() {
         {!isVeryCompact && (
           <div className="absolute inset-0 opacity-5 pointer-events-none">
             <Quote
-              className={`absolute top-2 left-2 text-white transform rotate-12 ${
+              className={`absolute top-2 left-2 ${colors.textPrimary} transform rotate-12 ${
                 isCompact ? "w-10 h-10" : "w-16 h-16"
               }`}
             />
             <Quote
-              className={`absolute bottom-2 right-2 text-white transform -rotate-12 ${
+              className={`absolute bottom-2 right-2 ${colors.textPrimary} transform -rotate-12 ${
                 isCompact ? "w-10 h-10" : "w-16 h-16"
               }`}
             />
@@ -576,7 +600,7 @@ export default function QuotesWidget() {
               }`}
             />
             <p
-              className={`text-white/60 ${isVeryCompact ? "text-xs mb-2" : "mb-4"}`}
+              className={`${colors.textMuted} ${isVeryCompact ? "text-xs mb-2" : "mb-4"}`}
             >
               {error}
             </p>
@@ -609,7 +633,7 @@ export default function QuotesWidget() {
             )}
 
             <blockquote
-              className={`${getQuoteFontSize()} font-medium text-white leading-relaxed px-2 ${
+              className={`${getQuoteFontSize()} font-medium ${colors.textPrimary} leading-relaxed px-2 ${
                 isVeryCompact ? "mb-2" : isCompact ? "mb-3" : "mb-6"
               }`}
             >
@@ -658,7 +682,7 @@ export default function QuotesWidget() {
 
       {/* Footer */}
       <div
-        className={`flex-shrink-0 border-t border-white/10 bg-black/20 ${
+        className={`flex-shrink-0 border-t ${colors.border} ${colors.bgOverlay} ${
           isVeryCompact ? "p-1.5" : isCompact ? "p-2" : "p-3"
         }`}
       >
@@ -670,7 +694,7 @@ export default function QuotesWidget() {
           <button
             onClick={goBack}
             disabled={historyIndex <= 0 || isLoading}
-            className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+            className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
               isVeryCompact ? "p-1.5" : "p-2"
             }`}
             aria-label="Previous quote"
@@ -709,7 +733,7 @@ export default function QuotesWidget() {
           <button
             onClick={goForward}
             disabled={historyIndex >= quoteHistory.length - 1 || isLoading}
-            className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+            className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
               isVeryCompact ? "p-1.5" : "p-2"
             }`}
             aria-label="Next quote"
@@ -743,7 +767,7 @@ export default function QuotesWidget() {
                   className={`rounded-full transition-all ${
                     actualIdx === historyIndex
                       ? `${colors.accent} ${isCompact ? "w-2.5 h-1" : "w-3 h-1.5"}`
-                      : `bg-white/20 ${isCompact ? "w-1 h-1" : "w-1.5 h-1.5"}`
+                      : `${isLightMode ? 'bg-black/20' : 'bg-white/20'} ${isCompact ? "w-1 h-1" : "w-1.5 h-1.5"}`
                   }`}
                 />
               );

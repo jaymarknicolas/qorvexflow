@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import FeedbackModal from "@/components/feedback-modal";
+import SettingsModal from "@/components/settings-modal";
 import clsx from "clsx";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useLayout } from "@/lib/contexts/layout-context";
@@ -68,6 +69,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { layout, setLayout } = useLayout();
 
@@ -355,7 +357,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="start"
-                      className="w-72 z-[999] fuck"
+                      className="w-72 z-[999]"
                     >
                       <DropdownMenuLabel className="flex items-center gap-2 normal-case text-sm font-medium text-white/70">
                         {item.icon}
@@ -547,7 +549,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                       Profile
                       <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer">
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => setSettingsModalOpen(true)}>
                       <Settings className="w-4 h-4 mr-2 text-white/60" />
                       Settings
                       <DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
@@ -765,6 +767,10 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                       <span className="font-medium">Profile</span>
                     </button>
                     <button
+                      onClick={() => {
+                        setSettingsModalOpen(true);
+                        setMobileMenuOpen(false);
+                      }}
                       className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
                     >
                       <Settings className="w-5 h-5" />
@@ -802,6 +808,12 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
       <FeedbackModal
         isOpen={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
       />
     </>
   );

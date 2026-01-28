@@ -201,7 +201,7 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
 
       {/* Tooltip for desktop */}
       {!showLabel && !isMobile && (
-        <span className="pointer-events-none absolute left-full ml-3 rounded-lg bg-slate-900/95 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-50 border border-white/10 shadow-xl">
+        <span className="theme-tooltip pointer-events-none absolute left-full ml-3 rounded-lg backdrop-blur-sm px-3 py-1.5 text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-50 border shadow-xl">
           <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
             {label}
           </span>

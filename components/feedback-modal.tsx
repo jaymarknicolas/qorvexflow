@@ -208,7 +208,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
             className="fixed inset-4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg z-[201] flex items-center justify-center"
           >
             <div
-              className={`w-full max-h-[90vh] overflow-hidden bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl flex flex-col`}
+              className={`theme-modal w-full max-h-[90vh] overflow-hidden backdrop-blur-xl rounded-2xl border shadow-2xl flex flex-col`}
             >
               {/* Header */}
               <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-white/10">
@@ -302,7 +302,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                               className="fixed inset-0 z-10"
                               onClick={() => setShowPriorityDropdown(false)}
                             />
-                            <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-xl">
+                            <div className="absolute top-full left-0 right-0 mt-1 z-20 dropdown-menu-content backdrop-blur-xl border rounded-xl overflow-hidden shadow-xl">
                               {priorities.map((p) => (
                                 <button
                                   key={p.id}
