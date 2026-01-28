@@ -523,7 +523,7 @@ The drag handle has data attributes that can be used with @dnd-kit or similar:
 The iframe widget still requires API key for search:
 
 ```bash
-YOUTUBE_API_KEY=your_api_key_here
+NEXT_PUBLIC_YOUTUBE_API_KEY=your_api_key_here
 ```
 
 But the iframe embed itself works without API key.

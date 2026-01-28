@@ -355,10 +355,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         <ChevronRight className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity rotate-90" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      className="w-72 z-[999]"
-                    >
+                    <DropdownMenuContent align="start" className="w-72 z-[999]">
                       <DropdownMenuLabel className="flex items-center gap-2 normal-case text-sm font-medium text-white/70">
                         {item.icon}
                         {item.label}
@@ -549,7 +546,10 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                       Profile
                       <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => setSettingsModalOpen(true)}>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => setSettingsModalOpen(true)}
+                    >
                       <Settings className="w-4 h-4 mr-2 text-white/60" />
                       Settings
                       <DropdownMenuShortcut>⌘,</DropdownMenuShortcut>

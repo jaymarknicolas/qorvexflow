@@ -42,7 +42,8 @@ export function useYouTubeSearch(): UseYouTubeSearchReturn {
       return;
     }
 
-    const apiKey = process.env.YOUTUBE_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+    console.log("OK");
     if (!apiKey) {
       setError("YouTube API key not configured");
       return;

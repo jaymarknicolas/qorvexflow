@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+const NEXT_PUBLIC_YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!YOUTUBE_API_KEY) {
+  if (!NEXT_PUBLIC_YOUTUBE_API_KEY) {
     return NextResponse.json(
       { error: "YouTube API key not configured" },
       { status: 503 },
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(
         query,
-      )}&key=${YOUTUBE_API_KEY}`,
+      )}&key=${NEXT_PUBLIC_YOUTUBE_API_KEY}`,
       { cache: "no-store" },
     );
 

@@ -342,7 +342,7 @@ export default function YouTubeWidgetInput() {
             <p
               className={`text-white/40 mt-2 ${isVeryCompact ? "text-[9px]" : "text-xs"}`}
             >
-              Add YOUTUBE_API_KEY to .env.local
+              Add NEXT_PUBLIC_YOUTUBE_API_KEY to .env.local
             </p>
           )}
         </div>

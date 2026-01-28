@@ -12,7 +12,7 @@ export class YouTubeAPIService {
   private apiKey: string;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.YOUTUBE_API_KEY || "";
+    this.apiKey = apiKey || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || "";
   }
 
   /**
@@ -28,7 +28,7 @@ export class YouTubeAPIService {
         error: {
           code: "API_KEY_MISSING",
           message:
-            "YouTube API key is not configured. Please add YOUTUBE_API_KEY to your .env.local file.",
+            "YouTube API key is not configured. Please add NEXT_PUBLIC_YOUTUBE_API_KEY to your .env.local file.",
         },
       };
     }

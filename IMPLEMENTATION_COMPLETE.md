@@ -452,7 +452,7 @@ Route (app)
 2. Enable YouTube Data API v3
 3. Add to `.env.local`:
    ```
-   YOUTUBE_API_KEY=your_key_here
+   NEXT_PUBLIC_YOUTUBE_API_KEY=your_key_here
    ```
 4. Restart dev server
 5. Add YouTube widget to canvas
