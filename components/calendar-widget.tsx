@@ -4,11 +4,14 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Flame, Clock } from "lucide-react";
 import { CALENDAR_DAY_NAMES } from "@/lib/constants";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import { motion } from "framer-motion";
 
 export default function CalendarWidget() {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
   const focusTracker = useFocusTrackerContext();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -36,69 +39,108 @@ export default function CalendarWidget() {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          gradient: isLightMode
+            ? "from-green-50/95 via-emerald-50/90 to-teal-50/95"
+            : "from-green-900/95 via-emerald-900/90 to-teal-900/95",
           glowFrom: "from-green-500/30",
           glowTo: "to-amber-500/20",
-          accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/20",
-          border: "border-emerald-400/30",
+          accent: isLightMode ? "text-green-700" : "text-emerald-400",
+          accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/20",
+          border: isLightMode ? "border-green-300/50" : "border-emerald-400/30",
           selectedGradient: "from-green-500 to-emerald-500",
-          hoverBg: "hover:bg-emerald-500/20",
-          iconColor: "text-emerald-400",
+          hoverBg: isLightMode ? "hover:bg-green-200/40" : "hover:bg-emerald-500/20",
+          iconColor: isLightMode ? "text-green-600" : "text-emerald-400",
           selectedBg: "bg-emerald-500",
-          todayBg: "bg-emerald-600/70",
-          activity: {
-            0: "bg-white/5",
-            1: "bg-emerald-900/60",
-            2: "bg-emerald-700/70",
-            3: "bg-emerald-500/80",
-            4: "bg-emerald-400",
-          },
+          todayBg: isLightMode ? "bg-emerald-400/80" : "bg-emerald-600/70",
+          textPrimary: isLightMode ? "text-green-900" : "text-white",
+          textSecondary: isLightMode ? "text-green-800/80" : "text-white/60",
+          textMuted: isLightMode ? "text-green-700/70" : "text-white/40",
+          activity: isLightMode
+            ? {
+                0: "bg-green-100/50",
+                1: "bg-green-200/60",
+                2: "bg-green-300/70",
+                3: "bg-green-400/80",
+                4: "bg-green-500",
+              }
+            : {
+                0: "bg-white/5",
+                1: "bg-emerald-900/60",
+                2: "bg-emerald-700/70",
+                3: "bg-emerald-500/80",
+                4: "bg-emerald-400",
+              },
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+          gradient: isLightMode
+            ? "from-amber-50/95 via-orange-50/90 to-yellow-50/95"
+            : "from-stone-900/95 via-amber-950/90 to-orange-950/95",
           glowFrom: "from-amber-500/20",
           glowTo: "to-orange-500/20",
-          accent: "text-amber-400",
-          accentBg: "bg-amber-500/20",
-          border: "border-amber-500/20",
+          accent: isLightMode ? "text-amber-800" : "text-amber-400",
+          accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
+          border: isLightMode ? "border-amber-300/50" : "border-amber-500/20",
           selectedGradient: "from-amber-500 to-orange-500",
-          hoverBg: "hover:bg-amber-500/10",
-          iconColor: "text-amber-400",
+          hoverBg: isLightMode ? "hover:bg-amber-200/40" : "hover:bg-amber-500/10",
+          iconColor: isLightMode ? "text-amber-700" : "text-amber-400",
           selectedBg: "bg-amber-500",
-          todayBg: "bg-amber-600/70",
-          activity: {
-            0: "bg-white/5",
-            1: "bg-amber-900/60",
-            2: "bg-amber-700/70",
-            3: "bg-amber-500/80",
-            4: "bg-amber-400",
-          },
+          todayBg: isLightMode ? "bg-amber-400/80" : "bg-amber-600/70",
+          textPrimary: isLightMode ? "text-amber-950" : "text-white",
+          textSecondary: isLightMode ? "text-amber-800/80" : "text-white/60",
+          textMuted: isLightMode ? "text-amber-800/70" : "text-white/40",
+          activity: isLightMode
+            ? {
+                0: "bg-amber-100/50",
+                1: "bg-amber-200/60",
+                2: "bg-amber-300/70",
+                3: "bg-amber-400/80",
+                4: "bg-amber-500",
+              }
+            : {
+                0: "bg-white/5",
+                1: "bg-amber-900/60",
+                2: "bg-amber-700/70",
+                3: "bg-amber-500/80",
+                4: "bg-amber-400",
+              },
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+          gradient: isLightMode
+            ? "from-violet-50/95 via-purple-50/90 to-indigo-50/95"
+            : "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
           glowFrom: "from-violet-500/20",
           glowTo: "to-pink-500/20",
-          accent: "text-violet-400",
-          accentBg: "bg-violet-500/20",
-          border: "border-violet-500/20",
+          accent: isLightMode ? "text-violet-700" : "text-violet-400",
+          accentBg: isLightMode ? "bg-violet-200/50" : "bg-violet-500/20",
+          border: isLightMode ? "border-violet-300/50" : "border-violet-500/20",
           selectedGradient: "from-violet-500 to-pink-500",
-          hoverBg: "hover:bg-violet-500/10",
-          iconColor: "text-violet-400",
+          hoverBg: isLightMode ? "hover:bg-violet-200/40" : "hover:bg-violet-500/10",
+          iconColor: isLightMode ? "text-violet-600" : "text-violet-400",
           selectedBg: "bg-violet-500",
-          todayBg: "bg-violet-600/70",
-          activity: {
-            0: "bg-white/5",
-            1: "bg-violet-900/60",
-            2: "bg-violet-700/70",
-            3: "bg-violet-500/80",
-            4: "bg-violet-400",
-          },
+          todayBg: isLightMode ? "bg-violet-400/80" : "bg-violet-600/70",
+          textPrimary: isLightMode ? "text-violet-950" : "text-white",
+          textSecondary: isLightMode ? "text-violet-800/80" : "text-white/60",
+          textMuted: isLightMode ? "text-violet-800/70" : "text-white/40",
+          activity: isLightMode
+            ? {
+                0: "bg-violet-100/50",
+                1: "bg-violet-200/60",
+                2: "bg-violet-300/70",
+                3: "bg-violet-400/80",
+                4: "bg-violet-500",
+              }
+            : {
+                0: "bg-white/5",
+                1: "bg-violet-900/60",
+                2: "bg-violet-700/70",
+                3: "bg-violet-500/80",
+                4: "bg-violet-400",
+              },
         };
     }
-  }, [theme]);
+  }, [theme, isLightMode]);
 
   const colors = getThemeColors();
 
@@ -203,7 +245,7 @@ export default function CalendarWidget() {
             <div className={`p-1 sm:p-1.5 rounded-lg ${colors.accentBg} flex-shrink-0`}>
               <Calendar className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.iconColor}`} />
             </div>
-            <h2 className="text-sm sm:text-base font-bold text-white truncate">
+            <h2 className={`text-sm sm:text-base font-bold ${colors.textPrimary} truncate`}>
               {isCompact ? "Activity" : "Activity"}
             </h2>
           </div>
@@ -213,12 +255,12 @@ export default function CalendarWidget() {
               className={`p-1 sm:p-1.5 ${colors.hoverBg} rounded-lg transition-colors`}
               aria-label="Previous month"
             >
-              <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 hover:text-white" />
+              <ChevronLeft className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.textSecondary} hover:${colors.textPrimary}`} />
             </button>
             {!isCompact && (
               <button
                 onClick={goToToday}
-                className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[9px] sm:text-[10px] ${colors.hoverBg} rounded-lg transition-colors text-white/60 hover:text-white font-medium`}
+                className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[9px] sm:text-[10px] ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} hover:${colors.textPrimary} font-medium`}
                 aria-label="Go to today"
               >
                 Today
@@ -229,7 +271,7 @@ export default function CalendarWidget() {
               className={`p-1 sm:p-1.5 ${colors.hoverBg} rounded-lg transition-colors`}
               aria-label="Next month"
             >
-              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-white/60 hover:text-white" />
+              <ChevronRight className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.textSecondary} hover:${colors.textPrimary}`} />
             </button>
           </div>
         </div>
@@ -245,7 +287,7 @@ export default function CalendarWidget() {
         <div className="grid grid-cols-7 gap-0.5 mb-0.5 flex-shrink-0">
           {CALENDAR_DAY_NAMES.map((day) => (
             <div key={day} className="text-center">
-              <p className="text-[8px] sm:text-[9px] font-semibold text-white/40 py-0.5">
+              <p className={`text-[8px] sm:text-[9px] font-semibold ${colors.textMuted} py-0.5`}>
                 {day.charAt(0)}
               </p>
             </div>
@@ -275,7 +317,7 @@ export default function CalendarWidget() {
 
             // Determine background color based on state
             const getBgColor = () => {
-              if (isFutureDate) return "bg-white/5";
+              if (isFutureDate) return isLightMode ? "bg-black/5" : "bg-white/5";
               if (isSelected) return colors.selectedBg;
               if (isToday) return colors.todayBg;
               return colors.activity[activityLevel as keyof typeof colors.activity];
@@ -283,10 +325,10 @@ export default function CalendarWidget() {
 
             // Determine text color
             const getTextColor = () => {
-              if (isFutureDate) return "text-white/20";
+              if (isFutureDate) return isLightMode ? `${colors.textMuted}` : "text-white/20";
               if (isSelected || isToday) return "text-white font-semibold";
-              if (activityLevel > 0) return "text-white";
-              return "text-white/50";
+              if (activityLevel > 0) return isLightMode ? colors.textPrimary : "text-white";
+              return isLightMode ? colors.textSecondary : "text-white/50";
             };
 
             return (
@@ -321,14 +363,14 @@ export default function CalendarWidget() {
               className="flex items-center justify-between gap-2"
             >
               <div className="min-w-0">
-                <p className="text-[9px] sm:text-[10px] text-white/50 truncate">
+                <p className={`text-[9px] sm:text-[10px] ${colors.textSecondary} truncate`}>
                   {new Date(selectedDate!).toLocaleDateString("en-US", {
                     weekday: "short",
                     month: "short",
                     day: "numeric",
                   })}
                 </p>
-                <p className="text-xs sm:text-sm font-bold text-white">
+                <p className={`text-xs sm:text-sm font-bold ${colors.textPrimary}`}>
                   {selectedDateInfo.totalMinutes > 0
                     ? `${(selectedDateInfo.totalMinutes / 60).toFixed(1)}h`
                     : "No activity"}
@@ -336,10 +378,10 @@ export default function CalendarWidget() {
               </div>
               {selectedDateInfo.sessions > 0 && (
                 <div className="text-center flex-shrink-0">
-                  <p className="text-xs sm:text-sm font-bold text-white">
+                  <p className={`text-xs sm:text-sm font-bold ${colors.textPrimary}`}>
                     {selectedDateInfo.sessions}
                   </p>
-                  <p className="text-[8px] sm:text-[9px] text-white/40">sessions</p>
+                  <p className={`text-[8px] sm:text-[9px] ${colors.textMuted}`}>sessions</p>
                 </div>
               )}
             </motion.div>
@@ -347,27 +389,27 @@ export default function CalendarWidget() {
             <div className="flex items-center justify-around gap-1">
               <div className="text-center flex-1 min-w-0">
                 <div className="flex items-center justify-center gap-0.5">
-                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/40 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-bold text-white">
+                  <Clock className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${colors.textMuted} flex-shrink-0`} />
+                  <span className={`text-xs sm:text-sm font-bold ${colors.textPrimary}`}>
                     {monthStats.totalHours}h
                   </span>
                 </div>
-                <p className="text-[8px] sm:text-[9px] text-white/40 truncate">month</p>
+                <p className={`text-[8px] sm:text-[9px] ${colors.textMuted} truncate`}>month</p>
               </div>
               <div className="text-center flex-1 min-w-0">
                 <div className="flex items-center justify-center gap-0.5">
                   <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange-400 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-bold text-white">
+                  <span className={`text-xs sm:text-sm font-bold ${colors.textPrimary}`}>
                     {focusTracker.stats.currentStreak}
                   </span>
                 </div>
-                <p className="text-[8px] sm:text-[9px] text-white/40 truncate">streak</p>
+                <p className={`text-[8px] sm:text-[9px] ${colors.textMuted} truncate`}>streak</p>
               </div>
               <div className="text-center flex-1 min-w-0">
-                <span className="text-xs sm:text-sm font-bold text-white">
+                <span className={`text-xs sm:text-sm font-bold ${colors.textPrimary}`}>
                   {monthStats.activeDays}
                 </span>
-                <p className="text-[8px] sm:text-[9px] text-white/40 truncate">active</p>
+                <p className={`text-[8px] sm:text-[9px] ${colors.textMuted} truncate`}>active</p>
               </div>
             </div>
           )}
@@ -376,7 +418,7 @@ export default function CalendarWidget() {
         {/* Activity legend - only show when not compact */}
         {!isCompact && (
           <div className="flex items-center justify-center gap-0.5 mt-1.5 flex-shrink-0">
-            <span className="text-[7px] sm:text-[8px] text-white/30 mr-0.5">Less</span>
+            <span className={`text-[7px] sm:text-[8px] ${colors.textMuted} mr-0.5`}>Less</span>
             {[0, 1, 2, 3, 4].map((level) => (
               <div
                 key={level}
@@ -386,7 +428,7 @@ export default function CalendarWidget() {
                 title={`Level ${level}`}
               />
             ))}
-            <span className="text-[7px] sm:text-[8px] text-white/30 ml-0.5">More</span>
+            <span className={`text-[7px] sm:text-[8px] ${colors.textMuted} ml-0.5`}>More</span>
           </div>
         )}
       </div>

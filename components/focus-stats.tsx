@@ -24,6 +24,7 @@ import {
   Award,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -31,6 +32,8 @@ type ViewMode = "week" | "month";
 
 export default function FocusStats() {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
   const focusTracker = useFocusTrackerContext();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
 
@@ -39,48 +42,72 @@ export default function FocusStats() {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          gradient: isLightMode
+            ? "from-green-50/95 via-emerald-50/90 to-teal-50/95"
+            : "from-green-900/95 via-emerald-900/90 to-teal-900/95",
           glowFrom: "from-green-500/30",
           glowTo: "to-amber-500/20",
-          accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/25",
-          border: "border-emerald-400/30",
+          accent: isLightMode ? "text-green-700" : "text-emerald-400",
+          accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/25",
+          border: isLightMode ? "border-green-300/50" : "border-emerald-400/30",
           lineStart: "rgb(16, 185, 129)",
           lineEnd: "rgb(20, 184, 166)",
           dotColor: "#10b981",
           barColor: "#10b981",
           areaFill: "rgba(16, 185, 129, 0.3)",
+          textPrimary: isLightMode ? "text-green-900" : "text-white",
+          textSecondary: isLightMode ? "text-green-800/80" : "text-white/80",
+          textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-green-200/50" : "hover:bg-white/10",
+          bgOverlay: isLightMode ? "bg-green-100/50" : "bg-white/10",
+          surfaceBg: isLightMode ? "bg-green-50/80" : "bg-black/20",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+          gradient: isLightMode
+            ? "from-amber-50/95 via-orange-50/90 to-yellow-50/95"
+            : "from-stone-900/95 via-amber-950/90 to-orange-950/95",
           glowFrom: "from-amber-500/20",
           glowTo: "to-orange-500/20",
-          accent: "text-amber-400",
-          accentBg: "bg-amber-500/20",
-          border: "border-amber-500/20",
+          accent: isLightMode ? "text-amber-800" : "text-amber-400",
+          accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
+          border: isLightMode ? "border-amber-300/50" : "border-amber-500/20",
           lineStart: "rgb(245, 158, 11)",
           lineEnd: "rgb(249, 115, 22)",
           dotColor: "#f59e0b",
           barColor: "#f59e0b",
           areaFill: "rgba(245, 158, 11, 0.3)",
+          textPrimary: isLightMode ? "text-amber-950" : "text-white",
+          textSecondary: isLightMode ? "text-amber-900/80" : "text-white/80",
+          textMuted: isLightMode ? "text-amber-800/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-amber-200/50" : "hover:bg-white/10",
+          bgOverlay: isLightMode ? "bg-amber-100/50" : "bg-white/10",
+          surfaceBg: isLightMode ? "bg-amber-50/80" : "bg-black/20",
         };
       default:
         return {
-          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+          gradient: isLightMode
+            ? "from-violet-50/95 via-purple-50/90 to-indigo-50/95"
+            : "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
           glowFrom: "from-violet-500/20",
           glowTo: "to-pink-500/20",
-          accent: "text-violet-400",
-          accentBg: "bg-violet-500/20",
-          border: "border-violet-500/20",
+          accent: isLightMode ? "text-violet-700" : "text-violet-400",
+          accentBg: isLightMode ? "bg-violet-200/50" : "bg-violet-500/20",
+          border: isLightMode ? "border-violet-300/50" : "border-violet-500/20",
           lineStart: "rgb(139, 92, 246)",
           lineEnd: "rgb(236, 72, 153)",
           dotColor: "#8b5cf6",
           barColor: "#8b5cf6",
           areaFill: "rgba(139, 92, 246, 0.3)",
+          textPrimary: isLightMode ? "text-violet-950" : "text-white",
+          textSecondary: isLightMode ? "text-violet-900/80" : "text-white/80",
+          textMuted: isLightMode ? "text-violet-800/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-violet-200/50" : "hover:bg-white/10",
+          bgOverlay: isLightMode ? "bg-violet-100/50" : "bg-white/10",
+          surfaceBg: isLightMode ? "bg-violet-50/80" : "bg-black/20",
         };
     }
-  }, [theme]);
+  }, [theme, isLightMode]);
 
   const colors = getThemeColors();
   const gradientId = `areaGrad-${theme}`;
@@ -147,13 +174,13 @@ export default function FocusStats() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="theme-tooltip border rounded-lg px-3 py-2 shadow-xl">
-          <p className="font-medium text-sm">{label}</p>
+        <div className={`theme-tooltip border ${colors.border} rounded-lg px-3 py-2 shadow-xl ${isLightMode ? 'bg-white/95' : 'bg-black/80'}`}>
+          <p className={`font-medium text-sm ${colors.textPrimary}`}>{label}</p>
           <p className={`text-sm ${colors.accent}`}>
             {payload[0].value}h focused
           </p>
           {payload[0].payload.sessions > 0 && (
-            <p className="text-xs opacity-50">
+            <p className={`text-xs ${colors.textMuted}`}>
               {payload[0].payload.sessions} sessions
             </p>
           )}
@@ -179,7 +206,7 @@ export default function FocusStats() {
               <BarChart3 className={`w-4 h-4 ${colors.accent}`} />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white">
+              <h2 className={`text-base sm:text-lg font-bold ${colors.textPrimary}`}>
                 Focus Stats
               </h2>
             </div>
@@ -191,8 +218,8 @@ export default function FocusStats() {
                 onClick={() => setViewMode("week")}
                 className={`px-2 py-1 text-[10px] font-medium rounded-md transition-all ${
                   viewMode === "week"
-                    ? "bg-white/20 text-white"
-                    : "text-white/50 hover:text-white"
+                    ? `${isLightMode ? 'bg-black/10' : 'bg-white/20'} ${colors.textPrimary}`
+                    : `${colors.textMuted} ${colors.hoverBg}`
                 }`}
               >
                 Week
@@ -201,8 +228,8 @@ export default function FocusStats() {
                 onClick={() => setViewMode("month")}
                 className={`px-2 py-1 text-[10px] font-medium rounded-md transition-all ${
                   viewMode === "month"
-                    ? "bg-white/20 text-white"
-                    : "text-white/50 hover:text-white"
+                    ? `${isLightMode ? 'bg-black/10' : 'bg-white/20'} ${colors.textPrimary}`
+                    : `${colors.textMuted} ${colors.hoverBg}`
                 }`}
               >
                 Month
@@ -216,14 +243,14 @@ export default function FocusStats() {
           className={`flex items-center justify-between p-3 rounded-xl ${colors.accentBg} mb-3 shrink-0`}
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-white/10">
+            <div className={`p-2 rounded-lg ${colors.bgOverlay}`}>
               <Clock className={`w-4 h-4 ${colors.accent}`} />
             </div>
             <div>
-              <p className="text-[10px] text-white/50 uppercase tracking-wide">
+              <p className={`text-[10px] ${colors.textMuted} uppercase tracking-wide`}>
                 Today
               </p>
-              <p className="text-xl font-bold text-white">
+              <p className={`text-xl font-bold ${colors.textPrimary}`}>
                 {stats.todayHours}h
               </p>
             </div>
@@ -231,11 +258,11 @@ export default function FocusStats() {
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
               <Flame className="w-4 h-4 text-orange-400" />
-              <span className="text-lg font-bold text-white">
+              <span className={`text-lg font-bold ${colors.textPrimary}`}>
                 {stats.currentStreak}
               </span>
             </div>
-            <p className="text-[10px] text-white/50">day streak</p>
+            <p className={`text-[10px] ${colors.textMuted}`}>day streak</p>
           </div>
         </div>
 
@@ -254,18 +281,18 @@ export default function FocusStats() {
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.05)"
+                stroke={isLightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.05)"}
                 vertical={false}
               />
               <XAxis
                 dataKey="name"
-                stroke="rgba(255,255,255,0.3)"
+                stroke={isLightMode ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.3)"}
                 tick={{ fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                stroke="rgba(255,255,255,0.3)"
+                stroke={isLightMode ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.3)"}
                 tick={{ fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
@@ -291,39 +318,39 @@ export default function FocusStats() {
         >
           <div className="text-center">
             <div className="flex items-center justify-center gap-1">
-              <Target className="w-3 h-3 text-white/40" />
+              <Target className={`w-3 h-3 ${colors.textMuted}`} />
             </div>
-            <p className="text-sm font-bold text-white mt-1">
+            <p className={`text-sm font-bold ${colors.textPrimary} mt-1`}>
               {stats.weekTotal}h
             </p>
-            <p className="text-[9px] text-white/40">this week</p>
+            <p className={`text-[9px] ${colors.textMuted}`}>this week</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1">
               <TrendingUp className="w-3 h-3 text-green-400" />
             </div>
-            <p className="text-sm font-bold text-white mt-1">
+            <p className={`text-sm font-bold ${colors.textPrimary} mt-1`}>
               {stats.weekAvg}h
             </p>
-            <p className="text-[9px] text-white/40">daily avg</p>
+            <p className={`text-[9px] ${colors.textMuted}`}>daily avg</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1">
               <Award className="w-3 h-3 text-amber-400" />
             </div>
-            <p className="text-sm font-bold text-white mt-1">
+            <p className={`text-sm font-bold ${colors.textPrimary} mt-1`}>
               {stats.bestDayHours}h
             </p>
-            <p className="text-[9px] text-white/40">best day</p>
+            <p className={`text-[9px] ${colors.textMuted}`}>best day</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1">
-              <Calendar className="w-3 h-3 text-white/40" />
+              <Calendar className={`w-3 h-3 ${colors.textMuted}`} />
             </div>
-            <p className="text-sm font-bold text-white mt-1">
+            <p className={`text-sm font-bold ${colors.textPrimary} mt-1`}>
               {stats.activeDays}
             </p>
-            <p className="text-[9px] text-white/40">active days</p>
+            <p className={`text-[9px] ${colors.textMuted}`}>active days</p>
           </div>
         </div>
       </div>

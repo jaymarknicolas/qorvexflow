@@ -15,10 +15,13 @@ import {
 } from "lucide-react";
 import { useCoffeeCounter } from "@/lib/hooks/useCoffeeCounter";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function CoffeeCounterWidget() {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
   const {
     todayEntries,
     settings,
@@ -47,48 +50,78 @@ export default function CoffeeCounterWidget() {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          gradient: isLightMode
+            ? "from-green-50/95 via-emerald-50/90 to-teal-50/95"
+            : "from-green-900/95 via-emerald-900/90 to-teal-900/95",
           glowFrom: "from-green-500/30",
           glowTo: "to-amber-500/20",
-          accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/25",
-          border: "border-emerald-400/30",
-          iconColor: "text-emerald-400",
-          buttonBg: "bg-emerald-500/20 hover:bg-emerald-500/30",
+          accent: isLightMode ? "text-green-700" : "text-emerald-400",
+          accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/25",
+          border: isLightMode ? "border-green-300/50" : "border-emerald-400/30",
+          iconColor: isLightMode ? "text-green-700" : "text-emerald-400",
+          buttonBg: isLightMode
+            ? "bg-green-200/50 hover:bg-green-300/50"
+            : "bg-emerald-500/20 hover:bg-emerald-500/30",
           progressBg: "bg-emerald-500",
           coffeeColor: "text-amber-600",
           cupFill: "#92400e",
+          textPrimary: isLightMode ? "text-green-900" : "text-white",
+          textSecondary: isLightMode ? "text-green-800" : "text-white/80",
+          textMuted: isLightMode ? "text-green-700/70" : "text-white/60",
+          hoverBg: isLightMode ? "hover:bg-green-200/50" : "hover:bg-white/10",
+          surfaceBg: isLightMode ? "bg-green-100/50" : "bg-white/5",
+          bgOverlay: "bg-green-200/30",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+          gradient: isLightMode
+            ? "from-amber-50/95 via-orange-50/90 to-yellow-50/95"
+            : "from-stone-900/95 via-amber-950/90 to-orange-950/95",
           glowFrom: "from-amber-500/30",
           glowTo: "to-orange-500/20",
-          accent: "text-amber-400",
-          accentBg: "bg-amber-500/25",
-          border: "border-amber-400/30",
-          iconColor: "text-amber-400",
-          buttonBg: "bg-amber-500/20 hover:bg-amber-500/30",
+          accent: isLightMode ? "text-amber-800" : "text-amber-400",
+          accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/25",
+          border: isLightMode ? "border-amber-300/50" : "border-amber-400/30",
+          iconColor: isLightMode ? "text-amber-800" : "text-amber-400",
+          buttonBg: isLightMode
+            ? "bg-amber-200/50 hover:bg-amber-300/50"
+            : "bg-amber-500/20 hover:bg-amber-500/30",
           progressBg: "bg-amber-500",
           coffeeColor: "text-amber-700",
           cupFill: "#78350f",
+          textPrimary: isLightMode ? "text-amber-950" : "text-white",
+          textSecondary: isLightMode ? "text-amber-900" : "text-white/80",
+          textMuted: isLightMode ? "text-amber-800/70" : "text-white/60",
+          hoverBg: isLightMode ? "hover:bg-amber-200/50" : "hover:bg-white/10",
+          surfaceBg: isLightMode ? "bg-amber-100/50" : "bg-white/5",
+          bgOverlay: "bg-amber-200/30",
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+          gradient: isLightMode
+            ? "from-violet-50/95 via-purple-50/90 to-indigo-50/95"
+            : "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
           glowFrom: "from-violet-500/30",
           glowTo: "to-pink-500/20",
-          accent: "text-violet-400",
-          accentBg: "bg-violet-500/25",
-          border: "border-violet-400/30",
-          iconColor: "text-violet-400",
-          buttonBg: "bg-violet-500/20 hover:bg-violet-500/30",
+          accent: isLightMode ? "text-violet-700" : "text-violet-400",
+          accentBg: isLightMode ? "bg-violet-200/50" : "bg-violet-500/25",
+          border: isLightMode ? "border-violet-300/50" : "border-violet-400/30",
+          iconColor: isLightMode ? "text-violet-700" : "text-violet-400",
+          buttonBg: isLightMode
+            ? "bg-violet-200/50 hover:bg-violet-300/50"
+            : "bg-violet-500/20 hover:bg-violet-500/30",
           progressBg: "bg-violet-500",
           coffeeColor: "text-amber-600",
           cupFill: "#92400e",
+          textPrimary: isLightMode ? "text-violet-950" : "text-white",
+          textSecondary: isLightMode ? "text-violet-900" : "text-white/80",
+          textMuted: isLightMode ? "text-violet-800/70" : "text-white/60",
+          hoverBg: isLightMode ? "hover:bg-violet-200/50" : "hover:bg-white/10",
+          surfaceBg: isLightMode ? "bg-violet-100/50" : "bg-white/5",
+          bgOverlay: "bg-violet-200/30",
         };
     }
-  }, [theme]);
+  }, [theme, isLightMode]);
 
   const colors = getThemeColors();
 
@@ -121,11 +154,11 @@ export default function CoffeeCounterWidget() {
       return { text: "Almost at your limit", color: "text-amber-400" };
     }
     if (stats.todayCount === 0) {
-      return { text: "No coffee yet today", color: "text-white/60" };
+      return { text: "No coffee yet today", color: colors.textMuted };
     }
     return {
       text: `${settings.dailyLimit - stats.todayCount} more cups allowed`,
-      color: "text-white/60",
+      color: colors.textMuted,
     };
   };
 
@@ -147,7 +180,7 @@ export default function CoffeeCounterWidget() {
           <svg
             viewBox="0 0 24 24"
             className={`w-6 h-6 sm:w-7 sm:h-7 transition-all duration-300 ${
-              isFilled ? colors.coffeeColor : "text-white/20"
+              isFilled ? colors.coffeeColor : isLightMode ? "text-black/20" : "text-white/20"
             }`}
             fill="currentColor"
           >
@@ -176,7 +209,7 @@ export default function CoffeeCounterWidget() {
               transition={{ duration: 2, repeat: Infinity }}
               className="absolute -top-1 left-1/2 -translate-x-1/2"
             >
-              <div className="text-white/30 text-[8px]">~</div>
+              <div className={`${isLightMode ? "text-black/30" : "text-white/30"} text-[8px]`}>~</div>
             </motion.div>
           )}
         </motion.div>
@@ -204,7 +237,7 @@ export default function CoffeeCounterWidget() {
                 <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
                   <Coffee className={`w-4 h-4 ${colors.iconColor}`} />
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-white truncate">
+                <h2 className={`text-lg sm:text-xl font-bold ${colors.textPrimary} truncate`}>
                   Coffee Counter
                 </h2>
               </div>
@@ -216,7 +249,7 @@ export default function CoffeeCounterWidget() {
               {stats.todayCount > 0 && (
                 <button
                   onClick={handleUndo}
-                  className={`p-1.5 sm:p-2 ${colors.buttonBg} text-white/60 hover:text-white rounded-lg transition-all duration-200`}
+                  className={`p-1.5 sm:p-2 ${colors.buttonBg} ${colors.textMuted} hover:${colors.textPrimary} rounded-lg transition-all duration-200`}
                   aria-label="Undo last coffee"
                   title="Undo last"
                 >
@@ -225,7 +258,7 @@ export default function CoffeeCounterWidget() {
               )}
               <button
                 onClick={() => setShowSettings(true)}
-                className={`p-1.5 sm:p-2 ${colors.buttonBg} text-white/60 hover:text-white rounded-lg transition-all duration-200`}
+                className={`p-1.5 sm:p-2 ${colors.buttonBg} ${colors.textMuted} hover:${colors.textPrimary} rounded-lg transition-all duration-200`}
                 aria-label="Coffee settings"
               >
                 <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -254,12 +287,12 @@ export default function CoffeeCounterWidget() {
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 className={`text-5xl sm:text-6xl lg:text-7xl font-bold ${
-                  isOverLimit ? "text-red-400" : "text-white"
+                  isOverLimit ? "text-red-400" : colors.textPrimary
                 }`}
               >
                 {stats.todayCount}
               </motion.div>
-              <div className="text-center text-white/40 text-sm mt-1">
+              <div className={`text-center ${colors.textMuted} text-sm mt-1`}>
                 of {settings.dailyLimit} cups
               </div>
             </div>
@@ -271,7 +304,7 @@ export default function CoffeeCounterWidget() {
 
             {/* Progress bar */}
             <div className="w-full max-w-[200px] mb-4">
-              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className={`h-2 ${isLightMode ? 'bg-black/10' : 'bg-white/10'} rounded-full overflow-hidden`}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
@@ -295,7 +328,7 @@ export default function CoffeeCounterWidget() {
               whileTap={{ scale: isOverLimit ? 1 : 0.95 }}
               className={`px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
                 isOverLimit
-                  ? "bg-white/10 text-white/40 cursor-not-allowed"
+                  ? `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} cursor-not-allowed`
                   : `bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg shadow-amber-500/20`
               }`}
             >
@@ -321,28 +354,28 @@ export default function CoffeeCounterWidget() {
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Flame className="w-3 h-3 text-orange-400" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-white">
+              <div className={`text-lg sm:text-xl font-bold ${colors.textPrimary}`}>
                 {stats.todayCaffeine}
               </div>
-              <div className="text-[10px] sm:text-xs text-white/40">mg caffeine</div>
+              <div className={`text-[10px] sm:text-xs ${colors.textMuted}`}>mg caffeine</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <TrendingUp className="w-3 h-3 text-green-400" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-white">
+              <div className={`text-lg sm:text-xl font-bold ${colors.textPrimary}`}>
                 {stats.currentStreak}
               </div>
-              <div className="text-[10px] sm:text-xs text-white/40">day streak</div>
+              <div className={`text-[10px] sm:text-xs ${colors.textMuted}`}>day streak</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Clock className="w-3 h-3 text-blue-400" />
               </div>
-              <div className="text-lg sm:text-xl font-bold text-white">
+              <div className={`text-lg sm:text-xl font-bold ${colors.textPrimary}`}>
                 {timeUntilReset}
               </div>
-              <div className="text-[10px] sm:text-xs text-white/40">until reset</div>
+              <div className={`text-[10px] sm:text-xs ${colors.textMuted}`}>until reset</div>
             </div>
           </div>
         </div>
@@ -366,14 +399,14 @@ export default function CoffeeCounterWidget() {
               exit={{ scale: 0.9, opacity: 0 }}
               className={`relative w-full max-w-sm bg-gradient-to-br ${colors.gradient} rounded-2xl border ${colors.border} p-6 shadow-2xl`}
             >
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className={`text-xl font-bold ${colors.textPrimary} mb-4 flex items-center gap-2`}>
                 <Settings className={`w-5 h-5 ${colors.iconColor}`} />
                 Coffee Settings
               </h3>
 
               {/* Daily Limit */}
               <div className="mb-6">
-                <label className="block text-sm text-white/60 mb-2">
+                <label className={`block text-sm ${colors.textMuted} mb-2`}>
                   Daily Cup Limit
                 </label>
                 <div className="flex items-center gap-4">
@@ -381,26 +414,26 @@ export default function CoffeeCounterWidget() {
                     onClick={() => setTempLimit(Math.max(1, tempLimit - 1))}
                     className={`p-2 ${colors.buttonBg} rounded-lg transition-colors`}
                   >
-                    <Minus className="w-5 h-5 text-white" />
+                    <Minus className={`w-5 h-5 ${colors.textPrimary}`} />
                   </button>
                   <div className="flex-1 text-center">
-                    <span className="text-3xl font-bold text-white">
+                    <span className={`text-3xl font-bold ${colors.textPrimary}`}>
                       {tempLimit}
                     </span>
-                    <span className="text-white/40 ml-2">cups</span>
+                    <span className={`${colors.textMuted} ml-2`}>cups</span>
                   </div>
                   <button
                     onClick={() => setTempLimit(Math.min(10, tempLimit + 1))}
                     className={`p-2 ${colors.buttonBg} rounded-lg transition-colors`}
                   >
-                    <Plus className="w-5 h-5 text-white" />
+                    <Plus className={`w-5 h-5 ${colors.textPrimary}`} />
                   </button>
                 </div>
               </div>
 
               {/* Info */}
               <div className={`p-3 rounded-lg ${colors.accentBg} mb-6`}>
-                <p className="text-xs text-white/70">
+                <p className={`text-xs ${isLightMode ? colors.textMuted : "text-white/70"}`}>
                   The FDA recommends limiting caffeine intake to 400mg per day
                   (about 4 cups of coffee) for healthy adults.
                 </p>
@@ -410,7 +443,7 @@ export default function CoffeeCounterWidget() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+                  className={`flex-1 px-4 py-2 ${isLightMode ? 'bg-black/5 hover:bg-black/10' : 'bg-white/10 hover:bg-white/20'} ${colors.textPrimary} rounded-lg transition-colors`}
                 >
                   Cancel
                 </button>

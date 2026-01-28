@@ -21,6 +21,7 @@ import {
 import { useTasks } from "@/lib/hooks";
 import { validateTaskTitle } from "@/lib/utils/validation";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 
 // Using existing type: "low" | "medium" | "high" with user-friendly labels
 type Priority = "high" | "medium" | "low";
@@ -91,6 +92,8 @@ const formatFullDate = (timestamp: number): string => {
 
 export default function TaskList() {
   const { theme } = useTheme();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCompact, setIsCompact] = useState(false);
   const [isVeryCompact, setIsVeryCompact] = useState(false);
@@ -139,54 +142,84 @@ export default function TaskList() {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
-          accent: "text-emerald-400",
-          accentBg: "bg-emerald-500/20",
-          accentBgHover: "hover:bg-emerald-500/30",
-          border: "border-emerald-500/20",
-          checkColor: "text-emerald-400",
-          button: "from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400",
+          gradient: isLightMode
+            ? "from-green-50/95 via-emerald-50/90 to-teal-50/95"
+            : "from-green-900/95 via-emerald-900/90 to-teal-900/95",
+          accent: isLightMode ? "text-green-700" : "text-emerald-400",
+          accentBg: isLightMode ? "bg-green-200/50" : "bg-emerald-500/20",
+          accentBgHover: isLightMode ? "hover:bg-green-300/50" : "hover:bg-emerald-500/30",
+          border: isLightMode ? "border-green-300/50" : "border-emerald-500/20",
+          checkColor: isLightMode ? "text-green-700" : "text-emerald-400",
+          button: isLightMode
+            ? "from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500"
+            : "from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400",
           buttonShadow: "shadow-emerald-500/25",
-          inputBg: "bg-black/30",
+          inputBg: isLightMode ? "bg-white/70" : "bg-black/30",
           inputFocus: "focus:ring-emerald-500/30 focus:border-emerald-400/50",
-          cardHover: "hover:bg-emerald-500/10",
-          tabActive: "bg-emerald-500/20 text-emerald-300",
+          cardHover: isLightMode ? "hover:bg-green-200/50" : "hover:bg-emerald-500/10",
+          tabActive: isLightMode ? "bg-green-200/60 text-green-800" : "bg-emerald-500/20 text-emerald-300",
           progress: "bg-emerald-500",
+          textPrimary: isLightMode ? "text-green-900" : "text-white",
+          textSecondary: isLightMode ? "text-green-800/80" : "text-white/80",
+          textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-green-200/50" : "hover:bg-white/10",
+          surfaceBg: isLightMode ? "bg-green-100/80" : "bg-slate-900/95",
+          bgOverlay: isLightMode ? "bg-green-100/50" : "bg-black/20",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
-          accent: "text-amber-400",
-          accentBg: "bg-amber-500/20",
-          accentBgHover: "hover:bg-amber-500/30",
-          border: "border-amber-500/20",
-          checkColor: "text-amber-400",
-          button: "from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400",
+          gradient: isLightMode
+            ? "from-amber-50/95 via-orange-50/90 to-yellow-50/95"
+            : "from-stone-900/95 via-amber-950/90 to-orange-950/95",
+          accent: isLightMode ? "text-amber-800" : "text-amber-400",
+          accentBg: isLightMode ? "bg-amber-200/50" : "bg-amber-500/20",
+          accentBgHover: isLightMode ? "hover:bg-amber-300/50" : "hover:bg-amber-500/30",
+          border: isLightMode ? "border-amber-300/50" : "border-amber-500/20",
+          checkColor: isLightMode ? "text-amber-800" : "text-amber-400",
+          button: isLightMode
+            ? "from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500"
+            : "from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400",
           buttonShadow: "shadow-amber-500/25",
-          inputBg: "bg-black/30",
+          inputBg: isLightMode ? "bg-white/70" : "bg-black/30",
           inputFocus: "focus:ring-amber-500/30 focus:border-amber-400/50",
-          cardHover: "hover:bg-amber-500/10",
-          tabActive: "bg-amber-500/20 text-amber-300",
+          cardHover: isLightMode ? "hover:bg-amber-200/50" : "hover:bg-amber-500/10",
+          tabActive: isLightMode ? "bg-amber-200/60 text-amber-800" : "bg-amber-500/20 text-amber-300",
           progress: "bg-amber-500",
+          textPrimary: isLightMode ? "text-amber-950" : "text-white",
+          textSecondary: isLightMode ? "text-amber-900/80" : "text-white/80",
+          textMuted: isLightMode ? "text-amber-800/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-amber-200/50" : "hover:bg-white/10",
+          surfaceBg: isLightMode ? "bg-amber-100/80" : "bg-slate-900/95",
+          bgOverlay: isLightMode ? "bg-amber-100/50" : "bg-black/20",
         };
       default:
         return {
-          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
-          accent: "text-violet-400",
-          accentBg: "bg-violet-500/20",
-          accentBgHover: "hover:bg-violet-500/30",
-          border: "border-violet-500/20",
-          checkColor: "text-violet-400",
-          button: "from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
+          gradient: isLightMode
+            ? "from-violet-50/95 via-purple-50/90 to-indigo-50/95"
+            : "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
+          accent: isLightMode ? "text-violet-700" : "text-violet-400",
+          accentBg: isLightMode ? "bg-violet-200/50" : "bg-violet-500/20",
+          accentBgHover: isLightMode ? "hover:bg-violet-300/50" : "hover:bg-violet-500/30",
+          border: isLightMode ? "border-violet-300/50" : "border-violet-500/20",
+          checkColor: isLightMode ? "text-violet-700" : "text-violet-400",
+          button: isLightMode
+            ? "from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500"
+            : "from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
           buttonShadow: "shadow-violet-500/25",
-          inputBg: "bg-black/30",
+          inputBg: isLightMode ? "bg-white/70" : "bg-black/30",
           inputFocus: "focus:ring-violet-500/30 focus:border-violet-400/50",
-          cardHover: "hover:bg-violet-500/10",
-          tabActive: "bg-violet-500/20 text-violet-300",
+          cardHover: isLightMode ? "hover:bg-violet-200/50" : "hover:bg-violet-500/10",
+          tabActive: isLightMode ? "bg-violet-200/60 text-violet-800" : "bg-violet-500/20 text-violet-300",
           progress: "bg-violet-500",
+          textPrimary: isLightMode ? "text-violet-950" : "text-white",
+          textSecondary: isLightMode ? "text-violet-900/80" : "text-white/80",
+          textMuted: isLightMode ? "text-violet-800/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-violet-200/50" : "hover:bg-white/10",
+          surfaceBg: isLightMode ? "bg-violet-100/80" : "bg-slate-900/95",
+          bgOverlay: isLightMode ? "bg-violet-100/50" : "bg-black/20",
         };
     }
-  }, [theme]);
+  }, [theme, isLightMode]);
 
   const colors = getThemeColors();
 
@@ -293,7 +326,7 @@ export default function TaskList() {
     return (
       <div
         key={task.id}
-        className={`group/task flex items-start gap-2 rounded-lg bg-white/5 ${colors.cardHover} border ${colors.border} transition-all ${
+        className={`group/task flex items-start gap-2 rounded-lg ${isLightMode ? 'bg-black/5' : 'bg-white/5'} ${colors.cardHover} border ${colors.border} transition-all ${
           isVeryCompact ? "p-2" : "p-3"
         } ${task.completed ? "opacity-60" : ""}`}
       >
@@ -306,7 +339,7 @@ export default function TaskList() {
           {task.completed ? (
             <CheckCircle2 className={`${isVeryCompact ? "w-4 h-4" : "w-5 h-5"} ${colors.checkColor}`} />
           ) : (
-            <Circle className={`${isVeryCompact ? "w-4 h-4" : "w-5 h-5"} text-white/40 group-hover/task:text-white/60`} />
+            <Circle className={`${isVeryCompact ? "w-4 h-4" : "w-5 h-5"} ${colors.textMuted} group-hover/task:${isLightMode ? 'text-black/60' : 'text-white/60'}`} />
           )}
         </button>
 
@@ -326,7 +359,7 @@ export default function TaskList() {
             <span
               className={`flex-1 font-medium break-words ${
                 isVeryCompact ? "text-xs" : "text-sm"
-              } ${task.completed ? "text-white/50 line-through" : "text-white"}`}
+              } ${task.completed ? `${colors.textMuted} line-through` : colors.textPrimary}`}
             >
               {task.title}
             </span>
@@ -334,7 +367,7 @@ export default function TaskList() {
 
           {/* Meta info */}
           {(showDate || !isVeryCompact) && (
-            <div className={`flex items-center gap-2 mt-1 text-white/40 ${
+            <div className={`flex items-center gap-2 mt-1 ${colors.textMuted} ${
               isVeryCompact ? "text-[9px]" : "text-[11px]"
             }`}>
               <Clock className={isVeryCompact ? "w-2.5 h-2.5" : "w-3 h-3"} />
@@ -367,7 +400,7 @@ export default function TaskList() {
       className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border} shadow-2xl overflow-hidden`}
     >
       {/* Header */}
-      <div className={`flex-shrink-0 border-b border-white/10 bg-black/20 ${
+      <div className={`flex-shrink-0 border-b ${colors.border} ${colors.bgOverlay} ${
         isVeryCompact ? "p-2" : "p-3"
       }`}>
         <div className="flex items-center justify-between gap-2">
@@ -376,13 +409,13 @@ export default function TaskList() {
               <ListTodo className={`${colors.accent} ${isVeryCompact ? "w-3 h-3" : "w-4 h-4"}`} />
             </div>
             <div className="min-w-0">
-              <h2 className={`font-bold text-white truncate ${
+              <h2 className={`font-bold ${colors.textPrimary} truncate ${
                 isVeryCompact ? "text-xs" : isCompact ? "text-sm" : "text-base"
               }`}>
                 Tasks
               </h2>
               {!isVeryCompact && (
-                <p className="text-[10px] text-white/50">
+                <p className={`text-[10px] ${colors.textMuted}`}>
                   {activeCount} active · {completedCount} done
                 </p>
               )}
@@ -395,7 +428,7 @@ export default function TaskList() {
             <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${colors.accentBg} ${
               isVeryCompact ? "text-[10px]" : "text-xs"
             }`}>
-              <div className={`${isVeryCompact ? "w-8" : "w-12"} h-1.5 bg-white/20 rounded-full overflow-hidden`}>
+              <div className={`${isVeryCompact ? "w-8" : "w-12"} h-1.5 ${isLightMode ? 'bg-black/15' : 'bg-white/20'} rounded-full overflow-hidden`}>
                 <div
                   className={`h-full ${colors.progress} transition-all duration-300`}
                   style={{ width: `${completionRate}%` }}
@@ -409,7 +442,7 @@ export default function TaskList() {
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className={`rounded-lg transition-colors ${
-                  showHistory ? `${colors.accentBg} ${colors.accent}` : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                  showHistory ? `${colors.accentBg} ${colors.accent}` : `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'}`
                 } ${isVeryCompact ? "p-1" : "p-1.5"}`}
                 title="View history"
               >
@@ -430,7 +463,7 @@ export default function TaskList() {
                   onClick={() => setStatusFilter(f)}
                   className={`flex-1 rounded-lg font-medium transition-colors capitalize ${
                     isVeryCompact ? "px-2 py-1 text-[10px]" : "px-3 py-1.5 text-xs"
-                  } ${statusFilter === f ? colors.tabActive : "text-white/50 hover:text-white hover:bg-white/10"}`}
+                  } ${statusFilter === f ? colors.tabActive : `${colors.textMuted} hover:${isLightMode ? 'text-black' : 'text-white'} ${colors.hoverBg}`}`}
                 >
                   {f}
                 </button>
@@ -445,7 +478,7 @@ export default function TaskList() {
                   } ${
                     priorityFilter !== "all"
                       ? `${PRIORITY_CONFIG[priorityFilter].bg} ${PRIORITY_CONFIG[priorityFilter].color}`
-                      : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                      : `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'}`
                   }`}
                   title="Filter by priority"
                 >
@@ -458,7 +491,7 @@ export default function TaskList() {
                 {showPriorityFilter && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowPriorityFilter(false)} />
-                    <div className={`absolute right-0 top-full mt-1 z-50 bg-slate-900/95 backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl overflow-hidden min-w-[130px]`}>
+                    <div className={`absolute right-0 top-full mt-1 z-50 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl overflow-hidden min-w-[130px]`}>
                       <button
                         onClick={() => {
                           setPriorityFilter("all");
@@ -467,7 +500,7 @@ export default function TaskList() {
                         className={`w-full flex items-center justify-between gap-2 px-3 py-2 transition-colors ${
                           priorityFilter === "all"
                             ? `${colors.accentBg} ${colors.accent}`
-                            : "text-white/70 hover:bg-white/10"
+                            : `${colors.textSecondary} ${colors.hoverBg}`
                         } ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
                       >
                         <span>All Priorities</span>
@@ -486,7 +519,7 @@ export default function TaskList() {
                             className={`w-full flex items-center justify-between gap-2 px-3 py-2 transition-colors ${
                               priorityFilter === p
                                 ? `${config.bg} ${config.color}`
-                                : "text-white/70 hover:bg-white/10"
+                                : `${colors.textSecondary} ${colors.hoverBg}`
                             } ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
                           >
                             <span className="flex items-center gap-2">
@@ -494,7 +527,7 @@ export default function TaskList() {
                               {config.label}
                             </span>
                             {count > 0 && (
-                              <span className="text-white/40">{count}</span>
+                              <span className={colors.textMuted}>{count}</span>
                             )}
                           </button>
                         );
@@ -507,7 +540,7 @@ export default function TaskList() {
               {/* Sort button */}
               <button
                 onClick={() => setSort(sort === "newest" ? "priority" : sort === "priority" ? "oldest" : "newest")}
-                className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors ${
+                className={`rounded-lg ${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'} transition-colors ${
                   isVeryCompact ? "p-1" : "p-1.5"
                 }`}
                 title={`Sort: ${sort}`}
