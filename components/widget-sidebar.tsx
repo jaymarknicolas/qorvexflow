@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDraggable, useDndMonitor } from "@dnd-kit/core";
 import {
   Timer,
@@ -25,7 +25,34 @@ import { motion, AnimatePresence } from "framer-motion";
 const newWidgets = new Set(["coffee"]);
 
 // Mark widgets as updated (will show UPDATED badge)
-const updatedWidgets = new Set(["calendar", "stats"]);
+const updatedWidgets = new Set(["calendar", "stats", "quotes", "youtube", "tasks"]);
+
+// Storage key for used widgets
+const USED_WIDGETS_KEY = "qorvexflow_used_widgets";
+
+// Helper to load used widgets from localStorage
+const loadUsedWidgets = (): Set<string> => {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const stored = localStorage.getItem(USED_WIDGETS_KEY);
+    if (stored) {
+      return new Set(JSON.parse(stored));
+    }
+  } catch (e) {
+    console.warn("Failed to load used widgets from localStorage:", e);
+  }
+  return new Set();
+};
+
+// Helper to save used widgets to localStorage
+const saveUsedWidgets = (widgets: Set<string>) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(USED_WIDGETS_KEY, JSON.stringify([...widgets]));
+  } catch (e) {
+    console.warn("Failed to save used widgets to localStorage:", e);
+  }
+};
 
 const widgets: WidgetDefinition[] = [
   { id: "pomodoro", icon: Timer, label: "Pomodoro" },
@@ -202,6 +229,35 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
   const { isMobile, isTablet } = useResponsive();
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const [usedWidgets, setUsedWidgets] = useState<Set<string>>(new Set());
+
+  // Load used widgets from localStorage on mount
+  useEffect(() => {
+    setUsedWidgets(loadUsedWidgets());
+  }, []);
+
+  // Mark a widget as used
+  const markWidgetAsUsed = useCallback((widgetId: string) => {
+    setUsedWidgets((prev) => {
+      if (prev.has(widgetId)) return prev;
+      const newSet = new Set(prev);
+      newSet.add(widgetId);
+      saveUsedWidgets(newSet);
+      return newSet;
+    });
+  }, []);
+
+  // Check if widget should show NEW badge
+  const shouldShowNew = useCallback(
+    (widgetId: string) => newWidgets.has(widgetId) && !usedWidgets.has(widgetId),
+    [usedWidgets]
+  );
+
+  // Check if widget should show UPDATED badge
+  const shouldShowUpdated = useCallback(
+    (widgetId: string) => updatedWidgets.has(widgetId) && !usedWidgets.has(widgetId),
+    [usedWidgets]
+  );
 
   // Get theme-based colors
   const getThemeAccent = () => {
@@ -229,6 +285,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
   const [isDraggingFromSidebar, setIsDraggingFromSidebar] = useState(false);
 
   // Monitor drag events to hide sidebar when dragging starts (mobile)
+  // and mark widgets as used when dropped
   useDndMonitor({
     onDragStart(event) {
       if (isMobile && event.active.data?.current?.from === "sidebar") {
@@ -236,7 +293,13 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
         setIsDraggingFromSidebar(true);
       }
     },
-    onDragEnd() {
+    onDragEnd(event) {
+      // Mark widget as used when successfully dropped on canvas
+      if (event.active.data?.current?.from === "sidebar" && event.over) {
+        const widgetId = event.active.id as string;
+        markWidgetAsUsed(widgetId);
+      }
+
       if (isMobile) {
         // Drag ended - close sidebar and reset state
         setIsDraggingFromSidebar(false);
@@ -361,8 +424,8 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                         label={w.label}
                         isMobile={true}
                         showLabel={true}
-                        isNew={newWidgets.has(w.id)}
-                        isUpdated={updatedWidgets.has(w.id)}
+                        isNew={shouldShowNew(w.id)}
+                        isUpdated={shouldShowUpdated(w.id)}
                       />
                     </motion.div>
                   ))}
@@ -396,7 +459,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05 }}
           >
-            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} isUpdated={updatedWidgets.has(w.id)} />
+            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={shouldShowNew(w.id)} isUpdated={shouldShowUpdated(w.id)} />
           </motion.div>
         ))}
       </motion.aside>
@@ -428,7 +491,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.05 }}
         >
-          <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={newWidgets.has(w.id)} isUpdated={updatedWidgets.has(w.id)} />
+          <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={shouldShowNew(w.id)} isUpdated={shouldShowUpdated(w.id)} />
         </motion.div>
       ))}
 

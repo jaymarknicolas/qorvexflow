@@ -12,7 +12,7 @@ export class YouTubeAPIService {
   private apiKey: string;
 
   constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || "";
+    this.apiKey = apiKey || process.env.YOUTUBE_API_KEY || "";
   }
 
   /**
@@ -20,7 +20,7 @@ export class YouTubeAPIService {
    */
   async searchVideos(
     query: string,
-    maxResults: number = 5
+    maxResults: number = 5,
   ): Promise<YouTubeSearchResult> {
     if (!this.apiKey) {
       return {
@@ -28,14 +28,14 @@ export class YouTubeAPIService {
         error: {
           code: "API_KEY_MISSING",
           message:
-            "YouTube API key is not configured. Please add NEXT_PUBLIC_YOUTUBE_API_KEY to your .env.local file.",
+            "YouTube API key is not configured. Please add YOUTUBE_API_KEY to your .env.local file.",
         },
       };
     }
 
     try {
       const searchUrl = `${API_BASE_URL}/search?part=snippet&type=video&maxResults=${maxResults}&q=${encodeURIComponent(
-        query
+        query,
       )}&key=${this.apiKey}`;
 
       const searchResponse = await fetch(searchUrl);
@@ -65,7 +65,7 @@ export class YouTubeAPIService {
       // Combine search results with details
       const videos: YouTubeVideo[] = searchData.items.map((item: any) => {
         const details = detailsData.items?.find(
-          (d: any) => d.id === item.id.videoId
+          (d: any) => d.id === item.id.videoId,
         );
 
         return {

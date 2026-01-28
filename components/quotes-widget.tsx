@@ -45,7 +45,8 @@ const FALLBACK_QUOTES: QuoteData[] = [
   },
   {
     _id: "fallback-3",
-    content: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    content:
+      "Success is not final, failure is not fatal: it is the courage to continue that counts.",
     author: "Winston Churchill",
     tags: ["Perseverance", "Success"],
     authorSlug: "winston-churchill",
@@ -53,7 +54,8 @@ const FALLBACK_QUOTES: QuoteData[] = [
   },
   {
     _id: "fallback-4",
-    content: "The future belongs to those who believe in the beauty of their dreams.",
+    content:
+      "The future belongs to those who believe in the beauty of their dreams.",
     author: "Eleanor Roosevelt",
     tags: ["Dreams", "Future"],
     authorSlug: "eleanor-roosevelt",
@@ -112,73 +114,64 @@ export default function QuotesWidget() {
 
   // State
   const [currentQuote, setCurrentQuote] = useState<QuoteData | null>(
-    () => persistedState?.quote ?? null
+    () => persistedState?.quote ?? null,
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>(
-    () => persistedState?.favorites ?? []
+    () => persistedState?.favorites ?? [],
   );
   const [copied, setCopied] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(
-    () => persistedState?.category ?? "all"
+    () => persistedState?.category ?? "all",
   );
   const [showCategories, setShowCategories] = useState(false);
   const [quoteHistory, setQuoteHistory] = useState<QuoteData[]>(
-    () => persistedState?.quoteHistory ?? []
+    () => persistedState?.quoteHistory ?? [],
   );
   const [historyIndex, setHistoryIndex] = useState(
-    () => persistedState?.historyIndex ?? -1
+    () => persistedState?.historyIndex ?? -1,
   );
 
-  // Theme colors - consistent with other widgets
+  // Theme colors
   const getThemeColors = useCallback(() => {
     switch (theme) {
       case "ghibli":
         return {
-          gradient: "from-green-900/95 via-emerald-900/90 to-teal-900/95",
-          glowFrom: "from-green-500/30",
-          glowTo: "to-amber-500/20",
+          gradient: "from-emerald-900/90 to-teal-900/90",
           accent: "text-emerald-400",
           accentBg: "bg-emerald-500/20",
-          button: "from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400",
-          buttonShadow: "shadow-emerald-500/30",
-          border: "border-emerald-400/30",
+          button:
+            "from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500",
+          buttonShadow: "shadow-emerald-500/20",
+          border: "border-emerald-500/20",
           tagBg: "bg-emerald-500/20 text-emerald-300",
           skeleton: "bg-emerald-500/20",
-          iconColor: "text-emerald-400",
-          hoverBg: "hover:bg-emerald-500/20",
         };
       case "coffeeshop":
         return {
-          gradient: "from-stone-900/95 via-amber-950/90 to-orange-950/95",
-          glowFrom: "from-amber-500/20",
-          glowTo: "to-orange-500/20",
+          gradient: "from-amber-900/90 to-stone-900/90",
           accent: "text-amber-400",
           accentBg: "bg-amber-500/20",
-          button: "from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400",
-          buttonShadow: "shadow-amber-500/30",
+          button:
+            "from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500",
+          buttonShadow: "shadow-amber-500/20",
           border: "border-amber-500/20",
           tagBg: "bg-amber-500/20 text-amber-300",
           skeleton: "bg-amber-500/20",
-          iconColor: "text-amber-400",
-          hoverBg: "hover:bg-amber-500/20",
         };
       default: // lofi
         return {
-          gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",
-          glowFrom: "from-violet-500/20",
-          glowTo: "to-pink-500/20",
-          accent: "text-violet-400",
-          accentBg: "bg-violet-500/20",
-          button: "from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400",
-          buttonShadow: "shadow-violet-500/30",
-          border: "border-violet-500/20",
-          tagBg: "bg-violet-500/20 text-violet-300",
-          skeleton: "bg-violet-500/20",
-          iconColor: "text-violet-400",
-          hoverBg: "hover:bg-violet-500/20",
+          gradient: "from-indigo-900/90 to-purple-900/90",
+          accent: "text-indigo-400",
+          accentBg: "bg-indigo-500/20",
+          button:
+            "from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500",
+          buttonShadow: "shadow-indigo-500/20",
+          border: "border-indigo-500/20",
+          tagBg: "bg-indigo-500/20 text-indigo-300",
+          skeleton: "bg-indigo-500/20",
         };
     }
   }, [theme]);
@@ -198,52 +191,58 @@ export default function QuotesWidget() {
 
   // Load favorites from localStorage
   useEffect(() => {
-    const savedFavorites = localStorage.getItem("qorvexflow_quote_favorites_v2");
+    const savedFavorites = localStorage.getItem(
+      "qorvexflow_quote_favorites_v2",
+    );
     if (savedFavorites) {
       setFavorites(JSON.parse(savedFavorites));
     }
   }, []);
 
-  // Fetch quote from API
-  const fetchQuote = useCallback(async (category?: string) => {
-    setIsLoading(true);
-    setError(null);
-    setIsAnimating(true);
+  const fetchQuote = useCallback(
+    async (category?: string) => {
+      setIsLoading(true);
+      setError(null);
+      setIsAnimating(true);
 
-    try {
-      const tag = category && category !== "all" ? `&tags=${category}` : "";
-      const response = await fetch(
-        `https://api.quotable.io/random?maxLength=150${tag}`,
-        { cache: "no-store" }
-      );
+      try {
+        const response = await fetch(
+          `/api/quotes?category=${category ?? selectedCategory}`,
+          { cache: "no-store" },
+        );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch quote");
+        if (!response.ok) {
+          throw new Error("Failed to fetch quote");
+        }
+
+        const data: QuoteData = await response.json();
+
+        console.log("fucking data", data);
+
+        setTimeout(() => {
+          setCurrentQuote(data);
+          setQuoteHistory((prev) => {
+            const newHistory = [...prev.slice(0, historyIndex + 1), data];
+            return newHistory.slice(-20);
+          });
+          setHistoryIndex((prev) => Math.min(prev + 1, 19));
+          setIsAnimating(false);
+          setIsLoading(false);
+        }, 300);
+      } catch {
+        const fallback =
+          FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+
+        setTimeout(() => {
+          setCurrentQuote(fallback);
+          setError("Using offline quotes");
+          setIsAnimating(false);
+          setIsLoading(false);
+        }, 300);
       }
-
-      const data: QuoteData = await response.json();
-
-      setTimeout(() => {
-        setCurrentQuote(data);
-        setQuoteHistory((prev) => {
-          const newHistory = [...prev.slice(0, historyIndex + 1), data];
-          return newHistory.slice(-20); // Keep last 20 quotes
-        });
-        setHistoryIndex((prev) => Math.min(prev + 1, 19));
-        setIsAnimating(false);
-        setIsLoading(false);
-      }, 300);
-    } catch (err) {
-      // Use fallback quotes on error
-      const fallback = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
-      setTimeout(() => {
-        setCurrentQuote(fallback);
-        setError("Using offline quotes");
-        setIsAnimating(false);
-        setIsLoading(false);
-      }, 300);
-    }
-  }, [historyIndex]);
+    },
+    [historyIndex, selectedCategory],
+  );
 
   // Initial load
   useEffect(() => {
@@ -271,8 +270,14 @@ export default function QuotesWidget() {
   // Save daily quote
   useEffect(() => {
     if (currentQuote && !currentQuote._id.startsWith("fallback")) {
-      localStorage.setItem("qorvexflow_quote_date_v2", new Date().toDateString());
-      localStorage.setItem("qorvexflow_daily_quote_v2", JSON.stringify(currentQuote));
+      localStorage.setItem(
+        "qorvexflow_quote_date_v2",
+        new Date().toDateString(),
+      );
+      localStorage.setItem(
+        "qorvexflow_daily_quote_v2",
+        JSON.stringify(currentQuote),
+      );
     }
   }, [currentQuote]);
 
@@ -318,7 +323,10 @@ export default function QuotesWidget() {
       : [...favorites, currentQuote._id];
 
     setFavorites(newFavorites);
-    localStorage.setItem("qorvexflow_quote_favorites_v2", JSON.stringify(newFavorites));
+    localStorage.setItem(
+      "qorvexflow_quote_favorites_v2",
+      JSON.stringify(newFavorites),
+    );
   };
 
   const handleCopy = async () => {
@@ -350,48 +358,93 @@ export default function QuotesWidget() {
     }
   };
 
-  const isFavorite = currentQuote ? favorites.includes(currentQuote._id) : false;
+  const isFavorite = currentQuote
+    ? favorites.includes(currentQuote._id)
+    : false;
 
-  // Dynamic font size based on quote length
+  // Dynamic font size based on quote length and container size
   const getQuoteFontSize = () => {
-    if (!currentQuote) return "text-lg sm:text-xl md:text-2xl";
+    if (!currentQuote)
+      return isVeryCompact ? "text-base" : isCompact ? "text-lg" : "text-xl";
     const length = currentQuote.content.length;
-    if (length < 50) return "text-xl sm:text-2xl md:text-3xl";
-    if (length < 100) return "text-lg sm:text-xl md:text-2xl";
-    return "text-base sm:text-lg md:text-xl";
+
+    if (isVeryCompact) {
+      if (length < 50) return "text-sm";
+      if (length < 100) return "text-xs";
+      return "text-xs";
+    }
+
+    if (isCompact) {
+      if (length < 50) return "text-lg";
+      if (length < 100) return "text-base";
+      return "text-sm";
+    }
+
+    if (length < 50) return "text-xl";
+    if (length < 100) return "text-lg";
+    return "text-base";
   };
 
   return (
-    <div className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden`}>
+    <div
+      ref={containerRef}
+      className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden`}
+    >
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-white/10 bg-black/20 px-3 py-2.5 sm:px-4 sm:py-3">
+      <div
+        className={`flex-shrink-0 border-b border-white/10 bg-black/20 ${
+          isVeryCompact ? "px-2 py-1.5" : isCompact ? "px-3 py-2" : "px-4 py-3"
+        }`}
+      >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <div className={`p-1.5 sm:p-2 rounded-lg ${colors.accentBg}`}>
-              <Quote className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${colors.accent}`} />
+            <div
+              className={`rounded-lg ${colors.accentBg} ${isVeryCompact ? "p-1" : "p-1.5"}`}
+            >
+              <Quote
+                className={`${isVeryCompact ? "w-3 h-3" : "w-4 h-4"} ${colors.accent}`}
+              />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm sm:text-base font-bold text-white truncate">Daily Quote</h2>
-              <p className="text-[10px] sm:text-xs text-white/50 truncate">
-                {error || "Powered by Quotable"}
-              </p>
+              <h2
+                className={`font-bold text-white truncate ${
+                  isVeryCompact
+                    ? "text-xs"
+                    : isCompact
+                      ? "text-sm"
+                      : "text-base"
+                }`}
+              >
+                {isVeryCompact ? "Quote" : "Daily Quote"}
+              </h2>
+              {!isVeryCompact && (
+                <p
+                  className={`text-white/50 truncate ${isCompact ? "text-[9px]" : "text-xs"}`}
+                >
+                  {error || "Powered by Quotable"}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+          <div
+            className={`flex items-center flex-shrink-0 ${isVeryCompact ? "gap-0.5" : "gap-1"}`}
+          >
             {/* Category filter */}
             <div className="relative">
               <button
                 onClick={() => setShowCategories(!showCategories)}
-                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
+                className={`rounded-lg transition-all duration-200 ${
+                  isVeryCompact ? "p-1" : "p-1.5"
+                } ${
                   showCategories
                     ? `${colors.accentBg} ${colors.accent}`
                     : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
                 }`}
                 aria-label="Filter by category"
               >
-                <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Filter className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
               </button>
 
               {showCategories && (
@@ -423,67 +476,115 @@ export default function QuotesWidget() {
             <button
               onClick={handleToggleFavorite}
               disabled={!currentQuote}
-              className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
+              className={`rounded-lg transition-all duration-200 ${
+                isVeryCompact ? "p-1" : "p-1.5"
+              } ${
                 isFavorite
                   ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
                   : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
               } disabled:opacity-50`}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
             >
-              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFavorite ? "fill-current" : ""}`} />
+              <Heart
+                className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} ${isFavorite ? "fill-current" : ""}`}
+              />
             </button>
 
             <button
               onClick={handleCopy}
               disabled={!currentQuote}
-              className="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50"
+              className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50 ${
+                isVeryCompact ? "p-1" : "p-1.5"
+              }`}
               aria-label="Copy quote"
             >
               {copied ? (
-                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
+                <Check
+                  className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} text-green-400`}
+                />
               ) : (
-                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Copy className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
               )}
             </button>
 
-            <button
-              onClick={handleShare}
-              disabled={!currentQuote}
-              className="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50 hidden sm:flex"
-              aria-label="Share quote"
-            >
-              <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
+            {!isCompact && (
+              <button
+                onClick={handleShare}
+                disabled={!currentQuote}
+                className="p-1.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-50"
+                aria-label="Share quote"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Quote Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden min-h-0">
+      <div
+        className={`flex-1 flex flex-col items-center justify-center relative overflow-hidden min-h-0 ${
+          isVeryCompact ? "p-2" : isCompact ? "p-3" : "p-4"
+        }`}
+      >
         {/* Decorative background */}
-        <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <Quote className="absolute top-2 left-2 sm:top-4 sm:left-4 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white transform rotate-12" />
-          <Quote className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 text-white transform -rotate-12" />
-        </div>
+        {!isVeryCompact && (
+          <div className="absolute inset-0 opacity-5 pointer-events-none">
+            <Quote
+              className={`absolute top-2 left-2 text-white transform rotate-12 ${
+                isCompact ? "w-10 h-10" : "w-16 h-16"
+              }`}
+            />
+            <Quote
+              className={`absolute bottom-2 right-2 text-white transform -rotate-12 ${
+                isCompact ? "w-10 h-10" : "w-16 h-16"
+              }`}
+            />
+          </div>
+        )}
 
         {/* Loading skeleton */}
-        {isLoading && !currentQuote && (
-          <div className="relative z-10 w-full max-w-md space-y-4 animate-pulse">
-            <div className={`h-6 ${colors.skeleton} rounded-lg w-3/4 mx-auto`} />
-            <div className={`h-6 ${colors.skeleton} rounded-lg w-full`} />
-            <div className={`h-6 ${colors.skeleton} rounded-lg w-2/3 mx-auto`} />
-            <div className={`h-4 ${colors.skeleton} rounded-lg w-1/3 mx-auto mt-6`} />
+        {isLoading && (
+          <div
+            className={`relative z-10 w-full max-w-md animate-pulse ${
+              isVeryCompact ? "space-y-2" : "space-y-4"
+            }`}
+          >
+            <div
+              className={`${colors.skeleton} rounded-lg w-3/4 mx-auto ${isVeryCompact ? "h-4" : "h-6"}`}
+            />
+            <div
+              className={`${colors.skeleton} rounded-lg w-full ${isVeryCompact ? "h-4" : "h-6"}`}
+            />
+            <div
+              className={`${colors.skeleton} rounded-lg w-2/3 mx-auto ${isVeryCompact ? "h-4" : "h-6"}`}
+            />
+            <div
+              className={`${colors.skeleton} rounded-lg w-1/3 mx-auto mt-6 ${isVeryCompact ? "h-3" : "h-4"}`}
+            />
           </div>
         )}
 
         {/* Error state */}
         {error && !currentQuote && (
           <div className="relative z-10 text-center">
-            <AlertCircle className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
-            <p className="text-white/60 mb-4">{error}</p>
+            <AlertCircle
+              className={`text-red-400/50 mx-auto ${
+                isVeryCompact ? "w-8 h-8 mb-2" : "w-12 h-12 mb-4"
+              }`}
+            />
+            <p
+              className={`text-white/60 ${isVeryCompact ? "text-xs mb-2" : "mb-4"}`}
+            >
+              {error}
+            </p>
             <button
               onClick={handleNewQuote}
-              className={`px-4 py-2 bg-gradient-to-r ${colors.button} text-white rounded-lg text-sm font-medium`}
+              className={`bg-gradient-to-r ${colors.button} text-white rounded-lg font-medium ${
+                isVeryCompact ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
+              }`}
             >
               Try Again
             </button>
@@ -491,87 +592,158 @@ export default function QuotesWidget() {
         )}
 
         {/* Quote */}
-        {currentQuote && (
+        {!isLoading && currentQuote && (
           <div
             className={`relative z-10 text-center w-full max-w-lg transition-all duration-300 ${
-              isAnimating ? "opacity-0 scale-95 translate-y-2" : "opacity-100 scale-100 translate-y-0"
+              isAnimating
+                ? "opacity-0 scale-95 translate-y-2"
+                : "opacity-100 scale-100 translate-y-0"
             }`}
           >
-            <Quote className={`w-6 h-6 sm:w-8 sm:h-8 ${colors.accent} mx-auto mb-3 sm:mb-4`} />
+            {!isVeryCompact && (
+              <Quote
+                className={`${colors.accent} mx-auto ${
+                  isCompact ? "w-5 h-5 mb-2" : "w-8 h-8 mb-4"
+                }`}
+              />
+            )}
 
-            <blockquote className={`${getQuoteFontSize()} font-medium text-white leading-relaxed mb-4 sm:mb-6 px-2`}>
+            <blockquote
+              className={`${getQuoteFontSize()} font-medium text-white leading-relaxed px-2 ${
+                isVeryCompact ? "mb-2" : isCompact ? "mb-3" : "mb-6"
+              }`}
+            >
               "{currentQuote.content}"
             </blockquote>
 
-            <div className="flex flex-col items-center gap-2">
-              <cite className={`text-sm sm:text-base ${colors.accent} not-italic font-semibold`}>
+            <div
+              className={`flex flex-col items-center ${isVeryCompact ? "gap-1" : "gap-2"}`}
+            >
+              <cite
+                className={`${colors.accent} not-italic font-semibold ${
+                  isVeryCompact
+                    ? "text-xs"
+                    : isCompact
+                      ? "text-sm"
+                      : "text-base"
+                }`}
+              >
                 — {currentQuote.author}
               </cite>
 
-              {currentQuote.tags && currentQuote.tags.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-1.5 mt-1">
-                  {currentQuote.tags.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag}
-                      className={`text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-full ${colors.tagBg}`}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {currentQuote.tags &&
+                currentQuote.tags.length > 0 &&
+                !isVeryCompact && (
+                  <div className="flex flex-wrap justify-center gap-1.5 mt-1">
+                    {currentQuote.tags
+                      .slice(0, isCompact ? 2 : 3)
+                      .map((tag) => (
+                        <span
+                          key={tag}
+                          className={`rounded-full ${colors.tagBg} ${
+                            isCompact
+                              ? "text-[9px] px-1.5 py-0.5"
+                              : "text-[10px] px-2 py-1"
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                  </div>
+                )}
             </div>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="flex-shrink-0 border-t border-white/10 bg-black/20 p-3 sm:p-4">
+      <div
+        className={`flex-shrink-0 border-t border-white/10 bg-black/20 ${
+          isVeryCompact ? "p-1.5" : isCompact ? "p-2" : "p-3"
+        }`}
+      >
         {/* Navigation and New Quote */}
-        <div className="flex items-center gap-2">
+        <div
+          className={`flex items-center ${isVeryCompact ? "gap-1" : "gap-2"}`}
+        >
           {/* History navigation */}
           <button
             onClick={goBack}
             disabled={historyIndex <= 0 || isLoading}
-            className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+              isVeryCompact ? "p-1.5" : "p-2"
+            }`}
             aria-label="Previous quote"
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronLeft
+              className={
+                isVeryCompact
+                  ? "w-3.5 h-3.5"
+                  : isCompact
+                    ? "w-4 h-4"
+                    : "w-5 h-5"
+              }
+            />
           </button>
 
           {/* New Quote button */}
           <button
             onClick={handleNewQuote}
             disabled={isLoading}
-            className={`flex-1 px-3 py-2.5 sm:px-4 sm:py-3 bg-gradient-to-r ${colors.button} text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg ${colors.buttonShadow} disabled:opacity-50 text-sm sm:text-base`}
+            className={`flex-1 bg-gradient-to-r ${colors.button} text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center shadow-lg ${colors.buttonShadow} disabled:opacity-50 ${
+              isVeryCompact
+                ? "px-2 py-1.5 gap-1.5 text-xs"
+                : isCompact
+                  ? "px-3 py-2 gap-2 text-sm"
+                  : "px-4 py-3 gap-2 text-base"
+            }`}
           >
-            <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isLoading ? "animate-spin" : ""}`} />
-            <span className="hidden xs:inline">New Quote</span>
-            <span className="xs:hidden">New</span>
+            <RefreshCw
+              className={`${isLoading ? "animate-spin" : ""} ${
+                isVeryCompact ? "w-3 h-3" : "w-4 h-4"
+              }`}
+            />
+            <span>{isVeryCompact ? "New" : "New Quote"}</span>
           </button>
 
           <button
             onClick={goForward}
             disabled={historyIndex >= quoteHistory.length - 1 || isLoading}
-            className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+              isVeryCompact ? "p-1.5" : "p-2"
+            }`}
             aria-label="Next quote"
           >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronRight
+              className={
+                isVeryCompact
+                  ? "w-3.5 h-3.5"
+                  : isCompact
+                    ? "w-4 h-4"
+                    : "w-5 h-5"
+              }
+            />
           </button>
         </div>
 
         {/* History indicator */}
-        {quoteHistory.length > 1 && (
-          <div className="flex items-center justify-center gap-1 mt-2">
-            {quoteHistory.slice(-7).map((_, idx) => {
-              const actualIdx = Math.max(0, quoteHistory.length - 7) + idx;
+        {quoteHistory.length > 1 && !isVeryCompact && (
+          <div
+            className={`flex items-center justify-center gap-1 ${isCompact ? "mt-1.5" : "mt-2"}`}
+          >
+            {quoteHistory.slice(isCompact ? -5 : -7).map((_, idx) => {
+              const sliceStart = Math.max(
+                0,
+                quoteHistory.length - (isCompact ? 5 : 7),
+              );
+              const actualIdx = sliceStart + idx;
               return (
                 <div
                   key={idx}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  className={`rounded-full transition-all ${
                     actualIdx === historyIndex
-                      ? `${colors.accent} w-3`
-                      : "bg-white/20"
+                      ? `${colors.accent} ${isCompact ? "w-2.5 h-1" : "w-3 h-1.5"}`
+                      : `bg-white/20 ${isCompact ? "w-1 h-1" : "w-1.5 h-1.5"}`
                   }`}
                 />
               );

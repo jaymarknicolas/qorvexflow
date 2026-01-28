@@ -42,7 +42,7 @@ export function useYouTubeSearch(): UseYouTubeSearchReturn {
       return;
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+    const apiKey = process.env.YOUTUBE_API_KEY;
     if (!apiKey) {
       setError("YouTube API key not configured");
       return;
@@ -80,7 +80,9 @@ export function useYouTubeSearch(): UseYouTubeSearchReturn {
         .join(",");
 
       // Get video details including duration
-      const detailsUrl = new URL("https://www.googleapis.com/youtube/v3/videos");
+      const detailsUrl = new URL(
+        "https://www.googleapis.com/youtube/v3/videos",
+      );
       detailsUrl.searchParams.set("part", "contentDetails");
       detailsUrl.searchParams.set("id", videoIds);
       detailsUrl.searchParams.set("key", apiKey);
@@ -94,7 +96,7 @@ export function useYouTubeSearch(): UseYouTubeSearchReturn {
         detailsData.items.forEach(
           (item: { id: string; contentDetails: { duration: string } }) => {
             durationMap[item.id] = parseDuration(item.contentDetails.duration);
-          }
+          },
         );
       }
 
@@ -118,7 +120,7 @@ export function useYouTubeSearch(): UseYouTubeSearchReturn {
             "",
           publishedAt: item.snippet.publishedAt,
           duration: durationMap[item.id.videoId] || 0,
-        })
+        }),
       );
 
       setResults(mappedResults);

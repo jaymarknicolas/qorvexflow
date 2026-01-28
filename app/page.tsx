@@ -101,7 +101,7 @@ const DraggableWidgetContent = memo(function DraggableWidgetContent({
   onMaximize,
   onResetSettings,
 }: DraggableWidgetContentProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `widget-${id}`,
     data: {
       from: "slot",
@@ -109,17 +109,12 @@ const DraggableWidgetContent = memo(function DraggableWidgetContent({
     },
   });
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
-
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="relative group w-full h-full overflow-hidden hover:ring-2 hover:ring-cyan-400/30 rounded-2xl transition-all duration-300"
+      className={`relative group w-full h-full overflow-hidden hover:ring-2 hover:ring-cyan-400/30 rounded-2xl transition-all duration-300 ${
+        isDragging ? "opacity-50 ring-2 ring-cyan-400/50" : ""
+      }`}
     >
       <WidgetActions
         widgetType={widgetType}
@@ -474,14 +469,31 @@ export default function Home() {
           >
             <WidgetSidebar />
             {renderWorkspace()}
-            <DragOverlay>
+            <DragOverlay
+              dropAnimation={null}
+              style={{ zIndex: 9999 }}
+            >
               {activeId
                 ? (() => {
-                    // When dragging from a slot (widget actions), don't show icon
-                    // Only show icon when dragging from sidebar
+                    // When dragging from a slot (widget actions), show a preview card
                     const isDraggingFromSlot = activeId.startsWith("widget-");
 
-                    if (isDraggingFromSlot) return;
+                    if (isDraggingFromSlot) {
+                      // Extract slot id from widget-slot-X format
+                      const slotId = activeId.replace("widget-", "");
+                      const widgetType = slotWidgets[slotId];
+                      if (!widgetType) return null;
+
+                      const IconComponent = getWidgetIcon(widgetType);
+                      return (
+                        <div className="w-48 h-32 rounded-2xl border-2 border-cyan-400/50 bg-slate-900/90 backdrop-blur-xl flex flex-col items-center justify-center gap-2 shadow-2xl shadow-cyan-500/20">
+                          <IconComponent className="h-8 w-8 text-cyan-400" />
+                          <span className="text-white/80 text-sm font-medium capitalize">
+                            {widgetType}
+                          </span>
+                        </div>
+                      );
+                    }
 
                     // Dragging from sidebar - show the widget icon
                     const IconComponent = getWidgetIcon(activeId as WidgetType);

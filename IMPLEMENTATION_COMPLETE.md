@@ -9,12 +9,15 @@ All remaining tasks from the user's request have been successfully implemented a
 ## 📋 Completed Tasks
 
 ### 1. ✅ Canvas Dynamic Scaling (CRITICAL FIX)
+
 **Files:**
+
 - [lib/hooks/useDynamicScale.ts](lib/hooks/useDynamicScale.ts)
 - [app/page.tsx](app/page.tsx)
 - [CANVAS_SCALING_FIX.md](CANVAS_SCALING_FIX.md)
 
 **Implementation:**
+
 - Changed from CSS-only to JavaScript-based measurement
 - Uses `scrollWidth` and `scrollHeight` to measure actual content
 - Calculates perfect scale: `min(availableWidth/contentWidth, availableHeight/contentHeight, 1.0)`
@@ -27,9 +30,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 2. ✅ Copy/Paste and Maximize Integration
+
 **File:** [app/page.tsx](app/page.tsx:109-128)
 
 **Features:**
+
 - Copy widget to clipboard with toast notification
 - Maximize widget to full-screen modal
 - Reset widget settings to defaults
@@ -38,11 +43,14 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 3. ✅ Notes Widget with WYSIWYG Editor
+
 **Files:**
+
 - [lib/hooks/useNotes.ts](lib/hooks/useNotes.ts) - State management
 - [components/notes-widget.tsx](components/notes-widget.tsx) - UI component
 
 **Features:**
+
 - **Tiptap WYSIWYG editor** with full toolbar
 - **Text formatting:** Bold, Italic, Underline, Strikethrough
 - **Headings:** H1, H2, H3
@@ -58,9 +66,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 4. ✅ YouTube API Service
+
 **File:** [lib/services/youtube-api.ts](lib/services/youtube-api.ts)
 
 **Features:**
+
 - Search videos by query (configurable max results)
 - Get video details by ID
 - Fetch video metadata (duration, views, thumbnail)
@@ -71,6 +81,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - Configuration check (API key validation)
 
 **API Methods:**
+
 - `searchVideos(query, maxResults)`
 - `getVideoDetails(videoId)`
 - `parseDuration(duration)`
@@ -80,9 +91,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 5. ✅ YouTube Hook
+
 **File:** [lib/hooks/useYouTube.ts](lib/hooks/useYouTube.ts)
 
 **State Management:**
+
 - Player state (unstarted, playing, paused, buffering, ended, cued)
 - Current video and playback progress
 - Volume control (0-100)
@@ -91,6 +104,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - localStorage persistence
 
 **Playback Controls:**
+
 - Play, Pause, Stop
 - Seek to position
 - Volume adjustment
@@ -98,6 +112,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - Auto-play next video when current ends
 
 **Playlist Features:**
+
 - Create multiple playlists
 - Add/remove videos from playlists
 - Reorder videos (drag and drop UI support)
@@ -107,9 +122,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 6. ✅ YouTube Widget Component
+
 **File:** [components/youtube-widget.tsx](components/youtube-widget.tsx)
 
 **UI Features:**
+
 - **Search interface:** Input + button with loading state
 - **Results grid:** 5 video thumbnails with metadata
 - **Video player:** Hidden YouTube iframe (audio only)
@@ -125,6 +142,7 @@ All remaining tasks from the user's request have been successfully implemented a
   - Time display (current / total)
 
 **Configuration Error Handling:**
+
 - Shows helpful message if YouTube API key is missing
 - Provides setup instructions inline
 - Links to Google Cloud Console
@@ -132,14 +150,17 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 7. ✅ Music Hook (Unified)
+
 **File:** [lib/hooks/useMusic.ts](lib/hooks/useMusic.ts)
 
 **Multi-Source Support:**
+
 - **YouTube Lofi:** 24/7 lofi hip hop radio streams
 - **Spotify:** OAuth integration with Web API
 - **Source switching:** Seamless transition between sources
 
 **Lofi Features:**
+
 - 4 pre-configured lofi streams
 - Shuffle between streams
 - Manual stream selection
@@ -147,6 +168,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - Play/pause state
 
 **Spotify Features:**
+
 - OAuth 2.0 PKCE authorization flow
 - Access token management
 - Playback controls (play, pause, skip)
@@ -154,6 +176,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - Connect/disconnect functionality
 
 **State Persistence:**
+
 - localStorage for lofi preferences
 - Separate token storage for Spotify
 - Volume and shuffle preferences
@@ -161,9 +184,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 8. ✅ Enhanced Music Player Component
+
 **File:** [components/music-player-enhanced.tsx](components/music-player-enhanced.tsx)
 
 **UI Features:**
+
 - **Source selector dropdown:** Choose between YouTube Lofi and Spotify
 - **Hidden YouTube player:** Audio-only lofi streams
 - **Album art display:** Shows stream thumbnail or spinning disc
@@ -178,6 +203,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - **Glassmorphism design** matching app theme
 
 **Smart Defaults:**
+
 - Defaults to lofi when first played
 - Remembers last source and volume
 - Auto-starts lofi on play if no source active
@@ -185,14 +211,17 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 9. ✅ Spotify API Service
+
 **File:** [lib/services/spotify-api.ts](lib/services/spotify-api.ts)
 
 **Authentication:**
+
 - Access token management
 - Token validation
 - OAuth flow integration
 
 **Playback Control API:**
+
 - `play(trackUri?)` - Play or resume
 - `pause()` - Pause playback
 - `skipToNext()` - Next track
@@ -201,6 +230,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - `seek(positionMs)` - Seek to position
 
 **Data Fetching:**
+
 - `getCurrentPlayback()` - Current playing track
 - `getUserPlaylists(limit)` - User's playlists
 - `getPlaylistTracks(playlistId)` - Tracks in playlist
@@ -208,6 +238,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - `getDevices()` - Available playback devices
 
 **Type Definitions:**
+
 - `SpotifyTrack` - Track metadata
 - `SpotifyPlaylist` - Playlist data
 - `SpotifyPlaybackState` - Current playback info
@@ -215,9 +246,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 10. ✅ Spotify Callback API Route
+
 **File:** [app/api/spotify/callback/route.ts](app/api/spotify/callback/route.ts)
 
 **Functionality:**
+
 - Handles OAuth redirect from Spotify
 - Processes error states
 - Redirects back to home with token in hash
@@ -226,9 +259,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 11. ✅ Spotify Setup Documentation
+
 **File:** [docs/spotify-setup.md](docs/spotify-setup.md)
 
 **Complete Guide Including:**
+
 - Step-by-step Spotify Developer account setup
 - App creation instructions
 - Redirect URI configuration
@@ -251,9 +286,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 12. ✅ Environment Configuration Files
+
 **File:** [.env.local.example](.env.local.example)
 
 **Contents:**
+
 - YouTube API key configuration
 - Spotify Client ID configuration
 - Redirect URI for development and production
@@ -262,6 +299,7 @@ All remaining tasks from the user's request have been successfully implemented a
 - Variable descriptions and requirements
 
 **Instructions for:**
+
 1. YouTube API Setup (Google Cloud Console)
 2. Spotify API Setup (Developer Dashboard)
 3. Configuration steps
@@ -270,9 +308,11 @@ All remaining tasks from the user's request have been successfully implemented a
 ---
 
 ### 13. ✅ Testing and Build Verification
+
 **Status:** ✅ Build Successful
 
 **Build Output:**
+
 ```
 ✓ Compiled successfully
 ✓ Generating static pages (5/5)
@@ -285,6 +325,7 @@ Route (app)
 ```
 
 **Verification:**
+
 - ✅ No TypeScript errors
 - ✅ No build errors
 - ✅ All components render
@@ -330,6 +371,7 @@ Route (app)
 ## 🎯 Feature Summary
 
 ### Notes Widget
+
 - ✅ Tiptap WYSIWYG editor
 - ✅ Rich text formatting
 - ✅ Auto-save (2s debounce)
@@ -338,6 +380,7 @@ Route (app)
 - ✅ localStorage persistence
 
 ### YouTube Widget
+
 - ✅ Video search with YouTube Data API v3
 - ✅ Embedded YouTube player
 - ✅ Playlist management (create, edit, delete)
@@ -348,6 +391,7 @@ Route (app)
 - ✅ localStorage persistence
 
 ### Music Player
+
 - ✅ YouTube Lofi integration (4 streams)
 - ✅ Spotify OAuth integration
 - ✅ Unified playback controls
@@ -358,6 +402,7 @@ Route (app)
 - ✅ localStorage persistence
 
 ### Canvas Scaling (Critical Fix)
+
 - ✅ JavaScript-based dynamic measurement
 - ✅ No scrolling required
 - ✅ Perfect centering (horizontal + vertical)
@@ -402,17 +447,19 @@ Route (app)
 ## 🚀 How to Use
 
 ### Setup YouTube Widget
+
 1. Get YouTube API key from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 2. Enable YouTube Data API v3
 3. Add to `.env.local`:
    ```
-   NEXT_PUBLIC_YOUTUBE_API_KEY=your_key_here
+   YOUTUBE_API_KEY=your_key_here
    ```
 4. Restart dev server
 5. Add YouTube widget to canvas
 6. Search and play videos
 
 ### Setup Spotify Integration
+
 1. Follow [docs/spotify-setup.md](docs/spotify-setup.md)
 2. Create Spotify Developer app
 3. Add to `.env.local`:
@@ -425,6 +472,7 @@ Route (app)
 6. Authorize Spotify
 
 ### Use Notes Widget
+
 1. Add Notes widget to canvas
 2. Start typing immediately
 3. Use toolbar for formatting
@@ -436,26 +484,32 @@ Route (app)
 ## 🐛 Issues Fixed During Implementation
 
 ### 1. Widget Actions TypeError
+
 **Error:** `Cannot read properties of undefined (reading 'charAt')`
 **Fix:** Added null check for widgetType parameter
 
 ### 2. YouTube Player Type Mismatch
+
 **Error:** `YouTubePlayerState` type incompatible
 **Fix:** Changed from interface to union type: `"unstarted" | "ended" | "playing" | "paused" | "buffering" | "cued"`
 
 ### 3. Regex Flag Not Supported
+
 **Error:** `/gs` flag only available in ES2018+
 **Fix:** Changed to `[\s\S]*?` with function replacement
 
 ### 4. Storage Key Missing
+
 **Error:** `MUSIC_PLAYER` does not exist
 **Fix:** Added `MUSIC_PLAYER: "qorvexflow_music_player"` to constants
 
 ### 5. PlayerRef Type Mismatch
+
 **Error:** `RefObject<HTMLDivElement | null>` not assignable
 **Fix:** Changed interface to accept `| null` in ref type
 
 ### 6. YouTube Player Deprecated Param
+
 **Error:** `showinfo` does not exist
 **Fix:** Removed deprecated `showinfo: 0` parameter
 
@@ -513,6 +567,7 @@ Route (app)
 ## 🔜 Optional Future Enhancements
 
 ### Notes Widget
+
 - [ ] Multiple note documents
 - [ ] Note search
 - [ ] Note categories/tags
@@ -520,6 +575,7 @@ Route (app)
 - [ ] Code block syntax highlighting
 
 ### YouTube Widget
+
 - [ ] Video quality selector
 - [ ] Picture-in-picture mode
 - [ ] Watch history
@@ -527,6 +583,7 @@ Route (app)
 - [ ] Captions/subtitles
 
 ### Music Player
+
 - [ ] Spotify playlist browser
 - [ ] Queue management
 - [ ] Now playing history
@@ -535,6 +592,7 @@ Route (app)
 - [ ] Crossfade between tracks
 
 ### General
+
 - [ ] Widget themes/customization
 - [ ] Keyboard shortcuts
 - [ ] Import/export workspace

@@ -3,7 +3,7 @@
 import {
   X,
   Maximize2,
-  Settings,
+  // Settings,
   Copy,
   Info,
   RotateCcw,
@@ -100,7 +100,7 @@ export default function WidgetActions({
         </button> */}
 
         {/* Settings Dropdown */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               className="h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border border-white/10 text-white/70 hover:text-purple-400 hover:border-purple-400/50 hover:bg-slate-700 transition-all duration-200 flex items-center justify-center group/btn"
@@ -141,7 +141,7 @@ export default function WidgetActions({
               Help
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
 
         {/* Remove Widget */}
         <button
