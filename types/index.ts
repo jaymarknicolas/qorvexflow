@@ -17,7 +17,9 @@ export type WidgetType =
   | "notes"
   | "youtube"
   | "quotes"
-  | "coffee";
+  | "coffee"
+  | "stopwatch"
+  | "countdown";
 
 export interface WidgetDefinition {
   id: WidgetType;
@@ -178,6 +180,12 @@ export interface UserSettings {
   autoSave: boolean;
   pomodoroSettings: PomodoroSettings;
 }
+
+// ============================================
+// Floating Widget Types
+// ============================================
+
+export type FloatingWidgetTab = "stopwatch" | "pomodoro" | "tasks" | "notes";
 
 // ============================================
 // Drag and Drop Types

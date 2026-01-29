@@ -10,8 +10,11 @@ import {
   HelpCircle,
   Check,
   GripVertical,
+  Pin,
+  PinOff,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useFloatingWidget, hasDocumentPipSupport } from "@/components/floating-widget/floating-widget-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +48,13 @@ export default function WidgetActions({
 }: WidgetActionsProps) {
   const [isInfoHovered, setIsInfoHovered] = useState(false);
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
+  const { pinWidget, unpinWidget, isWidgetPinned } = useFloatingWidget();
+  const [canPip, setCanPip] = useState(false);
+  const pinned = isWidgetPinned(widgetType);
+
+  useEffect(() => {
+    setCanPip(hasDocumentPipSupport());
+  }, []);
 
   const handleCopy = () => {
     onCopy();
@@ -142,6 +152,26 @@ export default function WidgetActions({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu> */}
+
+        {/* Pin/Unpin for PiP */}
+        {canPip && (
+          <button
+            onClick={() => pinned ? unpinWidget(widgetType) : pinWidget(widgetType)}
+            className={`h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border transition-all duration-200 flex items-center justify-center group/btn ${
+              pinned
+                ? "border-cyan-400/50 text-cyan-400 hover:text-cyan-300"
+                : "border-white/10 text-white/70 hover:text-cyan-400 hover:border-cyan-400/50"
+            } hover:bg-slate-700`}
+            aria-label={pinned ? "Unpin from PiP" : "Pin to PiP"}
+            title={pinned ? "Unpin from PiP" : "Pin to PiP"}
+          >
+            {pinned ? (
+              <PinOff className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+            ) : (
+              <Pin className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+            )}
+          </button>
+        )}
 
         {/* Remove Widget */}
         <button

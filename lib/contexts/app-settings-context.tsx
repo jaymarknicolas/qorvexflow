@@ -21,6 +21,9 @@ export interface AppSettings {
   videoBackgroundEnabled: boolean;
   reducedMotion: boolean;
   reducedTransparency: boolean;
+
+  // Picture-in-Picture
+  pipEnabled: boolean;
 }
 
 interface AppSettingsContextType {
@@ -41,6 +44,7 @@ const defaultSettings: AppSettings = {
   videoBackgroundEnabled: true,
   reducedMotion: false,
   reducedTransparency: false,
+  pipEnabled: true,
 };
 
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(

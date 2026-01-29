@@ -47,6 +47,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+// PiP imports removed — PiP is auto-triggered on tab switch or pinned per-widget
 
 interface NavItem {
   label: string;
@@ -72,6 +73,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { layout, setLayout } = useLayout();
+  // PiP is now auto-triggered or pinned per-widget, no header toggle needed
 
   // Track scroll position for header styling
   useEffect(() => {
@@ -402,7 +404,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   <button
                     className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
                   >
-                    <Layout className={`w-4 h-4 ${colors.primaryAccent}`} />
+                    <Layout className={`w-4 h-4`} />
                     <span className="text-sm font-medium hidden md:inline">
                       {layoutOptions.find((l) => l.id === layout)?.label ||
                         "Layout"}

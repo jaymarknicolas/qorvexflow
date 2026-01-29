@@ -7,6 +7,8 @@ import { LayoutProvider } from "@/lib/contexts/layout-context";
 import { WidgetSettingsProvider } from "@/lib/contexts/widget-settings-context";
 import { FocusTrackerProvider } from "@/lib/contexts/focus-tracker-context";
 import { Toaster } from "sonner";
+import { FloatingWidgetProvider } from "@/components/floating-widget/floating-widget-context";
+import FloatingWidgetWindow from "@/components/floating-widget/floating-widget-window";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,8 +42,11 @@ export default function RootLayout({
             <LayoutProvider>
               <WidgetSettingsProvider>
                 <FocusTrackerProvider>
-                  {children}
-                  <Toaster position="bottom-right" richColors />
+                  <FloatingWidgetProvider>
+                    {children}
+                    <FloatingWidgetWindow />
+                    <Toaster position="bottom-right" richColors />
+                  </FloatingWidgetProvider>
                 </FocusTrackerProvider>
               </WidgetSettingsProvider>
             </LayoutProvider>

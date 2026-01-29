@@ -71,6 +71,14 @@ export interface CoffeeWidgetSettings {
   showStreak: boolean;
 }
 
+export interface StopwatchWidgetSettings {
+  // No specific settings needed
+}
+
+export interface CountdownWidgetSettings {
+  // No specific settings needed
+}
+
 export type WidgetSettings = {
   pomodoro: PomodoroWidgetSettings;
   tasks: TasksWidgetSettings;
@@ -81,6 +89,8 @@ export type WidgetSettings = {
   stats: StatsWidgetSettings;
   quotes: QuotesWidgetSettings;
   coffee: CoffeeWidgetSettings;
+  stopwatch: StopwatchWidgetSettings;
+  countdown: CountdownWidgetSettings;
 };
 
 export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {
@@ -144,4 +154,6 @@ export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {
     resetHour: 4,
     showStreak: true,
   },
+  stopwatch: {},
+  countdown: {},
 };
