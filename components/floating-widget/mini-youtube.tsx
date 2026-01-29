@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Youtube, Play, Radio, X } from "lucide-react";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 interface VideoItem {
   id: string;

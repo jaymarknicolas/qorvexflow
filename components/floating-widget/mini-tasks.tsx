@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Check, Trash2 } from "lucide-react";
 import { useTasks } from "@/lib/hooks";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 export default function MiniTasks() {
   const { tasks, addTask, toggleTask, removeTask } = useTasks();

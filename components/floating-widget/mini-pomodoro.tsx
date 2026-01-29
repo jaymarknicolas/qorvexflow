@@ -2,6 +2,7 @@
 
 import { Play, Pause, SkipForward, RotateCcw } from "lucide-react";
 import { usePomodoro } from "@/lib/hooks";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 export default function MiniPomodoro() {
   const {

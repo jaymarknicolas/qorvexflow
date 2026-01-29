@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Flame, Clock } from "lucide-react";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 

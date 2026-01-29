@@ -1,6 +1,7 @@
 "use client";
 
 import { useNotes } from "@/lib/hooks/useNotes";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 export default function MiniNotes() {
   const { content, updateContent, characterCount } = useNotes();

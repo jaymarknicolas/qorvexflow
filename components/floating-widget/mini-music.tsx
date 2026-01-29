@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Play, Pause, SkipBack, SkipForward, Disc3 } from "lucide-react";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 export default function MiniMusic() {
+  const colors = useWidgetTheme();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(40);
   const [waveformOffset, setWaveformOffset] = useState(0);
@@ -30,30 +32,30 @@ export default function MiniMusic() {
       {/* Track info */}
       <div className="flex items-center gap-2 flex-shrink-0">
         <div
-          className={`w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0 ${
+          className={`w-10 h-10 rounded-lg ${colors.accentBg} flex items-center justify-center flex-shrink-0 ${
             isPlaying ? "animate-spin" : ""
           }`}
           style={{ animationDuration: "3s" }}
         >
-          <Disc3 className="w-5 h-5 text-cyan-400" />
+          <Disc3 className={`w-5 h-5 ${colors.accent}`} />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-white truncate">
+          <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>
             Rainy Day Study Session
           </p>
-          <p className="text-[10px] text-white/50 truncate">Lofi Girl</p>
+          <p className={`text-[10px] ${colors.textMuted} truncate`}>Lofi Girl</p>
         </div>
       </div>
 
       {/* Progress */}
       <div className="flex-shrink-0">
-        <div className="w-full bg-white/10 rounded-full h-1">
+        <div className={`w-full ${colors.isLightMode ? "bg-black/10" : "bg-white/10"} rounded-full h-1`}>
           <div
-            className="bg-cyan-400 h-full rounded-full transition-all"
+            className={`${colors.progressBg} h-full rounded-full transition-all`}
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-between mt-1 text-[9px] text-white/40">
+        <div className={`flex justify-between mt-1 text-[9px] ${colors.textMuted}`}>
           <span>0:40</span>
           <span>3:45</span>
         </div>
@@ -61,12 +63,12 @@ export default function MiniMusic() {
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-2 flex-shrink-0">
-        <button className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
-          <SkipBack className="w-3.5 h-3.5 text-white/60" />
+        <button className={`p-1.5 ${colors.isLightMode ? "hover:bg-black/5" : "hover:bg-white/10"} rounded-lg transition-colors`}>
+          <SkipBack className={`w-3.5 h-3.5 ${colors.textMuted}`} />
         </button>
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="p-2 bg-cyan-500/20 text-cyan-400 rounded-full hover:bg-cyan-500/30 transition-colors"
+          className={`p-2 ${colors.accentBg} ${colors.accent} rounded-full ${colors.isLightMode ? "hover:bg-black/10" : "hover:bg-white/15"} transition-colors`}
         >
           {isPlaying ? (
             <Pause className="w-4 h-4" />
@@ -74,8 +76,8 @@ export default function MiniMusic() {
             <Play className="w-4 h-4" />
           )}
         </button>
-        <button className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
-          <SkipForward className="w-3.5 h-3.5 text-white/60" />
+        <button className={`p-1.5 ${colors.isLightMode ? "hover:bg-black/5" : "hover:bg-white/10"} rounded-lg transition-colors`}>
+          <SkipForward className={`w-3.5 h-3.5 ${colors.textMuted}`} />
         </button>
       </div>
 

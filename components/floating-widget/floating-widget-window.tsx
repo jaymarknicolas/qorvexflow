@@ -94,7 +94,8 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             accent: "text-green-600",
             accentBg: "bg-green-500/10",
             tabActive: "bg-green-500/15 text-green-700",
-            tabInactive: "text-green-500/50 hover:text-green-600 hover:bg-green-100",
+            tabInactive:
+              "text-green-500/50 hover:text-green-600 hover:bg-green-100",
             scrollThumb: "#16a34a",
             scrollTrack: "#f0fdf4",
             bodyBg: "#f0fdf4",
@@ -111,7 +112,8 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             accent: "text-green-400",
             accentBg: "bg-green-500/15",
             tabActive: "bg-green-500/20 text-green-300",
-            tabInactive: "text-green-200/40 hover:text-green-200/60 hover:bg-green-500/10",
+            tabInactive:
+              "text-green-200/40 hover:text-green-200/60 hover:bg-green-500/10",
             scrollThumb: "#16a34a",
             scrollTrack: "#052e16",
             bodyBg: "#052e16",
@@ -130,7 +132,8 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             accent: "text-amber-600",
             accentBg: "bg-amber-500/10",
             tabActive: "bg-amber-500/15 text-amber-700",
-            tabInactive: "text-amber-500/50 hover:text-amber-600 hover:bg-amber-100",
+            tabInactive:
+              "text-amber-500/50 hover:text-amber-600 hover:bg-amber-100",
             scrollThumb: "#d97706",
             scrollTrack: "#fffbeb",
             bodyBg: "#fffbeb",
@@ -147,7 +150,8 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             accent: "text-amber-400",
             accentBg: "bg-amber-500/15",
             tabActive: "bg-amber-500/20 text-amber-300",
-            tabInactive: "text-amber-200/40 hover:text-amber-200/60 hover:bg-amber-500/10",
+            tabInactive:
+              "text-amber-200/40 hover:text-amber-200/60 hover:bg-amber-500/10",
             scrollThumb: "#d97706",
             scrollTrack: "#1c1917",
             bodyBg: "#1c1917",
@@ -166,7 +170,8 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             accent: "text-violet-600",
             accentBg: "bg-violet-500/10",
             tabActive: "bg-violet-500/15 text-violet-700",
-            tabInactive: "text-slate-400 hover:text-slate-600 hover:bg-slate-100",
+            tabInactive:
+              "text-slate-400 hover:text-slate-600 hover:bg-slate-100",
             scrollThumb: "#7c3aed",
             scrollTrack: "#f8fafc",
             bodyBg: "#f8fafc",
@@ -183,7 +188,8 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             accent: "text-violet-400",
             accentBg: "bg-violet-500/15",
             tabActive: "bg-violet-500/20 text-violet-300",
-            tabInactive: "text-violet-200/40 hover:text-violet-200/60 hover:bg-violet-500/10",
+            tabInactive:
+              "text-violet-200/40 hover:text-violet-200/60 hover:bg-violet-500/10",
             scrollThumb: "#7c3aed",
             scrollTrack: "#0f172a",
             bodyBg: "#0f172a",
@@ -245,8 +251,7 @@ function MiniWidget({ type }: { type: string }) {
 
 // ─── PiP inner UI ──────────────────────────────────────────
 function PipUI({ onClose }: { onClose: () => void }) {
-  const { activeTab, setActiveTab, pinnedWidgets } =
-    useFloatingWidget();
+  const { activeTab, setActiveTab, pinnedWidgets } = useFloatingWidget();
   const { theme } = useTheme();
   const { effectiveColorScheme } = useAppSettings();
   const colors = getThemeColors(theme, effectiveColorScheme);
@@ -260,33 +265,14 @@ function PipUI({ onClose }: { onClose: () => void }) {
     }));
 
   // If active tab is not in tabs list, default to first pinned
-  const currentTab = tabs.find((t) => t.id === activeTab) ? activeTab : tabs[0]?.id ?? "";
+  const currentTab = tabs.find((t) => t.id === activeTab)
+    ? activeTab
+    : (tabs[0]?.id ?? "");
 
   return (
     <div
       className={`flex flex-col h-full w-full ${colors.bg} ${colors.textPrimary} overflow-hidden`}
     >
-      {/* Title bar */}
-      <div
-        className={`flex items-center justify-between h-10 px-3 select-none border-b ${colors.border} shrink-0 ${colors.surface}`}
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          <Timer className={`w-4 h-4 ${colors.accent} shrink-0`} />
-          <span
-            className={`text-xs font-semibold ${colors.textSecondary} truncate`}
-          >
-            Qorvex PiP
-          </span>
-        </div>
-        <button
-          onClick={onClose}
-          className={`p-1.5 rounded-md text-white/30 ${colors.closeHover} transition-colors`}
-          title="Close PiP"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
       {/* Tab bar */}
       {tabs.length > 1 && (
         <div
@@ -314,9 +300,13 @@ function PipUI({ onClose }: { onClose: () => void }) {
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {pinnedWidgets.length === 0 ? (
-          <div className={`flex flex-col items-center justify-center h-full gap-2 ${colors.emptyText}`}>
+          <div
+            className={`flex flex-col items-center justify-center h-full gap-2 ${colors.emptyText}`}
+          >
             <Pin className="w-6 h-6" />
-            <p className="text-xs">Pin widgets from the dashboard to show them here</p>
+            <p className="text-xs">
+              Pin widgets from the dashboard to show them here
+            </p>
           </div>
         ) : (
           tabs.map((tab) => (
@@ -418,8 +408,7 @@ function PipPromptToast() {
 
 // ─── Main component ────────────────────────────────────────
 export default function FloatingWidgetWindow() {
-  const { isPipOpen, closePip, pipContainer } =
-    useFloatingWidget();
+  const { isPipOpen, closePip, pipContainer } = useFloatingWidget();
   const { theme } = useTheme();
   const { effectiveColorScheme } = useAppSettings();
   const [mounted, setMounted] = useState(false);
@@ -449,11 +438,11 @@ export default function FloatingWidgetWindow() {
     const root = document.documentElement;
     pipDoc.documentElement.setAttribute(
       "data-theme",
-      root.getAttribute("data-theme") || "lofi"
+      root.getAttribute("data-theme") || "lofi",
     );
     pipDoc.documentElement.setAttribute(
       "data-color-scheme",
-      effectiveColorScheme
+      effectiveColorScheme,
     );
     pipDoc.documentElement.className = root.className;
     pipDoc.body.style.backgroundColor = colors.bodyBg;
@@ -468,7 +457,7 @@ export default function FloatingWidgetWindow() {
     const root = document.documentElement;
     pipDoc.documentElement.setAttribute(
       "data-color-scheme",
-      root.getAttribute("data-color-scheme") || "dark"
+      root.getAttribute("data-color-scheme") || "dark",
     );
     pipDoc.documentElement.className = root.className;
   }, [isPipOpen, pipContainer, theme]);
@@ -479,7 +468,9 @@ export default function FloatingWidgetWindow() {
     <>
       <PipPromptToast />
       {/* PiP portal content */}
-      {isPipOpen && pipContainer && createPortal(<PipUI onClose={closePip} />, pipContainer)}
+      {isPipOpen &&
+        pipContainer &&
+        createPortal(<PipUI onClose={closePip} />, pipContainer)}
     </>
   );
 }

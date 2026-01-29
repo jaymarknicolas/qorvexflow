@@ -14,7 +14,10 @@ import {
   PinOff,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useFloatingWidget, hasDocumentPipSupport } from "@/components/floating-widget/floating-widget-context";
+import {
+  useFloatingWidget,
+  hasDocumentPipSupport,
+} from "@/components/floating-widget/floating-widget-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -154,9 +157,11 @@ export default function WidgetActions({
         </DropdownMenu> */}
 
         {/* Pin/Unpin for PiP */}
-        {canPip && (
+        {canPip && widgetType === "countdown" && (
           <button
-            onClick={() => pinned ? unpinWidget(widgetType) : pinWidget(widgetType)}
+            onClick={() =>
+              pinned ? unpinWidget(widgetType) : pinWidget(widgetType)
+            }
             className={`h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border transition-all duration-200 flex items-center justify-center group/btn ${
               pinned
                 ? "border-cyan-400/50 text-cyan-400 hover:text-cyan-300"

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Quote, RefreshCw, Heart, Copy, Check } from "lucide-react";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 interface QuoteData {
   _id: string;
@@ -35,6 +36,7 @@ const FALLBACK_QUOTES: QuoteData[] = [
 let persistedQuote: QuoteData | null = null;
 
 export default function MiniQuotes() {
+  const colors = useWidgetTheme();
   const [quote, setQuote] = useState<QuoteData | null>(
     () => persistedQuote
   );
@@ -93,14 +95,14 @@ export default function MiniQuotes() {
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0 overflow-hidden">
         {loading ? (
-          <RefreshCw className="w-5 h-5 text-white/30 animate-spin" />
+          <RefreshCw className={`w-5 h-5 ${colors.textMuted} animate-spin`} />
         ) : quote ? (
           <>
-            <Quote className="w-4 h-4 text-indigo-400 mb-2 flex-shrink-0" />
-            <blockquote className="text-sm font-medium text-white leading-relaxed px-1 overflow-y-auto">
+            <Quote className={`w-4 h-4 ${colors.accent} mb-2 flex-shrink-0`} />
+            <blockquote className={`text-sm font-medium ${colors.textPrimary} leading-relaxed px-1 overflow-y-auto`}>
               &ldquo;{quote.content}&rdquo;
             </blockquote>
-            <cite className="text-[11px] text-indigo-400 not-italic font-semibold mt-2 flex-shrink-0">
+            <cite className={`text-[11px] ${colors.accent} not-italic font-semibold mt-2 flex-shrink-0`}>
               — {quote.author}
             </cite>
           </>
@@ -112,7 +114,7 @@ export default function MiniQuotes() {
         <button
           onClick={handleCopy}
           disabled={!quote}
-          className="p-1.5 rounded-lg bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70 transition-colors disabled:opacity-30"
+          className={`p-1.5 rounded-lg ${colors.isLightMode ? "bg-black/5 text-black/40 hover:bg-black/10 hover:text-black/60" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70"} transition-colors disabled:opacity-30`}
         >
           {copied ? (
             <Check className="w-3.5 h-3.5 text-green-400" />
@@ -123,7 +125,7 @@ export default function MiniQuotes() {
         <button
           onClick={fetchQuote}
           disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors text-xs font-medium disabled:opacity-50"
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg ${colors.accentBg} ${colors.accent} ${colors.isLightMode ? "hover:bg-black/10" : "hover:bg-white/15"} transition-colors text-xs font-medium disabled:opacity-50`}
         >
           <RefreshCw
             className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
