@@ -34,6 +34,15 @@ let persistedTimerState: {
   lastUpdateTime: number;
 } | null = null;
 
+// ─── Cross-instance sync via EventTarget ───────────────────
+const pomodoroSyncBus = typeof window !== "undefined"
+  ? new EventTarget()
+  : (null as unknown as EventTarget);
+
+function emitPomodoroSync() {
+  pomodoroSyncBus?.dispatchEvent(new Event("sync"));
+}
+
 export function usePomodoro(): UsePomodoroReturn {
   // Load settings from localStorage
   const [settings, setSettings] = useState<PomodoroWidgetSettings>(() => {
@@ -78,6 +87,7 @@ export function usePomodoro(): UsePomodoroReturn {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Persist timer state to memory on every change
+  const skipNextSyncRef = useRef(false);
   useEffect(() => {
     persistedTimerState = {
       timeLeft,
@@ -85,7 +95,36 @@ export function usePomodoro(): UsePomodoroReturn {
       mode,
       lastUpdateTime: Date.now(),
     };
+    // Notify other instances
+    if (skipNextSyncRef.current) {
+      skipNextSyncRef.current = false;
+    } else {
+      emitPomodoroSync();
+    }
   }, [timeLeft, isRunning, mode]);
+
+  // Listen for sync events from other instances
+  useEffect(() => {
+    if (!pomodoroSyncBus) return;
+    const handler = () => {
+      if (!persistedTimerState) return;
+      const p = persistedTimerState;
+      // Only update if values actually differ to avoid loops
+      skipNextSyncRef.current = true;
+      setTimeLeft((prev) => {
+        if (p.isRunning) {
+          const elapsed = Math.floor((Date.now() - p.lastUpdateTime) / 1000);
+          const corrected = Math.max(0, p.timeLeft - elapsed);
+          return Math.abs(prev - corrected) > 1 ? corrected : prev;
+        }
+        return prev !== p.timeLeft ? p.timeLeft : prev;
+      });
+      setIsRunning((prev) => (prev !== p.isRunning ? p.isRunning : prev));
+      setMode((prev) => (prev !== p.mode ? p.mode : prev));
+    };
+    pomodoroSyncBus.addEventListener("sync", handler);
+    return () => pomodoroSyncBus.removeEventListener("sync", handler);
+  }, []);
 
   // Calculate durations based on settings
   const workDuration = settings.workDuration * 60;

@@ -14,6 +14,8 @@ import {
   Coffee,
   Sparkles,
   GripVertical,
+  Hourglass,
+  Watch,
   type LucideIcon,
 } from "lucide-react";
 import type { WidgetDefinition } from "@/types";
@@ -56,6 +58,8 @@ const saveUsedWidgets = (widgets: Set<string>) => {
 
 const widgets: WidgetDefinition[] = [
   { id: "pomodoro", icon: Timer, label: "Pomodoro" },
+  { id: "stopwatch", icon: Watch, label: "Stopwatch" },
+  { id: "countdown", icon: Hourglass, label: "Countdown" },
   { id: "tasks", icon: ListTodo, label: "Tasks" },
   { id: "music", icon: Music, label: "Music" },
   { id: "stats", icon: BarChart3, label: "Stats" },
@@ -112,6 +116,16 @@ const widgetColors: Record<string, { gradient: string; glow: string; icon: strin
     gradient: "from-amber-600 to-orange-600",
     glow: "group-hover:shadow-amber-500/30",
     icon: "text-amber-400",
+  },
+  stopwatch: {
+    gradient: "from-cyan-500 to-blue-500",
+    glow: "group-hover:shadow-cyan-500/30",
+    icon: "text-cyan-400",
+  },
+  countdown: {
+    gradient: "from-fuchsia-500 to-pink-500",
+    glow: "group-hover:shadow-fuchsia-500/30",
+    icon: "text-fuchsia-400",
   },
 };
 
@@ -270,6 +284,15 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
         bg: "bg-green-950/90",
       };
     }
+    if (theme === "coffeeshop") {
+      return {
+        primary: "from-amber-500 to-orange-500",
+        secondary: "from-yellow-500 to-amber-500",
+        glow: "shadow-amber-500/40",
+        border: "border-amber-500/30",
+        bg: "bg-stone-950/90",
+      };
+    }
     return {
       primary: "from-violet-500 to-purple-500",
       secondary: "from-cyan-500 to-blue-500",
@@ -403,7 +426,7 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 px-2">
                   <div className="flex items-center gap-2">
-                    <Sparkles className={`h-5 w-5 ${theme === "ghibli" ? "text-green-400" : "text-violet-400"}`} />
+                    <Sparkles className={`h-5 w-5 ${theme === "ghibli" ? "text-green-400" : theme === "coffeeshop" ? "text-amber-400" : "text-violet-400"}`} />
                     <h3 className="text-lg font-semibold text-white">Add Widgets</h3>
                   </div>
                   <span className="text-xs text-white/40">Drag to canvas</span>

@@ -36,11 +36,15 @@ import {
   Youtube,
   Quote,
   Coffee,
+  Hourglass,
+  Watch,
 } from "lucide-react";
 import NotesWidgetWYSIWYG from "@/components/notes-widget-wysiwyg";
 import YouTubeWidgetInput from "@/components/youtube-widget-input";
 import QuotesWidget from "@/components/quotes-widget";
 import CoffeeCounterWidget from "@/components/coffee-counter-widget";
+import StopwatchWidgetCanvas from "@/components/stopwatch-widget-canvas";
+import CountdownWidgetCanvas from "@/components/countdown-widget-canvas";
 import CanvasVideoBackground from "@/components/canvas-video-background";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
@@ -57,6 +61,8 @@ const MemoizedNotesWidgetWYSIWYG = memo(NotesWidgetWYSIWYG);
 const MemoizedYouTubeWidgetInput = memo(YouTubeWidgetInput);
 const MemoizedQuotesWidget = memo(QuotesWidget);
 const MemoizedCoffeeCounterWidget = memo(CoffeeCounterWidget);
+const MemoizedStopwatchWidgetCanvas = memo(StopwatchWidgetCanvas);
+const MemoizedCountdownWidgetCanvas = memo(CountdownWidgetCanvas);
 
 // Widget icon mapping
 const getWidgetIcon = (widgetType: WidgetType | string | null) => {
@@ -79,6 +85,10 @@ const getWidgetIcon = (widgetType: WidgetType | string | null) => {
       return Quote;
     case "coffee":
       return Coffee;
+    case "stopwatch":
+      return Watch;
+    case "countdown":
+      return Hourglass;
     default:
       return Timer;
   }
@@ -563,6 +573,10 @@ function renderWidget(type: WidgetType | null) {
       return <MemoizedQuotesWidget />;
     case "coffee":
       return <MemoizedCoffeeCounterWidget />;
+    case "stopwatch":
+      return <MemoizedStopwatchWidgetCanvas />;
+    case "countdown":
+      return <MemoizedCountdownWidgetCanvas />;
     default:
       return null;
   }

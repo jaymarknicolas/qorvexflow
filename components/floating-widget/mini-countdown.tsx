@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
+import { useCountdown } from "@/lib/hooks/useCountdown";
 
 const PRESETS = [
   { label: "5m", seconds: 5 * 60 },
@@ -23,76 +23,17 @@ function formatCountdown(totalSeconds: number) {
 }
 
 export default function MiniCountdown() {
-  const [duration, setDuration] = useState(25 * 60); // initial duration in seconds
-  const [remaining, setRemaining] = useState(25 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [finished, setFinished] = useState(false);
-
-  const endTimeRef = useRef<number>(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
-
-  const tick = useCallback(() => {
-    const left = Math.max(0, Math.round((endTimeRef.current - Date.now()) / 1000));
-    setRemaining(left);
-    if (left <= 0) {
-      setIsRunning(false);
-      setFinished(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isRunning) {
-      endTimeRef.current = Date.now() + remaining * 1000;
-      intervalRef.current = setInterval(tick, 250);
-    } else {
-      clearTimer();
-    }
-    return clearTimer;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning]);
-
-  // Sync on tab visibility
-  useEffect(() => {
-    const handle = () => {
-      if (document.visibilityState === "visible" && isRunning) {
-        tick();
-      }
-    };
-    document.addEventListener("visibilitychange", handle);
-    return () => document.removeEventListener("visibilitychange", handle);
-  }, [isRunning, tick]);
-
-  const start = () => {
-    if (remaining <= 0) return;
-    setFinished(false);
-    setIsRunning(true);
-  };
-
-  const pause = () => {
-    setIsRunning(false);
-  };
-
-  const reset = () => {
-    setIsRunning(false);
-    setFinished(false);
-    setRemaining(duration);
-  };
-
-  const selectPreset = (seconds: number) => {
-    setIsRunning(false);
-    setFinished(false);
-    setDuration(seconds);
-    setRemaining(seconds);
-  };
-
-  const progress = duration > 0 ? ((duration - remaining) / duration) * 100 : 0;
+  const {
+    duration,
+    remaining,
+    isRunning,
+    isFinished: finished,
+    progress,
+    start,
+    pause,
+    reset,
+    selectPreset,
+  } = useCountdown();
 
   return (
     <div className="flex flex-col h-full p-3 gap-3">

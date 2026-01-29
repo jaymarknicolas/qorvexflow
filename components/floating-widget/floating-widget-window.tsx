@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   Timer,
@@ -15,13 +15,13 @@ import {
   Quote,
   Coffee,
   Pin,
-  PictureInPicture2,
   Hourglass,
+  Watch,
+  PictureInPicture2,
 } from "lucide-react";
 import {
   useFloatingWidget,
   FloatingWidgetTab,
-  hasDocumentPipSupport,
 } from "./floating-widget-context";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
@@ -31,10 +31,16 @@ import MiniPomodoro from "./mini-pomodoro";
 import MiniTasks from "./mini-tasks";
 import MiniNotes from "./mini-notes";
 import MiniCountdown from "./mini-countdown";
+import MiniMusic from "./mini-music";
+import MiniStats from "./mini-stats";
+import MiniCalendar from "./mini-calendar";
+import MiniYouTube from "./mini-youtube";
+import MiniQuotes from "./mini-quotes";
+import MiniCoffee from "./mini-coffee";
 
 // ─── Icon map for all widget types ─────────────────────────
 const WIDGET_ICON: Record<string, typeof Timer> = {
-  stopwatch: Timer,
+  stopwatch: Watch,
   countdown: Hourglass,
   pomodoro: Clock,
   tasks: ListTodo,
@@ -67,6 +73,12 @@ const MemoizedMiniPomodoro = memo(MiniPomodoro);
 const MemoizedMiniTasks = memo(MiniTasks);
 const MemoizedMiniNotes = memo(MiniNotes);
 const MemoizedMiniCountdown = memo(MiniCountdown);
+const MemoizedMiniMusic = memo(MiniMusic);
+const MemoizedMiniStats = memo(MiniStats);
+const MemoizedMiniCalendar = memo(MiniCalendar);
+const MemoizedMiniYouTube = memo(MiniYouTube);
+const MemoizedMiniQuotes = memo(MiniQuotes);
+const MemoizedMiniCoffee = memo(MiniCoffee);
 
 // ─── Theme color map ───────────────────────────────────────
 function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
@@ -210,10 +222,22 @@ function MiniWidget({ type }: { type: string }) {
       return <MemoizedMiniNotes />;
     case "countdown":
       return <MemoizedMiniCountdown />;
+    case "music":
+      return <MemoizedMiniMusic />;
+    case "stats":
+      return <MemoizedMiniStats />;
+    case "calendar":
+      return <MemoizedMiniCalendar />;
+    case "youtube":
+      return <MemoizedMiniYouTube />;
+    case "quotes":
+      return <MemoizedMiniQuotes />;
+    case "coffee":
+      return <MemoizedMiniCoffee />;
     default:
       return (
         <div className="flex items-center justify-center h-full text-white/30 text-xs">
-          {WIDGET_LABEL[type] || type} (compact view coming soon)
+          {WIDGET_LABEL[type] || type}
         </div>
       );
   }
@@ -309,30 +333,86 @@ function PipUI({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Floating PiP launch button ─────────────────────────────
-function PipLaunchButton() {
-  const { openPip, isPipOpen, pinnedWidgets } = useFloatingWidget();
-  const [canPip, setCanPip] = useState(false);
+// ─── PiP prompt toast (Google Meet style) ───────────────────
+function PipPromptToast() {
+  const { showPipPrompt, hidePipPrompt, openPip, pinnedWidgets } =
+    useFloatingWidget();
+  const [visible, setVisible] = useState(false);
+  const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
-    setCanPip(hasDocumentPipSupport());
-  }, []);
+    if (showPipPrompt) {
+      // Slight delay for entrance animation
+      const t = setTimeout(() => setVisible(true), 100);
+      return () => clearTimeout(t);
+    } else {
+      setVisible(false);
+    }
+  }, [showPipPrompt]);
 
-  // Only show when: browser supports PiP, PiP is not already open, and there are pinned widgets
-  if (!canPip || isPipOpen || pinnedWidgets.length === 0) return null;
+  // No auto-hide — prompt stays until user explicitly closes or opens PiP
+
+  const handleOpen = useCallback(() => {
+    openPip().catch(() => {});
+  }, [openPip]);
+
+  const handleClose = useCallback(() => {
+    setExiting(true);
+    setTimeout(() => {
+      setExiting(false);
+      hidePipPrompt();
+    }, 300);
+  }, [hidePipPrompt]);
+
+  if (!showPipPrompt) return null;
 
   return (
-    <button
-      onClick={openPip}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-2xl bg-slate-800/90 backdrop-blur-xl border border-white/15 text-white/80 hover:text-white hover:border-cyan-400/50 hover:bg-slate-700/90 shadow-2xl shadow-black/40 transition-all duration-200 group"
-      title="Open Picture-in-Picture"
+    <div
+      className={`fixed bottom-6 right-6 z-50 max-w-sm transition-all duration-300 ${
+        visible && !exiting
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-4"
+      }`}
     >
-      <PictureInPicture2 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-      <span className="text-sm font-medium">Open PiP</span>
-      <span className="text-xs text-white/40 bg-white/10 px-1.5 py-0.5 rounded-md">
-        {pinnedWidgets.length}
-      </span>
-    </button>
+      <div className="bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl shadow-black/40 p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-cyan-500/15 flex-shrink-0">
+            <PictureInPicture2 className="w-5 h-5 text-cyan-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white mb-0.5">
+              Keep your widgets visible?
+            </p>
+            <p className="text-xs text-white/50 mb-3">
+              Open Picture-in-Picture to see your {pinnedWidgets.length} pinned
+              widget{pinnedWidgets.length !== 1 ? "s" : ""} while using other
+              tabs.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleOpen}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-white text-xs font-semibold transition-colors shadow-lg shadow-cyan-500/25"
+              >
+                <PictureInPicture2 className="w-3.5 h-3.5" />
+                Open PiP
+              </button>
+              <button
+                onClick={handleClose}
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/70 text-xs font-medium transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-md text-white/30 hover:text-white/60 hover:bg-white/10 transition-colors flex-shrink-0"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -397,8 +477,7 @@ export default function FloatingWidgetWindow() {
 
   return (
     <>
-      {/* Floating button to launch PiP (visible when widgets are pinned & PiP is closed) */}
-      <PipLaunchButton />
+      <PipPromptToast />
       {/* PiP portal content */}
       {isPipOpen && pipContainer && createPortal(<PipUI onClose={closePip} />, pipContainer)}
     </>

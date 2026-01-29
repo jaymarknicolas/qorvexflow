@@ -9,6 +9,7 @@ import {
   useEffect,
 } from "react";
 import { useLocalStorage } from "@/lib/hooks/useLocalStorage";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import type { WidgetType } from "@/types";
 
 export type FloatingWidgetTab = WidgetType;
@@ -44,6 +45,10 @@ interface FloatingWidgetContextValue {
   openPip: () => Promise<void>;
   closePip: () => void;
   pipContainer: HTMLElement | null;
+  // PiP prompt
+  showPipPrompt: boolean;
+  hidePipPrompt: () => void;
+  dismissPipPrompt: () => void;
 }
 
 const FloatingWidgetContext = createContext<FloatingWidgetContextValue | null>(
@@ -66,6 +71,8 @@ export function FloatingWidgetProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const { settings: appSettings, updateSettings } = useAppSettings();
+
   const [persisted, setPersisted] = useLocalStorage<FloatingWidgetPersisted>(
     "qorvex-floating-widget",
     DEFAULT_PERSISTED
@@ -176,13 +183,20 @@ export function FloatingWidgetProvider({
 
       pipWindowRef.current = pip;
 
-      // Copy stylesheets
+      // Copy stylesheets and wait for external ones to load
+      const linkLoadPromises: Promise<void>[] = [];
       for (const sheet of [...document.styleSheets]) {
         try {
           if (sheet.href) {
             const link = pip.document.createElement("link");
             link.rel = "stylesheet";
             link.href = sheet.href;
+            linkLoadPromises.push(
+              new Promise<void>((resolve) => {
+                link.onload = () => resolve();
+                link.onerror = () => resolve(); // don't block on error
+              })
+            );
             pip.document.head.appendChild(link);
           } else if (sheet.cssRules) {
             const style = pip.document.createElement("style");
@@ -224,7 +238,13 @@ export function FloatingWidgetProvider({
       mountDiv.id = "pip-root";
       mountDiv.style.width = "100%";
       mountDiv.style.height = "100vh";
+      // Hide until styles are ready
+      mountDiv.style.visibility = "hidden";
       pip.document.body.appendChild(mountDiv);
+
+      // Wait for all external stylesheets to load before showing content
+      await Promise.all(linkLoadPromises);
+      mountDiv.style.visibility = "visible";
 
       setPipContainer(mountDiv);
       setPipWindow(pip);
@@ -247,6 +267,182 @@ export function FloatingWidgetProvider({
     setPipWindow(null);
     setPipContainer(null);
   }, []);
+
+  // ─── PiP prompt ─────────────────────────────────────────────
+  // Prompt stays visible until user explicitly closes it or opens PiP.
+  // Closing/dismissing disables pipEnabled in settings.
+  // User re-enables via the settings modal toggle.
+  const [showPipPrompt, setShowPipPrompt] = useState(false);
+
+  const hidePipPrompt = useCallback(() => {
+    setShowPipPrompt(false);
+    updateSettings({ pipEnabled: false });
+  }, [updateSettings]);
+
+  const dismissPipPrompt = useCallback(() => {
+    setShowPipPrompt(false);
+    updateSettings({ pipEnabled: false });
+  }, [updateSettings]);
+
+  // ─── Auto PiP via Media Session API ─────────────────────
+  // Chrome fires "enterpictureinpicture" on tab switch only when:
+  //   1. A <video> element with `autopictureinpicture` attribute is playing
+  //   2. A media session handler for "enterpictureinpicture" is registered
+  // We create a tiny canvas-based video to satisfy requirement #1, and our
+  // handler opens Document PiP (instead of the default video-element PiP).
+  // If a real music/YouTube widget is already playing, we skip the fake video.
+  const openPipRef = useRef(openPip);
+  openPipRef.current = openPip;
+  const fakeVideoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!hasDocumentPipSupport() || !appSettings.pipEnabled) return;
+    if (!navigator.mediaSession) return;
+
+    // Check if any real media (music/YouTube widget) is currently playing
+    const hasActiveMedia = () => {
+      const els = document.querySelectorAll("audio, video");
+      for (const el of els) {
+        const media = el as HTMLMediaElement;
+        if (media === fakeVideoRef.current) continue;
+        if (!media.paused) return true;
+      }
+      return false;
+    };
+
+    // Create a tiny invisible <video> playing a canvas stream.
+    // The `autopictureinpicture` attribute tells Chrome to trigger the
+    // media session "enterpictureinpicture" action when the user leaves the tab.
+    let video: HTMLVideoElement | null = null;
+    let canvas: HTMLCanvasElement | null = null;
+
+    const startFakeVideo = () => {
+      if (fakeVideoRef.current) return;
+      try {
+        canvas = document.createElement("canvas");
+        canvas.width = 2;
+        canvas.height = 2;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        // Draw a single pixel so the stream isn't empty
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, 2, 2);
+
+        // Must keep drawing for the stream to stay "active"
+        canvasIntervalRef.current = setInterval(() => {
+          ctx.fillRect(0, 0, 2, 2);
+        }, 1000);
+
+        const stream = canvas.captureStream(1); // 1 fps
+        video = document.createElement("video");
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+        video.setAttribute("autopictureinpicture", "");
+        video.style.cssText =
+          "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;";
+        document.body.appendChild(video);
+        video.play().catch(() => {});
+        fakeVideoRef.current = video;
+      } catch {
+        // Canvas/stream not available
+      }
+    };
+
+    const stopFakeVideo = () => {
+      if (fakeVideoRef.current) {
+        fakeVideoRef.current.pause();
+        fakeVideoRef.current.srcObject = null;
+        fakeVideoRef.current.remove();
+        fakeVideoRef.current = null;
+      }
+      if (canvasIntervalRef.current) {
+        clearInterval(canvasIntervalRef.current);
+        canvasIntervalRef.current = null;
+      }
+      video = null;
+      canvas = null;
+    };
+
+    // Only create fake video if no real media is already playing
+    if (!hasActiveMedia()) {
+      startFakeVideo();
+    }
+
+    // Swap between fake video and real media dynamically
+    const onPlay = () => {
+      if (hasActiveMedia()) stopFakeVideo();
+    };
+    const onPause = () => {
+      if (!hasActiveMedia()) startFakeVideo();
+    };
+    document.addEventListener("play", onPlay, true);
+    document.addEventListener("pause", onPause, true);
+    document.addEventListener("ended", onPause, true);
+
+    // This handler is called by Chrome when the user switches tabs
+    // (triggered by the autopictureinpicture video or real media).
+    // We open Document PiP here instead of the default video PiP.
+    const handler = async () => {
+      if (!pipWindowRef.current) {
+        await openPipRef.current();
+      }
+    };
+
+    try {
+      // @ts-expect-error -- "enterpictureinpicture" not yet in TS MediaSessionAction type
+      navigator.mediaSession.setActionHandler("enterpictureinpicture", handler);
+    } catch {
+      // Browser doesn't support enterpictureinpicture action
+    }
+
+    return () => {
+      try {
+        // @ts-expect-error -- same as above
+        navigator.mediaSession.setActionHandler("enterpictureinpicture", null);
+      } catch {}
+      document.removeEventListener("play", onPlay, true);
+      document.removeEventListener("pause", onPause, true);
+      document.removeEventListener("ended", onPause, true);
+      stopFakeVideo();
+    };
+  }, [appSettings.pipEnabled]);
+
+  // Fallback: show prompt when user returns to the tab (if auto PiP didn't trigger)
+  useEffect(() => {
+    if (!hasDocumentPipSupport() || !appSettings.pipEnabled) return;
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        !pipWindowRef.current
+      ) {
+        setShowPipPrompt(true);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [appSettings.pipEnabled]);
+
+  // Sync prompt with pipEnabled toggle
+  useEffect(() => {
+    if (!appSettings.pipEnabled) {
+      setShowPipPrompt(false);
+    } else if (appSettings.pipEnabled && !pipWindowRef.current && hasDocumentPipSupport()) {
+      setShowPipPrompt(true);
+    }
+  }, [appSettings.pipEnabled]);
+
+  // Hide prompt when PiP opens
+  useEffect(() => {
+    if (pipWindow) {
+      setShowPipPrompt(false);
+    }
+  }, [pipWindow]);
 
   useEffect(() => {
     return () => {
@@ -317,6 +513,9 @@ export function FloatingWidgetProvider({
         openPip,
         closePip,
         pipContainer,
+        showPipPrompt,
+        hidePipPrompt,
+        dismissPipPrompt,
       }}
     >
       {children}

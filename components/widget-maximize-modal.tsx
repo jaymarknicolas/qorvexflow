@@ -7,6 +7,8 @@ import TaskList from "./task-list";
 import MusicPlayer from "./music-player";
 import FocusStats from "./focus-stats";
 import CalendarWidget from "./calendar-widget";
+import StopwatchWidgetCanvas from "./stopwatch-widget-canvas";
+import CountdownWidgetCanvas from "./countdown-widget-canvas";
 
 interface WidgetMaximizeModalProps {
   isOpen: boolean;
@@ -30,6 +32,10 @@ const getWidgetTitle = (type: WidgetType | null): string => {
       return "Notes";
     case "youtube":
       return "YouTube Player";
+    case "stopwatch":
+      return "Stopwatch & Countdown";
+    case "countdown":
+      return "Stopwatch & Countdown";
     default:
       return "Widget";
   }
@@ -53,6 +59,10 @@ const renderMaximizedWidget = (type: WidgetType | null) => {
     case "youtube":
       // Will be implemented
       return <div className="text-white/60 p-8 text-center">YouTube widget coming soon...</div>;
+    case "stopwatch":
+      return <StopwatchWidgetCanvas />;
+    case "countdown":
+      return <CountdownWidgetCanvas />;
     default:
       return null;
   }

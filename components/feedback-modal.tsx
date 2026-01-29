@@ -173,7 +173,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
       // Auto close after success
       setTimeout(() => {
         handleClose();
-      }, 2000);
+      }, 3500);
     } catch (error) {
       setSubmitStatus("error");
       setErrorMessage(error instanceof Error ? error.message : "Something went wrong");
@@ -241,9 +241,11 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                   >
                     <CheckCircle2 className="w-8 h-8 text-green-400" />
                   </motion.div>
-                  <h3 className="text-xl font-bold text-white mb-2">Thank You!</h3>
-                  <p className="text-white/60 text-sm">
-                    Your feedback has been sent successfully. We appreciate your input!
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Feedback Sent!
+                  </h3>
+                  <p className="text-white/60 text-sm max-w-xs">
+                    Your message has been received. We read every piece of feedback and it directly shapes how Qorvex evolves. Thank you for helping us improve.
                   </p>
                 </div>
               ) : (

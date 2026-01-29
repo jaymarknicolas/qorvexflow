@@ -44,7 +44,7 @@ const CanvasVideoBackground: React.FC<CanvasVideoBackgroundProps> = ({
       requestAnimationFrame(draw);
     };
 
-    video.play();
+    video.play().catch(() => {});
     draw();
 
     return () => window.removeEventListener("resize", resizeCanvas);
