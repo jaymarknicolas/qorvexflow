@@ -22,12 +22,12 @@ export default function MiniCalendar() {
   const daysInMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
-    0
+    0,
   ).getDate();
   const firstDay = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
-    1
+    1,
   ).getDay();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
@@ -36,9 +36,9 @@ export default function MiniCalendar() {
     () =>
       focusTracker.getActivityForMonth(
         currentDate.getFullYear(),
-        currentDate.getMonth()
+        currentDate.getMonth(),
       ),
-    [currentDate, focusTracker]
+    [currentDate, focusTracker],
   );
 
   const getDateKey = (day: number) => {
@@ -48,15 +48,19 @@ export default function MiniCalendar() {
 
   const prevMonth = () =>
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     );
   const nextMonth = () =>
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     );
 
+  const colors = useWidgetTheme();
+
   return (
-    <div className="flex flex-col h-full p-2 gap-1">
+    <div
+      className={`flex flex-col h-full p-2 gap-1 bg-gradient-to-br ${colors.gradient} `}
+    >
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <button
@@ -102,16 +106,16 @@ export default function MiniCalendar() {
           const bgColor = isFuture
             ? "bg-white/5"
             : isToday
-            ? "bg-violet-500/80"
-            : level === 0
-            ? "bg-white/5"
-            : level === 1
-            ? "bg-violet-900/60"
-            : level === 2
-            ? "bg-violet-700/70"
-            : level === 3
-            ? "bg-violet-500/80"
-            : "bg-violet-400";
+              ? "bg-violet-500/80"
+              : level === 0
+                ? "bg-white/5"
+                : level === 1
+                  ? "bg-violet-900/60"
+                  : level === 2
+                    ? "bg-violet-700/70"
+                    : level === 3
+                      ? "bg-violet-500/80"
+                      : "bg-violet-400";
 
           return (
             <div
@@ -120,8 +124,8 @@ export default function MiniCalendar() {
                 isToday
                   ? "text-white font-bold"
                   : isFuture
-                  ? "text-white/20"
-                  : "text-white/60"
+                    ? "text-white/20"
+                    : "text-white/60"
               }`}
             >
               {day}
@@ -142,7 +146,8 @@ export default function MiniCalendar() {
         <div className="flex items-center gap-1">
           <Clock className="w-2.5 h-2.5 text-white/40" />
           <span className="text-[10px] font-bold text-white">
-            {Math.round((focusTracker.stats.today.totalMinutes / 60) * 10) / 10}h
+            {Math.round((focusTracker.stats.today.totalMinutes / 60) * 10) / 10}
+            h
           </span>
           <span className="text-[8px] text-white/40">today</span>
         </div>

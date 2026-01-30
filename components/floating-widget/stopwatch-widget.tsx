@@ -2,6 +2,7 @@
 
 import { Play, Pause, RotateCcw, Flag } from "lucide-react";
 import { useFloatingWidget } from "./floating-widget-context";
+import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 export default function StopwatchWidget() {
   const {
@@ -14,9 +15,12 @@ export default function StopwatchWidget() {
   } = useFloatingWidget();
 
   const { elapsed, isRunning, laps } = stopwatch;
+  const colors = useWidgetTheme();
 
   return (
-    <div className="flex flex-col h-full p-3 gap-3">
+    <div
+      className={`flex flex-col justify-center items-center h-full p-3 gap-3 bg-gradient-to-br ${colors.gradient} `}
+    >
       {/* Time Display */}
       <div className="flex-shrink-0 text-center">
         <div className="text-3xl font-mono font-bold text-white tracking-wider">

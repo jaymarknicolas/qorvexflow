@@ -5,9 +5,12 @@ import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 export default function MiniNotes() {
   const { content, updateContent, characterCount } = useNotes();
+  const colors = useWidgetTheme();
 
   return (
-    <div className="flex flex-col h-full p-3">
+    <div
+      className={`flex flex-col h-full p-3  bg-gradient-to-br ${colors.gradient} `}
+    >
       <textarea
         value={content}
         onChange={(e) => updateContent(e.target.value)}

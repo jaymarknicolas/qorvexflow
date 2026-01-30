@@ -38,13 +38,17 @@ export default function MiniCountdown() {
   const colors = useWidgetTheme();
 
   return (
-    <div className={`flex flex-col h-full bg-gradient-to-br ${colors.gradient} overflow-hidden`}>
+    <div
+      className={`flex flex-col h-full bg-gradient-to-br ${colors.gradient} overflow-hidden`}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 px-3 pt-3 pb-1 shrink-0">
         <div className={`p-1 rounded-lg ${colors.accentBg}`}>
           <Hourglass className={`w-3.5 h-3.5 ${colors.iconColor}`} />
         </div>
-        <h2 className={`text-xs font-bold ${colors.textPrimary}`}>Countdown Timer</h2>
+        <h2 className={`text-xs font-bold ${colors.textPrimary}`}>
+          Countdown Timer
+        </h2>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-3 gap-2 min-h-0">
@@ -55,21 +59,23 @@ export default function MiniCountdown() {
               finished
                 ? "text-red-400 animate-pulse"
                 : remaining <= 10 && isRunning
-                ? "text-amber-400"
-                : colors.textPrimary
+                  ? "text-amber-400"
+                  : colors.textPrimary
             }`}
           >
             {formatCountdown(remaining)}
           </div>
           {/* Progress bar */}
-          <div className={`mt-2 h-1.5 rounded-full ${colors.isLightMode ? "bg-black/10" : "bg-white/10"} overflow-hidden max-w-[200px] mx-auto`}>
+          <div
+            className={`mt-2 h-1.5 rounded-full ${colors.isLightMode ? "bg-black/10" : "bg-white/10"} overflow-hidden max-w-[200px] mx-auto`}
+          >
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 finished
                   ? "bg-red-500"
                   : remaining <= 10 && isRunning
-                  ? "bg-amber-500"
-                  : colors.progressBg
+                    ? "bg-amber-500"
+                    : colors.progressBg
               }`}
               style={{ width: `${progress}%` }}
             />
@@ -80,7 +86,9 @@ export default function MiniCountdown() {
             </p>
           )}
           {isRunning && !finished && (
-            <p className={`mt-1 text-[10px] ${colors.accent} flex items-center justify-center gap-1`}>
+            <p
+              className={`mt-1 text-[10px] ${colors.accent} flex items-center justify-center gap-1`}
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
               Counting down
             </p>
@@ -123,7 +131,9 @@ export default function MiniCountdown() {
       {/* Presets */}
       {!isRunning && (
         <div className="shrink-0 px-3 pb-3">
-          <p className={`text-[9px] uppercase tracking-wider ${colors.textMuted} mb-1.5 text-center`}>
+          <p
+            className={`text-[9px] uppercase tracking-wider ${colors.textMuted} mb-1.5 text-center`}
+          >
             Quick presets
           </p>
           <div className="flex flex-wrap items-center justify-center gap-1.5">

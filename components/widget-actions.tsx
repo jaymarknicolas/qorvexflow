@@ -90,93 +90,35 @@ export default function WidgetActions({
           <GripVertical className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
         </div>
 
-        {/* Copy Widget */}
-        {/* <button
-          onClick={handleCopy}
-          className="h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border border-white/10 text-white/70 hover:text-cyan-400 hover:border-cyan-400/50 hover:bg-slate-700 transition-all duration-200 flex items-center justify-center group/btn"
-          aria-label="Copy widget"
-        >
-          {showCopyFeedback ? (
-            <Check className="w-3.5 h-3.5 text-cyan-400" />
-          ) : (
-            <Copy className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-          )}
-        </button> */}
-
-        {/* Maximize Widget */}
-        {/* <button
-          onClick={onMaximize}
-          className="h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border border-white/10 text-white/70 hover:text-blue-400 hover:border-blue-400/50 hover:bg-slate-700 transition-all duration-200 flex items-center justify-center group/btn"
-          aria-label="Maximize widget"
-        >
-          <Maximize2 className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-        </button> */}
-
-        {/* Settings Dropdown */}
-        {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border border-white/10 text-white/70 hover:text-purple-400 hover:border-purple-400/50 hover:bg-slate-700 transition-all duration-200 flex items-center justify-center group/btn"
-              aria-label="Widget settings"
-            >
-              <Settings className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="bg-slate-800/95 backdrop-blur-xl border-white/20"
-          >
-            <DropdownMenuLabel className="text-white">
-              {widgetType
-                ? `${widgetType.charAt(0).toUpperCase()}${widgetType.slice(
-                    1
-                  )} Settings`
-                : "Widget Settings"}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-white/10" />
-            {onResetSettings && (
-              <DropdownMenuItem
-                onClick={onResetSettings}
-                className="text-white/80 hover:text-white focus:text-white cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Reset to Defaults
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={() => {
-                // Open help documentation (can be implemented later)
-                console.log(`Help for ${widgetType} widget`);
-              }}
-              className="text-white/80 hover:text-white focus:text-white cursor-pointer"
-            >
-              <HelpCircle className="w-4 h-4 mr-2" />
-              Help
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu> */}
-
         {/* Pin/Unpin for PiP */}
-        {canPip && widgetType === "countdown" && (
-          <button
-            onClick={() =>
-              pinned ? unpinWidget(widgetType) : pinWidget(widgetType)
-            }
-            className={`h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border transition-all duration-200 flex items-center justify-center group/btn ${
-              pinned
-                ? "border-cyan-400/50 text-cyan-400 hover:text-cyan-300"
-                : "border-white/10 text-white/70 hover:text-cyan-400 hover:border-cyan-400/50"
-            } hover:bg-slate-700`}
-            aria-label={pinned ? "Unpin from PiP" : "Pin to PiP"}
-            title={pinned ? "Unpin from PiP" : "Pin to PiP"}
-          >
-            {pinned ? (
-              <PinOff className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-            ) : (
-              <Pin className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
-            )}
-          </button>
-        )}
+        {canPip &&
+          [
+            "countdown",
+            "stopwatch",
+            "quotes",
+            "calendar",
+            "stats",
+            "notes",
+          ].includes(widgetType) && (
+            <button
+              onClick={() =>
+                pinned ? unpinWidget(widgetType) : pinWidget(widgetType)
+              }
+              className={`h-7 w-7 rounded-lg bg-slate-700/80 backdrop-blur-sm border transition-all duration-200 flex items-center justify-center group/btn ${
+                pinned
+                  ? "border-cyan-400/50 text-cyan-400 hover:text-cyan-300"
+                  : "border-white/10 text-white/70 hover:text-cyan-400 hover:border-cyan-400/50"
+              } hover:bg-slate-700`}
+              aria-label={pinned ? "Unpin from PiP" : "Pin to PiP"}
+              title={pinned ? "Unpin from PiP" : "Pin to PiP"}
+            >
+              {pinned ? (
+                <PinOff className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+              ) : (
+                <Pin className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+              )}
+            </button>
+          )}
 
         {/* Remove Widget */}
         <button

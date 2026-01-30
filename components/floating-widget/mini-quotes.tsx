@@ -37,9 +37,7 @@ let persistedQuote: QuoteData | null = null;
 
 export default function MiniQuotes() {
   const colors = useWidgetTheme();
-  const [quote, setQuote] = useState<QuoteData | null>(
-    () => persistedQuote
-  );
+  const [quote, setQuote] = useState<QuoteData | null>(() => persistedQuote);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -58,7 +56,7 @@ export default function MiniQuotes() {
       setQuote(data);
     } catch {
       setQuote(
-        FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)]
+        FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)],
       );
     } finally {
       setLoading(false);
@@ -83,15 +81,15 @@ export default function MiniQuotes() {
 
   const handleCopy = async () => {
     if (!quote) return;
-    await navigator.clipboard.writeText(
-      `"${quote.content}" — ${quote.author}`
-    );
+    await navigator.clipboard.writeText(`"${quote.content}" — ${quote.author}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="flex flex-col h-full p-3 gap-2">
+    <div
+      className={`flex flex-col h-full p-3 gap-2  bg-gradient-to-br ${colors.gradient} `}
+    >
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0 overflow-hidden">
         {loading ? (
@@ -99,10 +97,14 @@ export default function MiniQuotes() {
         ) : quote ? (
           <>
             <Quote className={`w-4 h-4 ${colors.accent} mb-2 flex-shrink-0`} />
-            <blockquote className={`text-sm font-medium ${colors.textPrimary} leading-relaxed px-1 overflow-y-auto`}>
+            <blockquote
+              className={`text-sm font-medium ${colors.textPrimary} leading-relaxed px-1 overflow-y-auto`}
+            >
               &ldquo;{quote.content}&rdquo;
             </blockquote>
-            <cite className={`text-[11px] ${colors.accent} not-italic font-semibold mt-2 flex-shrink-0`}>
+            <cite
+              className={`text-[11px] ${colors.accent} not-italic font-semibold mt-2 flex-shrink-0`}
+            >
               — {quote.author}
             </cite>
           </>
