@@ -180,7 +180,11 @@ export default function CoffeeCounterWidget() {
           <svg
             viewBox="0 0 24 24"
             className={`w-6 h-6 sm:w-7 sm:h-7 transition-all duration-300 ${
-              isFilled ? colors.coffeeColor : isLightMode ? "text-black/20" : "text-white/20"
+              isFilled
+                ? colors.coffeeColor
+                : isLightMode
+                  ? "text-black/20"
+                  : "text-white/20"
             }`}
             fill="currentColor"
           >
@@ -209,10 +213,14 @@ export default function CoffeeCounterWidget() {
               transition={{ duration: 2, repeat: Infinity }}
               className="absolute -top-1 left-1/2 -translate-x-1/2"
             >
-              <div className={`${isLightMode ? "text-black/30" : "text-white/30"} text-[8px]`}>~</div>
+              <div
+                className={`${isLightMode ? "text-black/30" : "text-white/30"} text-[8px]`}
+              >
+                ~
+              </div>
             </motion.div>
           )}
-        </motion.div>
+        </motion.div>,
       );
     }
     return cups;
@@ -237,7 +245,9 @@ export default function CoffeeCounterWidget() {
                 <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
                   <Coffee className={`w-4 h-4 ${colors.iconColor}`} />
                 </div>
-                <h2 className={`text-lg sm:text-xl font-bold ${colors.textPrimary} truncate`}>
+                <h2
+                  className={`text-lg sm:text-xl font-bold ${colors.textPrimary} truncate`}
+                >
                   Coffee Counter
                 </h2>
               </div>
@@ -267,9 +277,9 @@ export default function CoffeeCounterWidget() {
           </div>
 
           {/* Main Counter Display */}
-          <div className="flex-1 flex flex-col items-center justify-center min-h-0">
+          <div className="flex-1 flex flex-col py-2 items-center justify-center min-h-0">
             {/* Big number display */}
-            <div className="relative mb-4">
+            <div className="relative mb-2 flex flex-col justify-center items-center">
               <AnimatePresence>
                 {showAddAnimation && (
                   <motion.div
@@ -286,7 +296,7 @@ export default function CoffeeCounterWidget() {
                 key={stats.todayCount}
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                className={`text-5xl sm:text-6xl lg:text-7xl font-bold ${
+                className={`text-5xl font-bold ${
                   isOverLimit ? "text-red-400" : colors.textPrimary
                 }`}
               >
@@ -298,13 +308,15 @@ export default function CoffeeCounterWidget() {
             </div>
 
             {/* Coffee cups visualization */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4 px-4 max-w-[200px]">
+            <div className="flex flex-wrap justify-center gap-2 mb-2 px-4 max-w-[200px]">
               {renderCoffeeCups()}
             </div>
 
             {/* Progress bar */}
-            <div className="w-full max-w-[200px] mb-4">
-              <div className={`h-2 ${isLightMode ? 'bg-black/10' : 'bg-white/10'} rounded-full overflow-hidden`}>
+            <div className="w-full max-w-[200px] mb-2">
+              <div
+                className={`h-2 ${isLightMode ? "bg-black/10" : "bg-white/10"} rounded-full overflow-hidden`}
+              >
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
@@ -313,8 +325,8 @@ export default function CoffeeCounterWidget() {
                     isOverLimit
                       ? "bg-red-500"
                       : isNearLimit
-                      ? "bg-amber-500"
-                      : colors.progressBg
+                        ? "bg-amber-500"
+                        : colors.progressBg
                   }`}
                 />
               </div>
@@ -328,7 +340,7 @@ export default function CoffeeCounterWidget() {
               whileTap={{ scale: isOverLimit ? 1 : 0.95 }}
               className={`px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
                 isOverLimit
-                  ? `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} cursor-not-allowed`
+                  ? `${isLightMode ? "bg-black/10" : "bg-white/10"} ${colors.textMuted} cursor-not-allowed`
                   : `bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-lg shadow-amber-500/20`
               }`}
             >
@@ -348,34 +360,46 @@ export default function CoffeeCounterWidget() {
 
           {/* Stats Footer */}
           <div
-            className={`grid grid-cols-3 gap-2 sm:gap-4 pt-4 border-t ${colors.border} flex-shrink-0`}
+            className={`grid grid-cols-3 gap-2 sm:gap-4 pt-2 border-t ${colors.border} flex-shrink-0`}
           >
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Flame className="w-3 h-3 text-orange-400" />
               </div>
-              <div className={`text-lg sm:text-xl font-bold ${colors.textPrimary}`}>
+              <div
+                className={`text-xs sm:text-base font-bold ${colors.textPrimary}`}
+              >
                 {stats.todayCaffeine}
               </div>
-              <div className={`text-[10px] sm:text-xs ${colors.textMuted}`}>mg caffeine</div>
+              <div className={`text-[10px] ${colors.textMuted}`}>
+                mg caffeine
+              </div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <TrendingUp className="w-3 h-3 text-green-400" />
               </div>
-              <div className={`text-lg sm:text-xl font-bold ${colors.textPrimary}`}>
+              <div
+                className={`text-xs sm:text-base font-bold ${colors.textPrimary}`}
+              >
                 {stats.currentStreak}
               </div>
-              <div className={`text-[10px] sm:text-xs ${colors.textMuted}`}>day streak</div>
+              <div className={`text-[10px] ${colors.textMuted}`}>
+                day streak
+              </div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Clock className="w-3 h-3 text-blue-400" />
               </div>
-              <div className={`text-lg sm:text-xl font-bold ${colors.textPrimary}`}>
+              <div
+                className={`text-xs sm:text-base font-bold ${colors.textPrimary}`}
+              >
                 {timeUntilReset}
               </div>
-              <div className={`text-[10px] sm:text-xs ${colors.textMuted}`}>until reset</div>
+              <div className={`text-[10px] ${colors.textMuted}`}>
+                until reset
+              </div>
             </div>
           </div>
         </div>
@@ -399,7 +423,9 @@ export default function CoffeeCounterWidget() {
               exit={{ scale: 0.9, opacity: 0 }}
               className={`relative w-full max-w-sm bg-gradient-to-br ${colors.gradient} rounded-2xl border ${colors.border} p-6 shadow-2xl`}
             >
-              <h3 className={`text-xl font-bold ${colors.textPrimary} mb-4 flex items-center gap-2`}>
+              <h3
+                className={`text-xl font-bold ${colors.textPrimary} mb-4 flex items-center gap-2`}
+              >
                 <Settings className={`w-5 h-5 ${colors.iconColor}`} />
                 Coffee Settings
               </h3>
@@ -417,7 +443,9 @@ export default function CoffeeCounterWidget() {
                     <Minus className={`w-5 h-5 ${colors.textPrimary}`} />
                   </button>
                   <div className="flex-1 text-center">
-                    <span className={`text-3xl font-bold ${colors.textPrimary}`}>
+                    <span
+                      className={`text-3xl font-bold ${colors.textPrimary}`}
+                    >
                       {tempLimit}
                     </span>
                     <span className={`${colors.textMuted} ml-2`}>cups</span>
@@ -433,7 +461,9 @@ export default function CoffeeCounterWidget() {
 
               {/* Info */}
               <div className={`p-3 rounded-lg ${colors.accentBg} mb-6`}>
-                <p className={`text-xs ${isLightMode ? colors.textMuted : "text-white/70"}`}>
+                <p
+                  className={`text-xs ${isLightMode ? colors.textMuted : "text-white/70"}`}
+                >
                   The FDA recommends limiting caffeine intake to 400mg per day
                   (about 4 cups of coffee) for healthy adults.
                 </p>
@@ -443,7 +473,7 @@ export default function CoffeeCounterWidget() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowSettings(false)}
-                  className={`flex-1 px-4 py-2 ${isLightMode ? 'bg-black/5 hover:bg-black/10' : 'bg-white/10 hover:bg-white/20'} ${colors.textPrimary} rounded-lg transition-colors`}
+                  className={`flex-1 px-4 py-2 ${isLightMode ? "bg-black/5 hover:bg-black/10" : "bg-white/10 hover:bg-white/20"} ${colors.textPrimary} rounded-lg transition-colors`}
                 >
                   Cancel
                 </button>
@@ -456,7 +486,7 @@ export default function CoffeeCounterWidget() {
               </div>
             </motion.div>
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );
