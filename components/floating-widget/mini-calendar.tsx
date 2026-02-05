@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Flame, Clock, Calendar } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  Clock,
+  Calendar,
+} from "lucide-react";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
@@ -31,12 +37,12 @@ export default function MiniCalendar() {
   const daysInMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
-    0
+    0,
   ).getDate();
   const firstDay = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
-    1
+    1,
   ).getDay();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
@@ -45,9 +51,9 @@ export default function MiniCalendar() {
     () =>
       focusTracker.getActivityForMonth(
         currentDate.getFullYear(),
-        currentDate.getMonth()
+        currentDate.getMonth(),
       ),
-    [currentDate, focusTracker]
+    [currentDate, focusTracker],
   );
 
   const getDateKey = (day: number) => {
@@ -57,22 +63,34 @@ export default function MiniCalendar() {
 
   const prevMonth = () =>
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     );
   const nextMonth = () =>
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     );
 
   // Check if a day is in the future (compare using local dates)
   const isFutureDay = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day,
+    );
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
     return date > todayStart;
   };
 
   // Theme-aware activity level colors
-  const getActivityBgColor = (level: number, isToday: boolean, isFuture: boolean) => {
+  const getActivityBgColor = (
+    level: number,
+    isToday: boolean,
+    isFuture: boolean,
+  ) => {
     if (isFuture) return colors.isLightMode ? "bg-black/5" : "bg-white/5";
     if (isToday) return colors.progressBg;
     if (level === 0) return colors.isLightMode ? "bg-black/5" : "bg-white/5";
@@ -80,24 +98,32 @@ export default function MiniCalendar() {
     // Theme-aware activity levels
     if (colors.isLightMode) {
       switch (level) {
-        case 1: return "bg-current opacity-20";
-        case 2: return "bg-current opacity-40";
-        case 3: return "bg-current opacity-60";
-        default: return "bg-current opacity-80";
+        case 1:
+          return "bg-current opacity-20";
+        case 2:
+          return "bg-current opacity-40";
+        case 3:
+          return "bg-current opacity-60";
+        default:
+          return "bg-current opacity-80";
       }
     } else {
       switch (level) {
-        case 1: return `${colors.accentBg} opacity-60`;
-        case 2: return `${colors.accentBg} opacity-80`;
-        case 3: return colors.accentBg;
-        default: return colors.progressBg;
+        case 1:
+          return `${colors.accentBg} opacity-60`;
+        case 2:
+          return `${colors.accentBg} opacity-80`;
+        case 3:
+          return colors.accentBg;
+        default:
+          return colors.progressBg;
       }
     }
   };
 
   return (
     <div
-      className={`flex flex-col h-full p-2 gap-1 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
+      className={`flex flex-col h-full p-2 gap-1 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">

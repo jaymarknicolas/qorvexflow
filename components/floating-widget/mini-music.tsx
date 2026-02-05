@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, SkipBack, SkipForward, Disc3, Shuffle } from "lucide-react";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Disc3,
+  Shuffle,
+} from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 import { STORAGE_KEYS } from "@/lib/constants";
 
@@ -133,7 +140,7 @@ export default function MiniMusic() {
         id: i,
         baseHeight: Math.sin(i * 0.5) * 20 + 30,
       })),
-    []
+    [],
   );
 
   const togglePlay = useCallback(() => {
@@ -142,7 +149,7 @@ export default function MiniMusic() {
 
   const shuffleStream = useCallback(() => {
     const availableStreams = DEFAULT_LOFI_STREAMS.filter(
-      (s) => s.id !== musicState.currentStream?.id
+      (s) => s.id !== musicState.currentStream?.id,
     );
     const randomStream =
       availableStreams[Math.floor(Math.random() * availableStreams.length)];
@@ -151,7 +158,7 @@ export default function MiniMusic() {
 
   const nextStream = useCallback(() => {
     const currentIndex = DEFAULT_LOFI_STREAMS.findIndex(
-      (s) => s.id === musicState.currentStream?.id
+      (s) => s.id === musicState.currentStream?.id,
     );
     const nextIndex = (currentIndex + 1) % DEFAULT_LOFI_STREAMS.length;
     updateMusicState({ currentStream: DEFAULT_LOFI_STREAMS[nextIndex] });
@@ -159,7 +166,7 @@ export default function MiniMusic() {
 
   const prevStream = useCallback(() => {
     const currentIndex = DEFAULT_LOFI_STREAMS.findIndex(
-      (s) => s.id === musicState.currentStream?.id
+      (s) => s.id === musicState.currentStream?.id,
     );
     const prevIndex =
       currentIndex <= 0 ? DEFAULT_LOFI_STREAMS.length - 1 : currentIndex - 1;
@@ -170,7 +177,7 @@ export default function MiniMusic() {
 
   return (
     <div
-      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
+      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">

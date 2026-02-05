@@ -20,7 +20,11 @@ export default function MiniPomodoro() {
   const colors = useWidgetTheme();
 
   const modeLabel =
-    mode === "work" ? "Focus" : mode === "short-break" ? "Short Break" : "Long Break";
+    mode === "work"
+      ? "Focus"
+      : mode === "short-break"
+        ? "Short Break"
+        : "Long Break";
 
   // Mode-specific colors for badges
   const modeBadgeStyle =
@@ -39,7 +43,7 @@ export default function MiniPomodoro() {
 
   return (
     <div
-      className={`flex flex-col h-full p-3 gap-3 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
+      className={`flex flex-col h-full p-3 gap-3 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
@@ -47,7 +51,9 @@ export default function MiniPomodoro() {
           <div className={`p-1 rounded-lg ${colors.accentBg}`}>
             <Timer className={`w-3.5 h-3.5 ${colors.iconColor}`} />
           </div>
-          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Pomodoro</h2>
+          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
+            Pomodoro
+          </h2>
         </div>
         <span className={`text-[10px] ${colors.textMuted}`}>
           Session {sessions + 1}

@@ -57,7 +57,7 @@ export default function MiniTasks() {
       };
       saveTasks([...tasks, newTaskItem]);
     },
-    [tasks, saveTasks]
+    [tasks, saveTasks],
   );
 
   const toggleTask = useCallback(
@@ -69,18 +69,18 @@ export default function MiniTasks() {
               completed: !task.completed,
               completedAt: !task.completed ? Date.now() : undefined,
             }
-          : task
+          : task,
       );
       saveTasks(updated);
     },
-    [tasks, saveTasks]
+    [tasks, saveTasks],
   );
 
   const removeTask = useCallback(
     (id: string) => {
       saveTasks(tasks.filter((task) => task.id !== id));
     },
-    [tasks, saveTasks]
+    [tasks, saveTasks],
   );
 
   const handleAdd = () => {
@@ -95,7 +95,7 @@ export default function MiniTasks() {
 
   return (
     <div
-      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
+      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
@@ -212,7 +212,9 @@ export default function MiniTasks() {
       </div>
 
       {/* Counter */}
-      <div className={`flex-shrink-0 text-[10px] ${colors.textMuted} text-center`}>
+      <div
+        className={`flex-shrink-0 text-[10px] ${colors.textMuted} text-center`}
+      >
         {activeTasks.length} active / {completedTasks.length} done
       </div>
     </div>
