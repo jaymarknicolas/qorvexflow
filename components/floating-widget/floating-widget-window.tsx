@@ -22,6 +22,7 @@ import {
 import {
   useFloatingWidget,
   FloatingWidgetTab,
+  isInIframe,
 } from "./floating-widget-context";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
@@ -249,6 +250,9 @@ function MiniWidget({ type }: { type: string }) {
   }
 }
 
+// Widgets that don't work in PiP due to YouTube embedding restrictions
+const PIP_EXCLUDED_WIDGETS = ["youtube", "music"];
+
 // ─── PiP inner UI ──────────────────────────────────────────
 function PipUI({ onClose }: { onClose: () => void }) {
   const { activeTab, setActiveTab, pinnedWidgets } = useFloatingWidget();
@@ -258,9 +262,12 @@ function PipUI({ onClose }: { onClose: () => void }) {
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
-  // Build tabs: only pinned widgets
+  // Build tabs: only pinned widgets, excluding YouTube and Music (they don't work in PiP)
+  const filteredWidgets = pinnedWidgets.filter(
+    (w) => !PIP_EXCLUDED_WIDGETS.includes(w)
+  );
   const tabs: { id: string; label: string; icon: typeof Timer }[] =
-    pinnedWidgets.map((w) => ({
+    filteredWidgets.map((w) => ({
       id: w,
       label: WIDGET_LABEL[w] || w,
       icon: WIDGET_ICON[w] || Timer,
@@ -326,14 +333,21 @@ function PipUI({ onClose }: { onClose: () => void }) {
 
       {/* Content */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        {pinnedWidgets.length === 0 ? (
+        {filteredWidgets.length === 0 ? (
           <div
-            className={`flex flex-col items-center justify-center h-full gap-2 ${colors.emptyText}`}
+            className={`flex flex-col items-center justify-center h-full gap-3 p-4 ${colors.emptyText}`}
           >
             <Pin className="w-6 h-6" />
-            <p className="text-xs">
-              Pin widgets from the dashboard to show them here
-            </p>
+            <div className="text-center">
+              <p className="text-xs mb-2">
+                Pin widgets from the dashboard to show them here
+              </p>
+              {pinnedWidgets.some((w) => PIP_EXCLUDED_WIDGETS.includes(w)) && (
+                <p className="text-[10px] opacity-60">
+                  Note: YouTube & Music widgets are excluded from PiP due to embedding restrictions
+                </p>
+              )}
+            </div>
           </div>
         ) : (
           tabs.map((tab) => (
@@ -356,6 +370,12 @@ function PipPromptToast() {
     useFloatingWidget();
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
+
+  // Filter out excluded widgets for the count
+  const availableWidgets = pinnedWidgets.filter(
+    (w) => !PIP_EXCLUDED_WIDGETS.includes(w)
+  );
+  const inIframe = isInIframe();
 
   useEffect(() => {
     if (showPipPrompt) {
@@ -383,6 +403,9 @@ function PipPromptToast() {
 
   if (!showPipPrompt) return null;
 
+  // Don't show prompt if no widgets are available for PiP
+  if (availableWidgets.length === 0) return null;
+
   return (
     <div
       className={`fixed bottom-6 right-6 z-50 max-w-sm transition-all duration-300 ${
@@ -393,25 +416,30 @@ function PipPromptToast() {
     >
       <div className="bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl shadow-black/40 p-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-cyan-500/15 flex-shrink-0">
+          <div className="p-2 rounded-xl bg-cyan-500/15 shrink-0">
             <PictureInPicture2 className="w-5 h-5 text-cyan-400" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white mb-0.5">
               Keep your widgets visible?
             </p>
-            <p className="text-xs text-white/50 mb-3">
-              Open Picture-in-Picture to see your {pinnedWidgets.length} pinned
-              widget{pinnedWidgets.length !== 1 ? "s" : ""} while using other
+            <p className="text-xs text-white/50 mb-2">
+              Open {inIframe ? "popup" : "Picture-in-Picture"} to see your {availableWidgets.length} pinned
+              widget{availableWidgets.length !== 1 ? "s" : ""} while using other
               tabs.
             </p>
+            {inIframe && (
+              <p className="text-[10px] text-amber-400/70 mb-2">
+                Note: Running in Chrome extension - using popup window instead of native PiP
+              </p>
+            )}
             <div className="flex items-center gap-2">
               <button
                 onClick={handleOpen}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-white text-xs font-semibold transition-colors shadow-lg shadow-cyan-500/25"
               >
                 <PictureInPicture2 className="w-3.5 h-3.5" />
-                Open PiP
+                {inIframe ? "Open Popup" : "Open PiP"}
               </button>
               <button
                 onClick={handleClose}
@@ -423,7 +451,7 @@ function PipPromptToast() {
           </div>
           <button
             onClick={handleClose}
-            className="p-1 rounded-md text-white/30 hover:text-white/60 hover:bg-white/10 transition-colors flex-shrink-0"
+            className="p-1 rounded-md text-white/30 hover:text-white/60 hover:bg-white/10 transition-colors shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>

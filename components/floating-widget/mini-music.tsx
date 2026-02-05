@@ -8,6 +8,7 @@ import {
   SkipForward,
   Disc3,
   Shuffle,
+  ExternalLink,
 } from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -60,20 +61,18 @@ export default function MiniMusic() {
   // Load music state from localStorage
   const [musicState, setMusicState] = useState<MusicState>(() => {
     if (typeof window !== "undefined") {
-      // First check music player storage
       const saved = localStorage.getItem(STORAGE_KEYS.MUSIC_PLAYER);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           return {
-            isPlaying: false, // Don't auto-play in PiP
+            isPlaying: false,
             currentStream: parsed.currentLofiStream || DEFAULT_LOFI_STREAMS[0],
           };
         } catch {
           // Fall through
         }
       }
-      // Check dedicated music state
       const stateData = localStorage.getItem(MUSIC_STATE_KEY);
       if (stateData) {
         try {
@@ -100,14 +99,14 @@ export default function MiniMusic() {
             currentStream: parsed.currentLofiStream || prev.currentStream,
           }));
         } catch {
-          // Ignore parse errors
+          // Ignore
         }
       }
       if (e.key === MUSIC_STATE_KEY && e.newValue) {
         try {
           setMusicState(JSON.parse(e.newValue));
         } catch {
-          // Ignore parse errors
+          // Ignore
         }
       }
     };
@@ -140,66 +139,91 @@ export default function MiniMusic() {
         id: i,
         baseHeight: Math.sin(i * 0.5) * 20 + 30,
       })),
-    [],
+    []
   );
 
+  const openInYouTube = useCallback(() => {
+    const stream = musicState.currentStream || DEFAULT_LOFI_STREAMS[0];
+    window.open(`https://www.youtube.com/watch?v=${stream.videoId}`, "_blank");
+    updateMusicState({ isPlaying: true });
+  }, [musicState.currentStream, updateMusicState]);
+
   const togglePlay = useCallback(() => {
-    updateMusicState({ isPlaying: !musicState.isPlaying });
-  }, [musicState.isPlaying, updateMusicState]);
+    if (!musicState.isPlaying) {
+      openInYouTube();
+    } else {
+      updateMusicState({ isPlaying: false });
+    }
+  }, [musicState.isPlaying, openInYouTube, updateMusicState]);
 
   const shuffleStream = useCallback(() => {
     const availableStreams = DEFAULT_LOFI_STREAMS.filter(
-      (s) => s.id !== musicState.currentStream?.id,
+      (s) => s.id !== musicState.currentStream?.id
     );
     const randomStream =
       availableStreams[Math.floor(Math.random() * availableStreams.length)];
-    updateMusicState({ currentStream: randomStream });
+    updateMusicState({ currentStream: randomStream, isPlaying: false });
   }, [musicState.currentStream, updateMusicState]);
 
   const nextStream = useCallback(() => {
     const currentIndex = DEFAULT_LOFI_STREAMS.findIndex(
-      (s) => s.id === musicState.currentStream?.id,
+      (s) => s.id === musicState.currentStream?.id
     );
     const nextIndex = (currentIndex + 1) % DEFAULT_LOFI_STREAMS.length;
-    updateMusicState({ currentStream: DEFAULT_LOFI_STREAMS[nextIndex] });
+    updateMusicState({
+      currentStream: DEFAULT_LOFI_STREAMS[nextIndex],
+      isPlaying: false,
+    });
   }, [musicState.currentStream, updateMusicState]);
 
   const prevStream = useCallback(() => {
     const currentIndex = DEFAULT_LOFI_STREAMS.findIndex(
-      (s) => s.id === musicState.currentStream?.id,
+      (s) => s.id === musicState.currentStream?.id
     );
     const prevIndex =
       currentIndex <= 0 ? DEFAULT_LOFI_STREAMS.length - 1 : currentIndex - 1;
-    updateMusicState({ currentStream: DEFAULT_LOFI_STREAMS[prevIndex] });
+    updateMusicState({
+      currentStream: DEFAULT_LOFI_STREAMS[prevIndex],
+      isPlaying: false,
+    });
   }, [musicState.currentStream, updateMusicState]);
 
   const currentStream = musicState.currentStream || DEFAULT_LOFI_STREAMS[0];
 
   return (
     <div
-      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
+      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <div className={`p-1 rounded-lg ${colors.accentBg}`}>
             <Disc3 className={`w-3.5 h-3.5 ${colors.iconColor}`} />
           </div>
           <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Music</h2>
         </div>
-        <button
-          onClick={shuffleStream}
-          className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
-          title="Shuffle"
-        >
-          <Shuffle className="w-3 h-3" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={openInYouTube}
+            className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
+            title="Open in YouTube"
+          >
+            <ExternalLink className="w-3 h-3" />
+          </button>
+          <button
+            onClick={shuffleStream}
+            className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
+            title="Shuffle"
+          >
+            <Shuffle className="w-3 h-3" />
+          </button>
+        </div>
       </div>
 
       {/* Track info */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <div
-          className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 ${
+          className={`w-10 h-10 rounded-lg overflow-hidden shrink-0 ${
             musicState.isPlaying ? "animate-pulse" : ""
           }`}
         >
@@ -219,18 +243,18 @@ export default function MiniMusic() {
         </div>
       </div>
 
-      {/* Running indicator */}
+      {/* Status indicator */}
       {musicState.isPlaying && (
         <div
           className={`text-[10px] ${colors.accent} flex items-center justify-center gap-1`}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-          Now Playing
+          Playing in YouTube
         </div>
       )}
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-2 flex-shrink-0">
+      <div className="flex items-center justify-center gap-2 shrink-0">
         <button
           onClick={prevStream}
           className={`p-1.5 rounded-lg ${colors.buttonBg} transition-colors`}
@@ -240,6 +264,7 @@ export default function MiniMusic() {
         <button
           onClick={togglePlay}
           className="p-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 transition-all"
+          title={musicState.isPlaying ? "Mark as stopped" : "Open in YouTube"}
         >
           {musicState.isPlaying ? (
             <Pause className="w-4 h-4" />
@@ -256,7 +281,7 @@ export default function MiniMusic() {
       </div>
 
       {/* Waveform */}
-      <div className="mt-auto flex items-end justify-center gap-0.5 h-8 flex-shrink-0">
+      <div className="mt-auto flex items-end justify-center gap-0.5 h-8 shrink-0">
         {waveformBars.map((bar) => (
           <div
             key={bar.id}

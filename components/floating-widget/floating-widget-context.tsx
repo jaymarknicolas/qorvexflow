@@ -25,6 +25,8 @@ export interface FloatingWidgetPersisted {
   pinnedWidgets: WidgetType[];
 }
 
+type PipMode = "document-pip" | "popup" | null;
+
 interface FloatingWidgetContextValue {
   activeTab: FloatingWidgetTab;
   setActiveTab: (tab: FloatingWidgetTab) => void;
@@ -42,9 +44,11 @@ interface FloatingWidgetContextValue {
   formatTime: (ms: number) => string;
   // PiP
   isPipOpen: boolean;
+  pipMode: PipMode;
   openPip: () => Promise<void>;
   closePip: () => void;
   pipContainer: HTMLElement | null;
+  canUsePip: boolean;
   // PiP prompt
   showPipPrompt: boolean;
   hidePipPrompt: () => void;
@@ -61,9 +65,31 @@ const DEFAULT_PERSISTED: FloatingWidgetPersisted = {
 };
 
 export function hasDocumentPipSupport(): boolean {
-  return (
-    typeof window !== "undefined" && "documentPictureInPicture" in window
-  );
+  if (typeof window === "undefined") return false;
+  if (!("documentPictureInPicture" in window)) return false;
+
+  // Document PiP doesn't work reliably in iframes (e.g., Chrome extension)
+  // Check if we're in an iframe
+  try {
+    if (window.self !== window.top) {
+      return false;
+    }
+  } catch {
+    // Cross-origin iframe - PiP won't work
+    return false;
+  }
+
+  return true;
+}
+
+// Check if running in an iframe (Chrome extension, etc.)
+export function isInIframe(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true; // Cross-origin iframe
+  }
 }
 
 export function FloatingWidgetProvider({
@@ -88,7 +114,11 @@ export function FloatingWidgetProvider({
   // PiP window state
   const [pipWindow, setPipWindow] = useState<Window | null>(null);
   const [pipContainer, setPipContainer] = useState<HTMLElement | null>(null);
+  const [pipMode, setPipMode] = useState<PipMode>(null);
   const pipWindowRef = useRef<Window | null>(null);
+
+  // Check if any PiP mode is available (Document PiP or popup fallback)
+  const canUsePip = typeof window !== "undefined";
 
   // Stopwatch
   const [stopwatch, setStopwatch] = useState<StopwatchState>({
@@ -171,15 +201,48 @@ export function FloatingWidgetProvider({
 
   // ─── PiP window management ──────────────────────────────
   const openPip = useCallback(async () => {
-    if (!hasDocumentPipSupport()) return;
     if (pipWindowRef.current) return;
 
+    let pip: Window | null = null;
+    let mode: PipMode = null;
+
+    // Try Document PiP first (doesn't work in iframes)
+    if (hasDocumentPipSupport()) {
+      try {
+        // @ts-expect-error -- Document PiP API types not yet in TS lib
+        pip = await window.documentPictureInPicture.requestWindow({
+          width: 400,
+          height: 380,
+        });
+        mode = "document-pip";
+      } catch (err) {
+        console.warn("Document PiP failed, trying popup fallback:", err);
+      }
+    }
+
+    // Fallback to popup window (works in iframes/Chrome extension)
+    if (!pip) {
+      try {
+        const width = 400;
+        const height = 400;
+        const left = window.screenX + window.outerWidth - width - 20;
+        const top = window.screenY + 80;
+
+        pip = window.open(
+          "",
+          "qorvex-pip",
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
+        );
+        mode = "popup";
+      } catch (err) {
+        console.error("Popup fallback also failed:", err);
+        return;
+      }
+    }
+
+    if (!pip) return;
+
     try {
-      // @ts-expect-error -- Document PiP API types not yet in TS lib
-      const pip: Window = await window.documentPictureInPicture.requestWindow({
-        width: 400,
-        height: 380,
-      });
 
       pipWindowRef.current = pip;
 
@@ -248,14 +311,21 @@ export function FloatingWidgetProvider({
 
       setPipContainer(mountDiv);
       setPipWindow(pip);
+      setPipMode(mode);
 
-      pip.addEventListener("pagehide", () => {
+      // Handle window close for both Document PiP and popup
+      const handleClose = () => {
         setPipWindow(null);
         setPipContainer(null);
+        setPipMode(null);
         pipWindowRef.current = null;
-      });
+      };
+
+      pip.addEventListener("pagehide", handleClose);
+      pip.addEventListener("beforeunload", handleClose);
+      pip.addEventListener("unload", handleClose);
     } catch (err) {
-      console.error("Failed to open Document PiP:", err);
+      console.error("Failed to open PiP window:", err);
     }
   }, []);
 
@@ -266,6 +336,7 @@ export function FloatingWidgetProvider({
     }
     setPipWindow(null);
     setPipContainer(null);
+    setPipMode(null);
   }, []);
 
   // ─── PiP prompt ─────────────────────────────────────────────
@@ -412,7 +483,7 @@ export function FloatingWidgetProvider({
 
   // Fallback: show prompt when user returns to the tab (if auto PiP didn't trigger)
   useEffect(() => {
-    if (!hasDocumentPipSupport() || !appSettings.pipEnabled) return;
+    if (!canUsePip || !appSettings.pipEnabled) return;
 
     const handleVisibilityChange = () => {
       if (
@@ -426,16 +497,16 @@ export function FloatingWidgetProvider({
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [appSettings.pipEnabled]);
+  }, [appSettings.pipEnabled, canUsePip]);
 
   // Sync prompt with pipEnabled toggle
   useEffect(() => {
     if (!appSettings.pipEnabled) {
       setShowPipPrompt(false);
-    } else if (appSettings.pipEnabled && !pipWindowRef.current && hasDocumentPipSupport()) {
+    } else if (appSettings.pipEnabled && !pipWindowRef.current && canUsePip) {
       setShowPipPrompt(true);
     }
-  }, [appSettings.pipEnabled]);
+  }, [appSettings.pipEnabled, canUsePip]);
 
   // Hide prompt when PiP opens
   useEffect(() => {
@@ -510,9 +581,11 @@ export function FloatingWidgetProvider({
         lapStopwatch,
         formatTime,
         isPipOpen: !!pipWindow,
+        pipMode,
         openPip,
         closePip,
         pipContainer,
+        canUsePip,
         showPipPrompt,
         hidePipPrompt,
         dismissPipPrompt,
