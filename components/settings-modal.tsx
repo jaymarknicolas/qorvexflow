@@ -16,6 +16,8 @@ import {
   Check,
   RotateCcw,
   Settings,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 import {
   useAppSettings,
@@ -482,6 +484,78 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         />
                       </button>
                     </label>
+                  </div>
+
+                  {/* Extensions Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Extensions
+                    </h3>
+
+                    {/* Chrome Extension */}
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center flex-shrink-0">
+                          <svg
+                            className="w-7 h-7 text-white"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2" />
+                            <circle cx="12" cy="12" r="4" fill="currentColor" />
+                            <path
+                              d="M21.17 8H14.5a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h.84"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              fill="none"
+                            />
+                            <path
+                              d="M8 21.17v-6.67a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v.84"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              fill="none"
+                            />
+                            <path
+                              d="M2.83 16h6.67a2 2 0 0 0 2-2v0a2 2 0 0 0-2-2H8.66"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              fill="none"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-white mb-1">
+                            Chrome New Tab Extension
+                          </h4>
+                          <p className="text-xs text-white/50 mb-3">
+                            Replace your new tab page with QorvexFlow for quick access to your productivity feed.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <a
+                              href="/chrome-extension.zip"
+                              download="qorvexflow-chrome-extension.zip"
+                              className={cn(
+                                "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-lg",
+                                `bg-gradient-to-r ${getGradientButton()}`
+                              )}
+                            >
+                              <Download className="w-4 h-4" />
+                              Download
+                            </a>
+                            <a
+                              href="https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all border border-white/10"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              How to Install
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Current Configuration */}
