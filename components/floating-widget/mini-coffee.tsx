@@ -23,12 +23,16 @@ export default function MiniCoffee() {
   };
 
   return (
-    <div className="flex flex-col h-full p-3 gap-2">
-      {/* Counter */}
+    <div
+      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
+    >
+      {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Coffee className="w-4 h-4 text-amber-400" />
-          <span className={`text-xs font-medium ${colors.textSecondary}`}>Coffee</span>
+          <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+            <Coffee className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+          </div>
+          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Coffee</h2>
         </div>
         <span className={`text-[10px] ${colors.textMuted}`}>
           {settings.dailyLimit - stats.todayCount} left
@@ -50,14 +54,16 @@ export default function MiniCoffee() {
 
         {/* Progress bar */}
         <div className="w-full max-w-[140px] mt-2">
-          <div className={`h-1.5 ${colors.isLightMode ? "bg-black/10" : "bg-white/10"} rounded-full overflow-hidden`}>
+          <div
+            className={`h-1.5 ${colors.isLightMode ? "bg-black/10" : "bg-white/10"} rounded-full overflow-hidden`}
+          >
             <div
               className={`h-full rounded-full transition-all ${
                 isOverLimit
                   ? "bg-red-500"
                   : isNearLimit
-                  ? "bg-amber-500"
-                  : "bg-amber-400"
+                    ? "bg-amber-500"
+                    : colors.progressBg
               }`}
               style={{ width: `${progressPercent}%` }}
             />
@@ -70,7 +76,7 @@ export default function MiniCoffee() {
         {stats.todayCount > 0 && (
           <button
             onClick={undoLast}
-            className={`p-1.5 rounded-lg ${colors.isLightMode ? "bg-black/5 text-black/40 hover:bg-black/10 hover:text-black/60" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70"} transition-colors`}
+            className={`p-1.5 rounded-lg ${colors.buttonBg} ${colors.textMuted} transition-colors`}
           >
             <Undo2 className="w-3.5 h-3.5" />
           </button>
@@ -78,10 +84,10 @@ export default function MiniCoffee() {
         <button
           onClick={handleAdd}
           disabled={isOverLimit}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-medium transition-all ${
             isOverLimit
               ? `${colors.isLightMode ? "bg-black/10 text-black/30" : "bg-white/10 text-white/30"} cursor-not-allowed`
-              : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/20"
           }`}
         >
           <Plus className="w-3.5 h-3.5" />
@@ -90,7 +96,9 @@ export default function MiniCoffee() {
       </div>
 
       {/* Stats */}
-      <div className={`flex items-center justify-around flex-shrink-0 pt-1 border-t ${colors.isLightMode ? "border-black/10" : "border-white/10"}`}>
+      <div
+        className={`flex items-center justify-around flex-shrink-0 pt-1 border-t ${colors.border}`}
+      >
         <div className="flex items-center gap-1">
           <Flame className="w-2.5 h-2.5 text-orange-400" />
           <span className={`text-[10px] font-bold ${colors.textPrimary}`}>

@@ -356,10 +356,31 @@ export function usePomodoro(): UsePomodoroReturn {
   }, [isRunning, timeLeft, mode, handleTimerComplete, getDurationForMode]);
 
   // Update timeLeft when settings change and timer is not running
+  // Use a ref to track previous settings to avoid resetting on pause
+  const prevSettingsRef = useRef({
+    workDuration: settings.workDuration,
+    breakDuration: settings.breakDuration,
+    longBreakDuration: settings.longBreakDuration,
+  });
+
   useEffect(() => {
-    if (!isRunning) {
+    const prev = prevSettingsRef.current;
+    const settingsChanged =
+      prev.workDuration !== settings.workDuration ||
+      prev.breakDuration !== settings.breakDuration ||
+      prev.longBreakDuration !== settings.longBreakDuration;
+
+    // Only reset time if settings actually changed, not just when pausing
+    if (settingsChanged && !isRunning) {
       setTimeLeft(getDurationForMode(mode));
     }
+
+    // Update the ref with current settings
+    prevSettingsRef.current = {
+      workDuration: settings.workDuration,
+      breakDuration: settings.breakDuration,
+      longBreakDuration: settings.longBreakDuration,
+    };
   }, [settings.workDuration, settings.breakDuration, settings.longBreakDuration, isRunning, mode, getDurationForMode]);
 
   const start = useCallback(() => {

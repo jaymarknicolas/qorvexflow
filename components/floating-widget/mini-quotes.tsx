@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Quote, RefreshCw, Heart, Copy, Check } from "lucide-react";
+import { Quote, RefreshCw, Copy, Check } from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 
 interface QuoteData {
@@ -56,7 +56,7 @@ export default function MiniQuotes() {
       setQuote(data);
     } catch {
       setQuote(
-        FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)],
+        FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)]
       );
     } finally {
       setLoading(false);
@@ -88,17 +88,31 @@ export default function MiniQuotes() {
 
   return (
     <div
-      className={`flex flex-col h-full p-3 gap-2  bg-gradient-to-br ${colors.gradient} `}
+      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
     >
+      {/* Header */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+          <Quote className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+        </div>
+        <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
+          Daily Quote
+        </h2>
+      </div>
+
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0 overflow-hidden relative">
+        {/* Decorative background quote */}
+        <Quote
+          className={`absolute top-0 left-0 w-8 h-8 ${colors.textMuted} opacity-10 -rotate-12`}
+        />
+
         {loading ? (
           <RefreshCw className={`w-5 h-5 ${colors.textMuted} animate-spin`} />
         ) : quote ? (
           <>
-            <Quote className={`w-4 h-4 ${colors.accent} mb-2 flex-shrink-0`} />
             <blockquote
-              className={`text-sm font-medium ${colors.textPrimary} leading-relaxed px-1 overflow-y-auto`}
+              className={`text-sm font-medium ${colors.textPrimary} leading-relaxed px-2 overflow-y-auto`}
             >
               &ldquo;{quote.content}&rdquo;
             </blockquote>
@@ -116,7 +130,7 @@ export default function MiniQuotes() {
         <button
           onClick={handleCopy}
           disabled={!quote}
-          className={`p-1.5 rounded-lg ${colors.isLightMode ? "bg-black/5 text-black/40 hover:bg-black/10 hover:text-black/60" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70"} transition-colors disabled:opacity-30`}
+          className={`p-1.5 rounded-lg ${colors.buttonBg} ${colors.textMuted} transition-colors disabled:opacity-30`}
         >
           {copied ? (
             <Check className="w-3.5 h-3.5 text-green-400" />
@@ -127,7 +141,7 @@ export default function MiniQuotes() {
         <button
           onClick={fetchQuote}
           disabled={loading}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg ${colors.accentBg} ${colors.accent} ${colors.isLightMode ? "hover:bg-black/10" : "hover:bg-white/15"} transition-colors text-xs font-medium disabled:opacity-50`}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-xs shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50"
         >
           <RefreshCw
             className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}

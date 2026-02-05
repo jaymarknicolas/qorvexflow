@@ -14,6 +14,14 @@ import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import { motion } from "framer-motion";
 
+// Helper to format date as YYYY-MM-DD in local timezone (not UTC)
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function CalendarWidget() {
   const { theme } = useTheme();
   const { effectiveColorScheme } = useAppSettings();
@@ -170,7 +178,7 @@ export default function CalendarWidget() {
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
 
   const today = new Date();
-  const todayKey = today.toISOString().split("T")[0];
+  const todayKey = formatLocalDate(today);
 
   const monthName = currentDate.toLocaleDateString("en-US", {
     month: "long",
@@ -190,14 +198,14 @@ export default function CalendarWidget() {
     );
   }, [currentDate, focusTracker]);
 
-  // Get date key for a specific day
+  // Get date key for a specific day (using local timezone)
   const getDateKey = (day: number) => {
     const date = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day,
     );
-    return date.toISOString().split("T")[0];
+    return formatLocalDate(date);
   };
 
   // Calculate month stats

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   Timer,
@@ -255,6 +255,8 @@ function PipUI({ onClose }: { onClose: () => void }) {
   const { theme } = useTheme();
   const { effectiveColorScheme } = useAppSettings();
   const colors = getThemeColors(theme, effectiveColorScheme);
+  const tabContainerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // Build tabs: only pinned widgets
   const tabs: { id: string; label: string; icon: typeof Timer }[] =
@@ -269,6 +271,26 @@ function PipUI({ onClose }: { onClose: () => void }) {
     ? activeTab
     : (tabs[0]?.id ?? "");
 
+  // Auto-scroll to center the active tab
+  useEffect(() => {
+    const container = tabContainerRef.current;
+    const activeButton = tabRefs.current.get(currentTab);
+    if (!container || !activeButton) return;
+
+    const buttonRect = activeButton.getBoundingClientRect();
+
+    // Calculate the scroll position to center the active tab
+    const scrollLeft =
+      activeButton.offsetLeft -
+      container.offsetWidth / 2 +
+      buttonRect.width / 2;
+
+    container.scrollTo({
+      left: Math.max(0, scrollLeft),
+      behavior: "smooth",
+    });
+  }, [currentTab]);
+
   return (
     <div
       className={`flex flex-col h-full w-full ${colors.bg} ${colors.textPrimary} overflow-hidden`}
@@ -276,7 +298,9 @@ function PipUI({ onClose }: { onClose: () => void }) {
       {/* Tab bar */}
       {tabs.length > 1 && (
         <div
-          className={`flex items-center gap-0.5 px-2 py-1.5 border-b ${colors.border} shrink-0 overflow-x-auto`}
+          ref={tabContainerRef}
+          className={`flex items-center gap-0.5 px-2 py-1.5 border-b ${colors.border} shrink-0 overflow-x-auto scrollbar-none`}
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -284,6 +308,9 @@ function PipUI({ onClose }: { onClose: () => void }) {
             return (
               <button
                 key={tab.id}
+                ref={(el) => {
+                  if (el) tabRefs.current.set(tab.id, el);
+                }}
                 onClick={() => setActiveTab(tab.id as FloatingWidgetTab)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap shrink-0 ${
                   isActive ? colors.tabActive : colors.tabInactive
