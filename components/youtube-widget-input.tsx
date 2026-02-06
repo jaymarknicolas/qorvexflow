@@ -106,10 +106,6 @@ const getVideoId = (url: string): string => {
   }
 };
 
-const getEmbedUrl = (videoId: string): string => {
-  return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-};
-
 const getThumbnail = (videoId: string): string => {
   return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
 };
@@ -285,24 +281,125 @@ export default function YouTubeWidgetInput() {
     setPlaylist((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // Play next/previous
-  const playNext = () => {
-    if (!currentVideo || playlist.length === 0) return;
-    const currentIndex = playlist.findIndex((p) => p.id === currentVideo.id);
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < playlist.length) {
-      setCurrentVideo(playlist[nextIndex]);
-    }
-  };
+  // Keep refs in sync for the message handler
+  const currentVideoRef = useRef(currentVideo);
+  const playlistRef = useRef(playlist);
+  useEffect(() => {
+    currentVideoRef.current = currentVideo;
+    playlistRef.current = playlist;
+  }, [currentVideo, playlist]);
 
-  const playPrevious = () => {
-    if (!currentVideo || playlist.length === 0) return;
-    const currentIndex = playlist.findIndex((p) => p.id === currentVideo.id);
+  // Play next/previous
+  const playNext = useCallback(() => {
+    const cv = currentVideoRef.current;
+    const pl = playlistRef.current;
+    if (!cv || pl.length === 0) return;
+    const currentIndex = pl.findIndex((p) => p.id === cv.id);
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < pl.length) {
+      setCurrentVideo(pl[nextIndex]);
+    }
+  }, []);
+
+  const playPrevious = useCallback(() => {
+    const cv = currentVideoRef.current;
+    const pl = playlistRef.current;
+    if (!cv || pl.length === 0) return;
+    const currentIndex = pl.findIndex((p) => p.id === cv.id);
     const prevIndex = currentIndex - 1;
     if (prevIndex >= 0) {
-      setCurrentVideo(playlist[prevIndex]);
+      setCurrentVideo(pl[prevIndex]);
     }
-  };
+  }, []);
+
+  // YouTube IFrame Player API
+  const playerRef = useRef<any>(null);
+  const playerWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Load YouTube IFrame API script once
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ((window as any).YT?.Player) return;
+    if (document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) return;
+
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  }, []);
+
+  // Create/update player when video changes
+  useEffect(() => {
+    if (!currentVideo) {
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+      return;
+    }
+
+    const createPlayer = () => {
+      const wrapper = playerWrapperRef.current;
+      if (!wrapper) return;
+
+      // Destroy old player
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+
+      // Clear wrapper and create fresh div for player
+      wrapper.innerHTML = "";
+      const playerDiv = document.createElement("div");
+      playerDiv.id = "yt-api-player";
+      wrapper.appendChild(playerDiv);
+
+      playerRef.current = new (window as any).YT.Player("yt-api-player", {
+        videoId: currentVideo.id,
+        width: "100%",
+        height: "100%",
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1,
+        },
+        events: {
+          onStateChange: (event: any) => {
+            // YT.PlayerState.ENDED = 0
+            if (event.data === 0) {
+              playNext();
+            }
+          },
+        },
+      });
+    };
+
+    const waitForAPI = () => {
+      if ((window as any).YT?.Player) {
+        createPlayer();
+      } else {
+        // Store callback for when API loads
+        const prev = (window as any).onYouTubeIframeAPIReady;
+        (window as any).onYouTubeIframeAPIReady = () => {
+          if (prev) prev();
+          createPlayer();
+        };
+      }
+    };
+
+    // Small delay to ensure DOM is ready after React render
+    const timer = setTimeout(waitForAPI, 50);
+    return () => clearTimeout(timer);
+  }, [currentVideo?.id, playNext]);
+
+  // Cleanup player on unmount
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+    };
+  }, []);
 
   // Handle search/URL submit
   const handleSubmit = (e: React.FormEvent) => {
@@ -637,13 +734,9 @@ export default function YouTubeWidgetInput() {
       <>
         {/* Video */}
         <div className="flex-1 bg-black relative min-h-0">
-          <iframe
-            src={getEmbedUrl(currentVideo.id)}
+          <div
+            ref={playerWrapperRef}
             className="absolute inset-0 w-full h-full"
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
           />
         </div>
 

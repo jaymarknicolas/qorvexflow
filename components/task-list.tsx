@@ -25,6 +25,7 @@ import {
   useSensors,
   DragEndEvent,
   DragStartEvent,
+  DragOverEvent,
   DragOverlay,
   useDroppable,
 } from "@dnd-kit/core";
@@ -34,7 +35,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+// CSS import removed - no longer applying transforms to prevent slide animations
 import { useTasks } from "@/lib/hooks";
 import { validateTaskTitle } from "@/lib/utils/validation";
 import { useTheme } from "@/lib/contexts/theme-context";
@@ -114,6 +115,17 @@ const PRIORITY_CONFIG = {
   },
 };
 
+// Drop line indicator - shows where the item will be placed
+function DropIndicator({ colors }: { colors: ThemeColors }) {
+  return (
+    <div className="relative py-0.5">
+      <div className={`h-0.5 rounded-full ${colors.progress} shadow-sm`} style={{ boxShadow: `0 0 6px currentColor` }} />
+      <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${colors.progress}`} />
+      <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${colors.progress}`} />
+    </div>
+  );
+}
+
 // Sortable Task Card - defined outside main component
 function SortableTaskCard({
   task,
@@ -121,26 +133,28 @@ function SortableTaskCard({
   isCompact,
   onRemove,
   onCyclePriority,
+  showIndicatorBefore,
+  showIndicatorAfter,
 }: {
   task: Task;
   colors: ThemeColors;
   isCompact: boolean;
   onRemove: (id: string) => void;
   onCyclePriority: (id: string, priority?: string) => void;
+  showIndicatorBefore?: boolean;
+  showIndicatorAfter?: boolean;
 }) {
   const {
     attributes,
     listeners,
     setNodeRef,
-    transform,
-    transition,
     isDragging,
   } = useSortable({ id: task.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const style: React.CSSProperties = {
     opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 50 : undefined,
+    position: "relative" as const,
   };
 
   const priority = (task.priority as Priority) || "low";
@@ -148,72 +162,68 @@ function SortableTaskCard({
   const PriorityIcon = priorityConfig.icon;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group flex items-center gap-2 rounded-lg ${colors.cardBg} ${colors.cardHover} border ${colors.border} transition-all ${
-        isCompact ? "p-2" : "p-2.5"
-      } ${isDragging ? "shadow-lg ring-2 ring-violet-500/30" : ""}`}
-    >
-      <TooltipProvider delayDuration={300}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              {...attributes}
-              {...listeners}
-              className={`flex-shrink-0 cursor-grab active:cursor-grabbing ${colors.textMuted} touch-none`}
-            >
-              <GripVertical className={isCompact ? "w-3.5 h-3.5" : "w-4 h-4"} />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Drag to move</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <TooltipProvider delayDuration={300}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => onCyclePriority(task.id, task.priority)}
-              className={`flex-shrink-0 p-1 rounded transition-all ${priorityConfig.bg} ${priorityConfig.color} hover:opacity-80`}
-            >
-              <PriorityIcon className={isCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{priorityConfig.label} priority (click to change)</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <span
-        className={`flex-1 font-medium truncate ${isCompact ? "text-xs" : "text-sm"} ${
-          task.status === "done" || task.completed
-            ? `${colors.textMuted} line-through`
-            : colors.textPrimary
-        }`}
+    <>
+      {showIndicatorBefore && <DropIndicator colors={colors} />}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`group flex items-center gap-2 rounded-lg ${colors.cardBg} ${colors.cardHover} border ${colors.border} ${
+          isCompact ? "p-2" : "p-2.5"
+        } ${isDragging ? "shadow-lg ring-2 ring-violet-500/30" : ""}`}
       >
-        {task.title}
-      </span>
+        <div
+          {...attributes}
+          {...listeners}
+          className={`flex-shrink-0 cursor-grab active:cursor-grabbing ${colors.textMuted} touch-none`}
+          title="Drag to reorder"
+        >
+          <GripVertical className={isCompact ? "w-3.5 h-3.5" : "w-4 h-4"} />
+        </div>
 
-      <TooltipProvider delayDuration={300}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => onRemove(task.id)}
-              className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded transition-all text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
-            >
-              <Trash2 className={isCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Delete</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onCyclePriority(task.id, task.priority)}
+                className={`flex-shrink-0 p-1 rounded transition-all ${priorityConfig.bg} ${priorityConfig.color} hover:opacity-80`}
+              >
+                <PriorityIcon className={isCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{priorityConfig.label} priority (click to change)</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <span
+          className={`flex-1 font-medium truncate ${isCompact ? "text-xs" : "text-sm"} ${
+            task.status === "done" || task.completed
+              ? `${colors.textMuted} line-through`
+              : colors.textPrimary
+          }`}
+        >
+          {task.title}
+        </span>
+
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onRemove(task.id)}
+                className="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded transition-all text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+              >
+                <Trash2 className={isCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      {showIndicatorAfter && <DropIndicator colors={colors} />}
+    </>
   );
 }
 
@@ -260,6 +270,7 @@ function DroppableColumn({
   isCompact,
   onRemove,
   onCyclePriority,
+  overInfo,
 }: {
   column: (typeof COLUMNS)[0];
   tasks: Task[];
@@ -267,6 +278,7 @@ function DroppableColumn({
   isCompact: boolean;
   onRemove: (id: string) => void;
   onCyclePriority: (id: string, priority?: string) => void;
+  overInfo: { overId: string; position: "before" | "after" } | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -310,6 +322,8 @@ function DroppableColumn({
               isCompact={isCompact}
               onRemove={onRemove}
               onCyclePriority={onCyclePriority}
+              showIndicatorBefore={overInfo?.overId === task.id && overInfo.position === "before"}
+              showIndicatorAfter={overInfo?.overId === task.id && overInfo.position === "after"}
             />
           ))}
         </SortableContext>
@@ -353,6 +367,7 @@ export default function TaskList() {
     addTask,
     removeTask,
     updateTask,
+    reorderTasks,
     moveTaskToColumn,
     clearCompleted,
     completedCount,
@@ -368,6 +383,7 @@ export default function TaskList() {
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [overInfo, setOverInfo] = useState<{ overId: string; position: "before" | "after" } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -497,15 +513,6 @@ export default function TaskList() {
       grouped[status].push(task);
     });
 
-    Object.keys(grouped).forEach((key) => {
-      grouped[key as TaskStatus].sort((a, b) => {
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
-        const aPriority = (a.priority as Priority) || "low";
-        const bPriority = (b.priority as Priority) || "low";
-        return priorityOrder[aPriority] - priorityOrder[bPriority];
-      });
-    });
-
     return grouped;
   }, [tasks, priorityFilter]);
 
@@ -552,20 +559,69 @@ export default function TaskList() {
       if (task) {
         setActiveTask(task);
       }
+      setOverInfo(null);
     },
     [tasks],
+  );
+
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) {
+        setOverInfo(null);
+        return;
+      }
+
+      // Check if over target is a column droppable (not a task)
+      const isColumn = COLUMNS.some((c) => c.id === over.id);
+      if (isColumn) {
+        setOverInfo(null);
+        return;
+      }
+
+      const activeTask = tasks.find((t) => t.id === active.id);
+      const overTask = tasks.find((t) => t.id === over.id);
+      if (!activeTask || !overTask) {
+        setOverInfo(null);
+        return;
+      }
+
+      const activeStatus = activeTask.status || (activeTask.completed ? "done" : "todo");
+      const overStatus = overTask.status || (overTask.completed ? "done" : "todo");
+
+      // Get the column tasks for the over item's column
+      const columnTasks = tasksByStatus[overStatus];
+      const activeIdx = columnTasks.findIndex((t) => t.id === active.id);
+      const overIdx = columnTasks.findIndex((t) => t.id === over.id);
+
+      if (activeStatus !== overStatus) {
+        // Cross-column: show indicator before the over item
+        setOverInfo({ overId: over.id as string, position: "before" });
+      } else if (activeIdx < overIdx) {
+        // Dragging down: show indicator after over item
+        setOverInfo({ overId: over.id as string, position: "after" });
+      } else {
+        // Dragging up: show indicator before over item
+        setOverInfo({ overId: over.id as string, position: "before" });
+      }
+    },
+    [tasks, tasksByStatus],
   );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
       setActiveTask(null);
+      setOverInfo(null);
 
       if (!over) return;
 
       const activeId = active.id as string;
       const overId = over.id as string;
 
+      if (activeId === overId) return;
+
+      // Dropped on a column droppable (empty area)
       const targetColumn = COLUMNS.find((col) => col.id === overId);
       if (targetColumn) {
         const task = tasks.find((t) => t.id === activeId);
@@ -577,6 +633,7 @@ export default function TaskList() {
         return;
       }
 
+      // Dropped on another task
       const overTask = tasks.find((t) => t.id === overId);
       if (overTask) {
         const activeTaskItem = tasks.find((t) => t.id === activeId);
@@ -587,25 +644,16 @@ export default function TaskList() {
           overTask?.status || (overTask?.completed ? "done" : "todo");
 
         if (activeStatus === overStatus) {
-          const columnTasks = tasksByStatus[activeStatus];
-          const overIndex = columnTasks.findIndex((t) => t.id === overId);
-          moveTaskToColumn(
-            activeId,
-            activeStatus,
-            tasks.indexOf(columnTasks[overIndex]),
-          );
+          // Same column - simple reorder
+          reorderTasks(activeId, overId);
         } else {
-          const columnTasks = tasksByStatus[overStatus];
-          const overIndex = columnTasks.findIndex((t) => t.id === overId);
-          moveTaskToColumn(
-            activeId,
-            overStatus,
-            tasks.indexOf(columnTasks[overIndex]),
-          );
+          // Cross-column move - place at the over task's position
+          const overGlobalIndex = tasks.findIndex((t) => t.id === overId);
+          moveTaskToColumn(activeId, overStatus, overGlobalIndex);
         }
       }
     },
-    [tasks, tasksByStatus, moveTaskToColumn],
+    [tasks, reorderTasks, moveTaskToColumn],
   );
 
   const cyclePriority = useCallback(
@@ -1022,6 +1070,7 @@ export default function TaskList() {
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
@@ -1086,6 +1135,8 @@ export default function TaskList() {
                       isCompact={isCompact}
                       onRemove={removeTask}
                       onCyclePriority={cyclePriority}
+                      showIndicatorBefore={overInfo?.overId === task.id && overInfo.position === "before"}
+                      showIndicatorAfter={overInfo?.overId === task.id && overInfo.position === "after"}
                     />
                   ))
                 )}
@@ -1109,6 +1160,7 @@ export default function TaskList() {
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
           >
             <div className="flex gap-2 h-full">
@@ -1121,6 +1173,7 @@ export default function TaskList() {
                   isCompact={isCompact}
                   onRemove={removeTask}
                   onCyclePriority={cyclePriority}
+                  overInfo={overInfo}
                 />
               ))}
             </div>
