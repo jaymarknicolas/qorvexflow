@@ -17,6 +17,12 @@ import { useCoffeeCounter } from "@/lib/hooks/useCoffeeCounter";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function CoffeeCounterWidget() {
   const { theme } = useTheme();
@@ -255,25 +261,40 @@ export default function CoffeeCounterWidget() {
                 {status.text}
               </p>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              {stats.todayCount > 0 && (
-                <button
-                  onClick={handleUndo}
-                  className={`p-1.5 sm:p-2 ${colors.buttonBg} ${colors.textMuted} hover:${colors.textPrimary} rounded-lg transition-all duration-200`}
-                  aria-label="Undo last coffee"
-                  title="Undo last"
-                >
-                  <Undo2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </button>
-              )}
-              <button
-                onClick={() => setShowSettings(true)}
-                className={`p-1.5 sm:p-2 ${colors.buttonBg} ${colors.textMuted} hover:${colors.textPrimary} rounded-lg transition-all duration-200`}
-                aria-label="Coffee settings"
-              >
-                <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </button>
-            </div>
+            <TooltipProvider delayDuration={300}>
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                {stats.todayCount > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleUndo}
+                        className={`p-1.5 sm:p-2 ${colors.buttonBg} ${colors.textMuted} hover:${colors.textPrimary} rounded-lg transition-all duration-200`}
+                        aria-label="Undo last coffee"
+                      >
+                        <Undo2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Undo last</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowSettings(true)}
+                      className={`p-1.5 sm:p-2 ${colors.buttonBg} ${colors.textMuted} hover:${colors.textPrimary} rounded-lg transition-all duration-200`}
+                      aria-label="Coffee settings"
+                    >
+                      <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Settings</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
           </div>
 
           {/* Main Counter Display */}

@@ -17,6 +17,12 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Persist notes content in memory across re-mounts
 let persistedNotesContent: string | null = null;
@@ -162,28 +168,42 @@ export default function NotesWidgetWYSIWYG() {
     title: string;
     children: React.ReactNode;
   }) => (
-    <button
-      onClick={onClick}
-      className={`p-2 rounded transition-colors ${
-        isActive
-          ? colors.activeBtn
-          : colors.inactiveBtn
-      }`}
-      title={title}
-    >
-      {children}
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={onClick}
+          className={`p-2 rounded transition-colors ${
+            isActive
+              ? colors.activeBtn
+              : colors.inactiveBtn
+          }`}
+        >
+          {children}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{title}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 
   return (
     <div className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border} shadow-2xl overflow-hidden`}>
       {/* Toolbar */}
+      <TooltipProvider delayDuration={300}>
       <div className={`flex-shrink-0 border-b ${colors.toolbarBorder} ${colors.toolbarBg} p-2`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <div className={`p-1.5 rounded-lg ${colors.accentBg} mr-2`}>
-              <FileText className={`w-4 h-4 ${colors.iconColor}`} />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-1.5 rounded-lg ${colors.accentBg} mr-2`}>
+                  <FileText className={`w-4 h-4 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Notes</p>
+              </TooltipContent>
+            </Tooltip>
 
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
@@ -255,6 +275,7 @@ export default function NotesWidgetWYSIWYG() {
           </div>
         </div>
       </div>
+      </TooltipProvider>
 
       {/* Editor */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -267,12 +288,21 @@ export default function NotesWidgetWYSIWYG() {
           <div className={`text-xs ${colors.textMuted}`}>
             WYSIWYG Editor • Auto-saves
           </div>
-          <div
-            className="text-xs cursor-pointer text-red-400 rounded hover:text-red-300 transition-colors"
-            onClick={handleClear}
-          >
-            Clear all
-          </div>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="text-xs cursor-pointer text-red-400 rounded hover:text-red-300 transition-colors"
+                  onClick={handleClear}
+                >
+                  Clear all
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear all notes</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>

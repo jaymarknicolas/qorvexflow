@@ -20,6 +20,12 @@ import {
   PictureInPicture2,
 } from "lucide-react";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   useFloatingWidget,
   FloatingWidgetTab,
   isInIframe,
@@ -449,12 +455,21 @@ function PipPromptToast() {
               </button>
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-1 rounded-md text-white/30 hover:text-white/60 hover:bg-white/10 transition-colors shrink-0"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleClose}
+                  className="p-1 rounded-md text-white/30 hover:text-white/60 hover:bg-white/10 transition-colors shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Close</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>

@@ -20,6 +20,12 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface VideoItem {
   id: string;
@@ -643,6 +649,7 @@ export default function YouTubeWidgetInput() {
 
         {/* Controls */}
         {showControls && (
+          <TooltipProvider delayDuration={300}>
           <div
             className={`flex-shrink-0 border-t border-white/10 bg-black/40 ${
               isVeryCompact ? "p-1.5" : "p-2"
@@ -657,55 +664,84 @@ export default function YouTubeWidgetInput() {
               <div className="flex items-center gap-1 flex-shrink-0">
                 {playlist.length > 0 && (
                   <>
-                    <button
-                      onClick={playPrevious}
-                      disabled={
-                        playlist.findIndex((p) => p.id === currentVideo.id) <= 0
-                      }
-                      className={`rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white disabled:opacity-30 transition-colors ${
-                        isVeryCompact ? "p-1" : "p-1.5"
-                      }`}
-                    >
-                      <SkipBack
-                        className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
-                      />
-                    </button>
-                    <button
-                      onClick={playNext}
-                      disabled={
-                        playlist.findIndex((p) => p.id === currentVideo.id) >=
-                        playlist.length - 1
-                      }
-                      className={`rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white disabled:opacity-30 transition-colors ${
-                        isVeryCompact ? "p-1" : "p-1.5"
-                      }`}
-                    >
-                      <SkipForward
-                        className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
-                      />
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={playPrevious}
+                          disabled={
+                            playlist.findIndex((p) => p.id === currentVideo.id) <= 0
+                          }
+                          className={`rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white disabled:opacity-30 transition-colors ${
+                            isVeryCompact ? "p-1" : "p-1.5"
+                          }`}
+                        >
+                          <SkipBack
+                            className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Previous</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={playNext}
+                          disabled={
+                            playlist.findIndex((p) => p.id === currentVideo.id) >=
+                            playlist.length - 1
+                          }
+                          className={`rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white disabled:opacity-30 transition-colors ${
+                            isVeryCompact ? "p-1" : "p-1.5"
+                          }`}
+                        >
+                          <SkipForward
+                            className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Next</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </>
                 )}
-                <button
-                  onClick={() => addToPlaylist(currentVideo)}
-                  disabled={!!playlist.find((p) => p.id === currentVideo.id)}
-                  className={`rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white disabled:opacity-30 transition-colors ${
-                    isVeryCompact ? "p-1" : "p-1.5"
-                  }`}
-                >
-                  <Plus className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-                </button>
-                <button
-                  onClick={clearVideo}
-                  className={`rounded bg-white/10 text-white/60 hover:bg-red-500/20 hover:text-red-400 transition-colors ${
-                    isVeryCompact ? "p-1" : "p-1.5"
-                  }`}
-                >
-                  <X className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => addToPlaylist(currentVideo)}
+                      disabled={!!playlist.find((p) => p.id === currentVideo.id)}
+                      className={`rounded bg-white/10 text-white/60 hover:bg-white/20 hover:text-white disabled:opacity-30 transition-colors ${
+                        isVeryCompact ? "p-1" : "p-1.5"
+                      }`}
+                    >
+                      <Plus className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add to playlist</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={clearVideo}
+                      className={`rounded bg-white/10 text-white/60 hover:bg-red-500/20 hover:text-red-400 transition-colors ${
+                        isVeryCompact ? "p-1" : "p-1.5"
+                      }`}
+                    >
+                      <X className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Close</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
+          </TooltipProvider>
         )}
       </>
     );
@@ -717,6 +753,7 @@ export default function YouTubeWidgetInput() {
       className={`h-full flex flex-col bg-gradient-to-br ${colors.gradient} backdrop-blur-xl rounded-2xl border ${colors.border} shadow-2xl overflow-hidden`}
     >
       {/* Header */}
+      <TooltipProvider delayDuration={300}>
       <div
         className={`flex-shrink-0 border-b border-white/10 bg-black/20 ${
           isVeryCompact ? "p-2" : "p-3"
@@ -725,14 +762,21 @@ export default function YouTubeWidgetInput() {
         <div className="flex items-center gap-2">
           {/* Back button when in sub-views */}
           {view !== "player" && (
-            <button
-              onClick={() => setView("player")}
-              className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors ${
-                isVeryCompact ? "p-1" : "p-1.5"
-              }`}
-            >
-              <ArrowLeft className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setView("player")}
+                  className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors ${
+                    isVeryCompact ? "p-1" : "p-1.5"
+                  }`}
+                >
+                  <ArrowLeft className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Back</p>
+              </TooltipContent>
+            </Tooltip>
           )}
 
           {/* Search input */}
@@ -778,35 +822,47 @@ export default function YouTubeWidgetInput() {
           {/* Nav buttons */}
           {view === "player" && (
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => setView("streams")}
-                className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors ${
-                  isVeryCompact ? "p-1.5" : "p-2"
-                }`}
-                title="Lofi Streams"
-              >
-                <Radio className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-              </button>
-              <button
-                onClick={() => setView("playlist")}
-                className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors relative ${
-                  isVeryCompact ? "p-1.5" : "p-2"
-                }`}
-                title="Playlist"
-              >
-                <List className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-                {playlist.length > 0 && (
-                  <span
-                    className={`absolute -top-1 -right-1 bg-red-500 text-white rounded-full font-bold flex items-center justify-center ${
-                      isVeryCompact
-                        ? "text-[7px] w-3 h-3"
-                        : "text-[9px] w-4 h-4"
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setView("streams")}
+                    className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors ${
+                      isVeryCompact ? "p-1.5" : "p-2"
                     }`}
                   >
-                    {playlist.length}
-                  </span>
-                )}
-              </button>
+                    <Radio className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Lofi Streams</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setView("playlist")}
+                    className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors relative ${
+                      isVeryCompact ? "p-1.5" : "p-2"
+                    }`}
+                  >
+                    <List className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                    {playlist.length > 0 && (
+                      <span
+                        className={`absolute -top-1 -right-1 bg-red-500 text-white rounded-full font-bold flex items-center justify-center ${
+                          isVeryCompact
+                            ? "text-[7px] w-3 h-3"
+                            : "text-[9px] w-4 h-4"
+                        }`}
+                      >
+                        {playlist.length}
+                      </span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Playlist</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
         </div>
@@ -822,6 +878,7 @@ export default function YouTubeWidgetInput() {
           </p>
         )}
       </div>
+      </TooltipProvider>
 
       {/* Content */}
       {view === "player" && renderPlayer()}

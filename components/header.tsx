@@ -44,6 +44,12 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -494,23 +500,40 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               </DropdownMenu>
 
               {/* Feedback Button - Desktop */}
-              <button
-                onClick={() => setFeedbackModalOpen(true)}
-                className={`hidden lg:flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
-                title="Send Feedback"
-              >
-                <MessageSquarePlus className="w-4 h-4" />
-              </button>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setFeedbackModalOpen(true)}
+                      className={`hidden lg:flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                    >
+                      <MessageSquarePlus className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Send feedback</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               {/* Notifications - Desktop */}
-              <button
-                className={`hidden lg:flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all relative`}
-              >
-                <Bell className="w-4 h-4" />
-                <span
-                  className={`absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse bg-gradient-to-r ${colors.buttonGradient}`}
-                />
-              </button>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={`hidden lg:flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all relative`}
+                    >
+                      <Bell className="w-4 h-4" />
+                      <span
+                        className={`absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse bg-gradient-to-r ${colors.buttonGradient}`}
+                      />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Notifications</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               {/* User Profile */}
               <DropdownMenu>
@@ -583,17 +606,26 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               </DropdownMenu>
 
               {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
-                aria-label="Toggle menu"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5" />
-                ) : (
-                  <Menu className="w-5 h-5" />
-                )}
-              </button>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
+                      aria-label="Toggle menu"
+                    >
+                      {mobileMenuOpen ? (
+                        <X className="w-5 h-5" />
+                      ) : (
+                        <Menu className="w-5 h-5" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{mobileMenuOpen ? "Close menu" : "Open menu"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
@@ -635,12 +667,21 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     QORVEX
                   </span>
                 </div>
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`p-2 rounded-lg ${colors.surfaceBg} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`p-2 rounded-lg ${colors.surfaceBg} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Close menu</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* Mobile Menu Content */}

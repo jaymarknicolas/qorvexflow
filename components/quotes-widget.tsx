@@ -16,6 +16,12 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface QuoteData {
   _id: string;
@@ -452,24 +458,32 @@ export default function QuotesWidget() {
           </div>
 
           {/* Action buttons */}
+          <TooltipProvider delayDuration={300}>
           <div
             className={`flex items-center flex-shrink-0 ${isVeryCompact ? "gap-0.5" : "gap-1"}`}
           >
             {/* Category filter */}
             <div className="relative">
-              <button
-                onClick={() => setShowCategories(!showCategories)}
-                className={`rounded-lg transition-all duration-200 ${
-                  isVeryCompact ? "p-1" : "p-1.5"
-                } ${
-                  showCategories
-                    ? `${colors.accentBg} ${colors.accent}`
-                    : `${colors.hoverBg} ${colors.textMuted}`
-                }`}
-                aria-label="Filter by category"
-              >
-                <Filter className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShowCategories(!showCategories)}
+                    className={`rounded-lg transition-all duration-200 ${
+                      isVeryCompact ? "p-1" : "p-1.5"
+                    } ${
+                      showCategories
+                        ? `${colors.accentBg} ${colors.accent}`
+                        : `${colors.hoverBg} ${colors.textMuted}`
+                    }`}
+                    aria-label="Filter by category"
+                  >
+                    <Filter className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Filter by category</p>
+                </TooltipContent>
+              </Tooltip>
 
               {showCategories && (
                 <>
@@ -497,53 +511,75 @@ export default function QuotesWidget() {
               )}
             </div>
 
-            <button
-              onClick={handleToggleFavorite}
-              disabled={!currentQuote}
-              className={`rounded-lg transition-all duration-200 ${
-                isVeryCompact ? "p-1" : "p-1.5"
-              } ${
-                isFavorite
-                  ? "bg-red-500/20 text-red-500 hover:bg-red-500/30"
-                  : `${colors.hoverBg} ${colors.textMuted}`
-              } disabled:opacity-50`}
-              aria-label={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
-            >
-              <Heart
-                className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} ${isFavorite ? "fill-current" : ""}`}
-              />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={!currentQuote}
+                  className={`rounded-lg transition-all duration-200 ${
+                    isVeryCompact ? "p-1" : "p-1.5"
+                  } ${
+                    isFavorite
+                      ? "bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                      : `${colors.hoverBg} ${colors.textMuted}`
+                  } disabled:opacity-50`}
+                  aria-label={
+                    isFavorite ? "Remove from favorites" : "Add to favorites"
+                  }
+                >
+                  <Heart
+                    className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} ${isFavorite ? "fill-current" : ""}`}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isFavorite ? "Remove from favorites" : "Add to favorites"}</p>
+              </TooltipContent>
+            </Tooltip>
 
-            <button
-              onClick={handleCopy}
-              disabled={!currentQuote}
-              className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-50 ${
-                isVeryCompact ? "p-1" : "p-1.5"
-              }`}
-              aria-label="Copy quote"
-            >
-              {copied ? (
-                <Check
-                  className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} text-green-500`}
-                />
-              ) : (
-                <Copy className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
-              )}
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleCopy}
+                  disabled={!currentQuote}
+                  className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-50 ${
+                    isVeryCompact ? "p-1" : "p-1.5"
+                  }`}
+                  aria-label="Copy quote"
+                >
+                  {copied ? (
+                    <Check
+                      className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} text-green-500`}
+                    />
+                  ) : (
+                    <Copy className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{copied ? "Copied!" : "Copy quote"}</p>
+              </TooltipContent>
+            </Tooltip>
 
             {!isCompact && (
-              <button
-                onClick={handleShare}
-                disabled={!currentQuote}
-                className={`p-1.5 ${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-50`}
-                aria-label="Share quote"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleShare}
+                    disabled={!currentQuote}
+                    className={`p-1.5 ${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-50`}
+                    aria-label="Share quote"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Share quote</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
+          </TooltipProvider>
         </div>
       </div>
 
@@ -687,68 +723,91 @@ export default function QuotesWidget() {
         }`}
       >
         {/* Navigation and New Quote */}
+        <TooltipProvider delayDuration={300}>
         <div
           className={`flex items-center ${isVeryCompact ? "gap-1" : "gap-2"}`}
         >
           {/* History navigation */}
-          <button
-            onClick={goBack}
-            disabled={historyIndex <= 0 || isLoading}
-            className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
-              isVeryCompact ? "p-1.5" : "p-2"
-            }`}
-            aria-label="Previous quote"
-          >
-            <ChevronLeft
-              className={
-                isVeryCompact
-                  ? "w-3.5 h-3.5"
-                  : isCompact
-                    ? "w-4 h-4"
-                    : "w-5 h-5"
-              }
-            />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={goBack}
+                disabled={historyIndex <= 0 || isLoading}
+                className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+                  isVeryCompact ? "p-1.5" : "p-2"
+                }`}
+                aria-label="Previous quote"
+              >
+                <ChevronLeft
+                  className={
+                    isVeryCompact
+                      ? "w-3.5 h-3.5"
+                      : isCompact
+                        ? "w-4 h-4"
+                        : "w-5 h-5"
+                  }
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Previous quote</p>
+            </TooltipContent>
+          </Tooltip>
 
           {/* New Quote button */}
-          <button
-            onClick={handleNewQuote}
-            disabled={isLoading}
-            className={`flex-1 bg-gradient-to-r ${colors.button} text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center shadow-lg ${colors.buttonShadow} disabled:opacity-50 ${
-              isVeryCompact
-                ? "px-2 py-1.5 gap-1.5 text-xs"
-                : isCompact
-                  ? "px-3 py-2 gap-2 text-sm"
-                  : "px-4 py-3 gap-2 text-base"
-            }`}
-          >
-            <RefreshCw
-              className={`${isLoading ? "animate-spin" : ""} ${
-                isVeryCompact ? "w-3 h-3" : "w-4 h-4"
-              }`}
-            />
-            <span>{isVeryCompact ? "New" : "New Quote"}</span>
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleNewQuote}
+                disabled={isLoading}
+                className={`flex-1 bg-gradient-to-r ${colors.button} text-white rounded-lg font-medium transition-all duration-200 flex items-center justify-center shadow-lg ${colors.buttonShadow} disabled:opacity-50 ${
+                  isVeryCompact
+                    ? "px-2 py-1.5 gap-1.5 text-xs"
+                    : isCompact
+                      ? "px-3 py-2 gap-2 text-sm"
+                      : "px-4 py-3 gap-2 text-base"
+                }`}
+              >
+                <RefreshCw
+                  className={`${isLoading ? "animate-spin" : ""} ${
+                    isVeryCompact ? "w-3 h-3" : "w-4 h-4"
+                  }`}
+                />
+                <span>{isVeryCompact ? "New" : "New Quote"}</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Get new quote</p>
+            </TooltipContent>
+          </Tooltip>
 
-          <button
-            onClick={goForward}
-            disabled={historyIndex >= quoteHistory.length - 1 || isLoading}
-            className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
-              isVeryCompact ? "p-1.5" : "p-2"
-            }`}
-            aria-label="Next quote"
-          >
-            <ChevronRight
-              className={
-                isVeryCompact
-                  ? "w-3.5 h-3.5"
-                  : isCompact
-                    ? "w-4 h-4"
-                    : "w-5 h-5"
-              }
-            />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={goForward}
+                disabled={historyIndex >= quoteHistory.length - 1 || isLoading}
+                className={`${colors.hoverBg} ${colors.textMuted} rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+                  isVeryCompact ? "p-1.5" : "p-2"
+                }`}
+                aria-label="Next quote"
+              >
+                <ChevronRight
+                  className={
+                    isVeryCompact
+                      ? "w-3.5 h-3.5"
+                      : isCompact
+                        ? "w-4 h-4"
+                        : "w-5 h-5"
+                  }
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Next quote</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
+        </TooltipProvider>
 
         {/* History indicator */}
         {quoteHistory.length > 1 && !isVeryCompact && (

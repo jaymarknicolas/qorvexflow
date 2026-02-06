@@ -3,6 +3,12 @@
 import { Coffee, Plus, Undo2, Flame, Clock } from "lucide-react";
 import { useCoffeeCounter } from "@/lib/hooks/useCoffeeCounter";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function MiniCoffee() {
   const {
@@ -27,17 +33,26 @@ export default function MiniCoffee() {
       className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-            <Coffee className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                  <Coffee className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Coffee Counter</p>
+              </TooltipContent>
+            </Tooltip>
+            <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Coffee</h2>
           </div>
-          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Coffee</h2>
+          <span className={`text-[10px] ${colors.textMuted}`}>
+            {settings.dailyLimit - stats.todayCount} left
+          </span>
         </div>
-        <span className={`text-[10px] ${colors.textMuted}`}>
-          {settings.dailyLimit - stats.todayCount} left
-        </span>
-      </div>
+      </TooltipProvider>
 
       {/* Big number */}
       <div className="flex-1 flex flex-col items-center justify-center min-h-0">

@@ -25,6 +25,12 @@ import {
 } from "@/lib/contexts/app-settings-context";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -173,13 +179,22 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <Settings className={`w-5 h-5 ${getAccentText()}`} />
                   Settings
                 </h2>
-                <button
-                  onClick={onClose}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                  aria-label="Close"
-                >
-                  <X className="w-5 h-5 text-white/60 hover:text-white" />
-                </button>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        aria-label="Close"
+                      >
+                        <X className="w-5 h-5 text-white/60 hover:text-white" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Close</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* Content - Scrollable */}
@@ -597,22 +612,31 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
               {/* Footer */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t border-white/10 flex-shrink-0 bg-slate-900/50">
-                <button
-                  onClick={() => {
-                    updateSettings({
-                      colorScheme: "dark",
-                      videoBackgroundEnabled: true,
-                      reducedMotion: false,
-                      reducedTransparency: false,
-                      performanceMode: "balanced",
-                      pipEnabled: true,
-                    });
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors order-2 sm:order-1"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset
-                </button>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => {
+                          updateSettings({
+                            colorScheme: "dark",
+                            videoBackgroundEnabled: true,
+                            reducedMotion: false,
+                            reducedTransparency: false,
+                            performanceMode: "balanced",
+                            pipEnabled: true,
+                          });
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors order-2 sm:order-1"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        Reset
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Reset to defaults</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <button
                   onClick={onClose}
                   className={cn(

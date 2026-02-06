@@ -13,6 +13,12 @@ import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import { motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Helper to format date as YYYY-MM-DD in local timezone (not UTC)
 function formatLocalDate(date: Date): string {
@@ -280,35 +286,58 @@ export default function CalendarWidget() {
               {isCompact ? "Activity" : "Activity"}
             </h2>
           </div>
-          <div className="flex gap-0.5 flex-shrink-0">
-            <button
-              onClick={prevMonth}
-              className={`p-1 sm:p-1.5 ${colors.hoverBg} rounded-lg transition-colors`}
-              aria-label="Previous month"
-            >
-              <ChevronLeft
-                className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.textSecondary} hover:${colors.textPrimary}`}
-              />
-            </button>
-            {!isCompact && (
-              <button
-                onClick={goToToday}
-                className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[9px] sm:text-[10px] ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} hover:${colors.textPrimary} font-medium`}
-                aria-label="Go to today"
-              >
-                Today
-              </button>
-            )}
-            <button
-              onClick={nextMonth}
-              className={`p-1 sm:p-1.5 ${colors.hoverBg} rounded-lg transition-colors`}
-              aria-label="Next month"
-            >
-              <ChevronRight
-                className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.textSecondary} hover:${colors.textPrimary}`}
-              />
-            </button>
-          </div>
+          <TooltipProvider delayDuration={300}>
+            <div className="flex gap-0.5 flex-shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={prevMonth}
+                    className={`p-1 sm:p-1.5 ${colors.hoverBg} rounded-lg transition-colors`}
+                    aria-label="Previous month"
+                  >
+                    <ChevronLeft
+                      className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.textSecondary} hover:${colors.textPrimary}`}
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Previous month</p>
+                </TooltipContent>
+              </Tooltip>
+              {!isCompact && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={goToToday}
+                      className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-[9px] sm:text-[10px] ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} hover:${colors.textPrimary} font-medium`}
+                      aria-label="Go to today"
+                    >
+                      Today
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Go to today</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={nextMonth}
+                    className={`p-1 sm:p-1.5 ${colors.hoverBg} rounded-lg transition-colors`}
+                    aria-label="Next month"
+                  >
+                    <ChevronRight
+                      className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.textSecondary} hover:${colors.textPrimary}`}
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Next month</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
 
         {/* Month/Year */}

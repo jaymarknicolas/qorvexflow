@@ -16,6 +16,12 @@ import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import PomodoroSettingsModal from "./pomodoro-settings-modal";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PomodoroWidgetProps {
   onSessionComplete?: () => void;
@@ -212,29 +218,44 @@ export default function PomodoroWidget({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  testSound();
-                }}
-                className={`p-1.5 ${themeColors.buttonBg} ${themeColors.textMuted} ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
-                aria-label="Test notification sound"
-                title="Test notification sound"
-              >
-                <Volume2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowSettings(true);
-                }}
-                className={`p-1.5 ${themeColors.buttonBg} ${themeColors.textMuted} ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
-                aria-label="Pomodoro settings"
-              >
-                <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              </button>
-            </div>
+            <TooltipProvider delayDuration={300}>
+              <div className="flex items-center gap-1 shrink-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        testSound();
+                      }}
+                      className={`p-1.5 ${themeColors.buttonBg} ${themeColors.textMuted} ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
+                      aria-label="Test notification sound"
+                    >
+                      <Volume2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Test sound</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSettings(true);
+                      }}
+                      className={`p-1.5 ${themeColors.buttonBg} ${themeColors.textMuted} ${themeColors.buttonHoverText} rounded-lg transition-all duration-200`}
+                      aria-label="Pomodoro settings"
+                    >
+                      <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Settings</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
           </div>
 
           {/* Timer Circle - flexible center area */}

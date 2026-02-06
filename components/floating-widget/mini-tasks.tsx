@@ -4,6 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus, Check, Trash2, ListTodo } from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 import type { Task } from "@/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Storage key for tasks
 const STORAGE_KEY = "qorvexflow-tasks";
@@ -98,21 +104,30 @@ export default function MiniTasks() {
       className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-            <ListTodo className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                  <ListTodo className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Tasks</p>
+              </TooltipContent>
+            </Tooltip>
+            <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Tasks</h2>
           </div>
-          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Tasks</h2>
+          {tasks.length > 0 && (
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full ${colors.accentBg} ${colors.accent}`}
+            >
+              {activeTasks.length} active
+            </span>
+          )}
         </div>
-        {tasks.length > 0 && (
-          <span
-            className={`text-[10px] px-2 py-0.5 rounded-full ${colors.accentBg} ${colors.accent}`}
-          >
-            {activeTasks.length} active
-          </span>
-        )}
-      </div>
+      </TooltipProvider>
 
       {/* Add Task */}
       <form
@@ -133,12 +148,21 @@ export default function MiniTasks() {
               : "bg-white/5 border-white/10 text-white placeholder:text-white/30"
           } border text-sm focus:outline-none focus:border-current`}
         />
-        <button
-          type="submit"
-          className="p-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 transition-all hover:from-cyan-400 hover:to-blue-500"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="submit"
+                className="p-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 transition-all hover:from-cyan-400 hover:to-blue-500"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add task</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </form>
 
       {/* Task List */}
@@ -167,12 +191,21 @@ export default function MiniTasks() {
             <span className={`text-sm ${colors.textSecondary} flex-1 truncate`}>
               {task.title}
             </span>
-            <button
-              onClick={() => removeTask(task.id)}
-              className={`opacity-0 group-hover:opacity-100 p-0.5 ${colors.textMuted} hover:text-red-400 transition-all`}
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => removeTask(task.id)}
+                    className={`opacity-0 group-hover:opacity-100 p-0.5 ${colors.textMuted} hover:text-red-400 transition-all`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Delete</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         ))}
 
@@ -199,12 +232,21 @@ export default function MiniTasks() {
                 >
                   {task.title}
                 </span>
-                <button
-                  onClick={() => removeTask(task.id)}
-                  className={`opacity-0 group-hover:opacity-100 p-0.5 ${colors.textMuted} hover:text-red-400 transition-all`}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => removeTask(task.id)}
+                        className={`opacity-0 group-hover:opacity-100 p-0.5 ${colors.textMuted} hover:text-red-400 transition-all`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             ))}
           </>

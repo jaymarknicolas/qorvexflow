@@ -3,6 +3,12 @@
 import { StickyNote } from "lucide-react";
 import { useNotes } from "@/lib/hooks/useNotes";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function MiniNotes() {
   const { content, updateContent, characterCount } = useNotes();
@@ -13,19 +19,28 @@ export default function MiniNotes() {
       className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-            <StickyNote className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                  <StickyNote className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Quick Notes</p>
+              </TooltipContent>
+            </Tooltip>
+            <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
+              Quick Notes
+            </h2>
           </div>
-          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
-            Quick Notes
-          </h2>
+          <span className={`text-[10px] ${colors.textMuted}`}>
+            {characterCount} chars
+          </span>
         </div>
-        <span className={`text-[10px] ${colors.textMuted}`}>
-          {characterCount} chars
-        </span>
-      </div>
+      </TooltipProvider>
 
       {/* Textarea */}
       <textarea

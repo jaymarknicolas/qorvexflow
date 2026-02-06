@@ -20,6 +20,10 @@ export interface YouTubeTrack {
   duration: number; // in seconds
 }
 
+interface UseYouTubePlayerOptions {
+  onEnded?: () => void;
+}
+
 interface UseYouTubePlayerReturn {
   // State
   isReady: boolean;
@@ -121,7 +125,7 @@ function loadYouTubeAPI(): Promise<void> {
   });
 }
 
-export function useYouTubePlayer(containerId: string): UseYouTubePlayerReturn {
+export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayerOptions): UseYouTubePlayerReturn {
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -135,6 +139,12 @@ export function useYouTubePlayer(containerId: string): UseYouTubePlayerReturn {
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const pendingVideoRef = useRef<{ videoId: string; track?: Partial<YouTubeTrack> } | null>(null);
   const playRetryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const onEndedRef = useRef(options?.onEnded);
+
+  // Keep onEnded callback reference up to date
+  useEffect(() => {
+    onEndedRef.current = options?.onEnded;
+  }, [options?.onEnded]);
 
   // Initialize YouTube API and player
   useEffect(() => {
@@ -238,6 +248,10 @@ export function useYouTubePlayer(containerId: string): UseYouTubePlayerReturn {
               case PlayerState.ENDED:
                 setIsPlaying(false);
                 setIsLoading(false);
+                // Call onEnded callback when video ends
+                if (onEndedRef.current) {
+                  onEndedRef.current();
+                }
                 break;
               case PlayerState.CUED:
                 setIsPlaying(false);

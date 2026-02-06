@@ -3,6 +3,12 @@
 import { Play, Pause, SkipForward, RotateCcw, Timer } from "lucide-react";
 import { usePomodoro } from "@/lib/hooks";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function MiniPomodoro() {
   const {
@@ -46,19 +52,28 @@ export default function MiniPomodoro() {
       className={`flex flex-col h-full p-3 gap-3 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-            <Timer className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                  <Timer className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Pomodoro Timer</p>
+              </TooltipContent>
+            </Tooltip>
+            <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
+              Pomodoro
+            </h2>
           </div>
-          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
-            Pomodoro
-          </h2>
+          <span className={`text-[10px] ${colors.textMuted}`}>
+            Session {sessions + 1}
+          </span>
         </div>
-        <span className={`text-[10px] ${colors.textMuted}`}>
-          Session {sessions + 1}
-        </span>
-      </div>
+      </TooltipProvider>
 
       {/* Mode Badge */}
       <div className="flex justify-center flex-shrink-0">
@@ -97,37 +112,53 @@ export default function MiniPomodoro() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-2 flex-shrink-0">
-        <button
-          onClick={reset}
-          className={`p-2 rounded-xl ${colors.buttonBg} ${colors.textMuted} transition-colors`}
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-        </button>
-        {!isRunning ? (
-          <button
-            onClick={start}
-            className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20 transition-all text-sm"
-          >
-            <Play className="w-4 h-4" />
-            Start
-          </button>
-        ) : (
-          <button
-            onClick={pause}
-            className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/20 transition-all text-sm"
-          >
-            <Pause className="w-4 h-4" />
-            Pause
-          </button>
-        )}
-        <button
-          onClick={skip}
-          className={`p-2 rounded-xl ${colors.buttonBg} ${colors.textMuted} transition-colors`}
-        >
-          <SkipForward className="w-3.5 h-3.5" />
-        </button>
-      </div>
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center justify-center gap-2 flex-shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={reset}
+                className={`p-2 rounded-xl ${colors.buttonBg} ${colors.textMuted} transition-colors`}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Reset</p>
+            </TooltipContent>
+          </Tooltip>
+          {!isRunning ? (
+            <button
+              onClick={start}
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20 transition-all text-sm"
+            >
+              <Play className="w-4 h-4" />
+              Start
+            </button>
+          ) : (
+            <button
+              onClick={pause}
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/20 transition-all text-sm"
+            >
+              <Pause className="w-4 h-4" />
+              Pause
+            </button>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={skip}
+                className={`p-2 rounded-xl ${colors.buttonBg} ${colors.textMuted} transition-colors`}
+              >
+                <SkipForward className="w-3.5 h-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Skip</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
     </div>
   );
 }

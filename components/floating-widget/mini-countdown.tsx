@@ -3,6 +3,12 @@
 import { Play, Pause, RotateCcw, Hourglass } from "lucide-react";
 import { useCountdown } from "@/lib/hooks/useCountdown";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const PRESETS = [
   { label: "5m", seconds: 5 * 60 },
@@ -42,14 +48,23 @@ export default function MiniCountdown() {
       className={`flex flex-col h-full bg-gradient-to-br ${colors.gradient} overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 pt-3 pb-1 shrink-0">
-        <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-          <Hourglass className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center gap-2 px-3 pt-3 pb-1 shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                <Hourglass className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Countdown Timer</p>
+            </TooltipContent>
+          </Tooltip>
+          <h2 className={`text-xs font-bold ${colors.textPrimary}`}>
+            Countdown Timer
+          </h2>
         </div>
-        <h2 className={`text-xs font-bold ${colors.textPrimary}`}>
-          Countdown Timer
-        </h2>
-      </div>
+      </TooltipProvider>
 
       <div className="flex-1 flex flex-col items-center justify-center px-3 gap-2 min-h-0">
         {/* Time display */}

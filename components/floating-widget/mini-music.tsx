@@ -12,6 +12,12 @@ import {
 } from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
 import { STORAGE_KEYS } from "@/lib/constants";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LofiStream {
   id: string;
@@ -191,34 +197,54 @@ export default function MiniMusic() {
   const currentStream = musicState.currentStream || DEFAULT_LOFI_STREAMS[0];
 
   return (
-    <div
-      className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-            <Disc3 className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+    <TooltipProvider delayDuration={300}>
+      <div
+        className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                  <Disc3 className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Music Player</p>
+              </TooltipContent>
+            </Tooltip>
+            <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Music</h2>
           </div>
-          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>Music</h2>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={openInYouTube}
+                  className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open in YouTube</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={shuffleStream}
+                  className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
+                >
+                  <Shuffle className="w-3 h-3" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Shuffle</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={openInYouTube}
-            className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
-            title="Open in YouTube"
-          >
-            <ExternalLink className="w-3 h-3" />
-          </button>
-          <button
-            onClick={shuffleStream}
-            className={`p-1 rounded ${colors.buttonBg} ${colors.textMuted} hover:${colors.accent} transition-colors`}
-            title="Shuffle"
-          >
-            <Shuffle className="w-3 h-3" />
-          </button>
-        </div>
-      </div>
 
       {/* Track info */}
       <div className="flex items-center gap-2 shrink-0">
@@ -253,50 +279,71 @@ export default function MiniMusic() {
         </div>
       )}
 
-      {/* Controls */}
-      <div className="flex items-center justify-center gap-2 shrink-0">
-        <button
-          onClick={prevStream}
-          className={`p-1.5 rounded-lg ${colors.buttonBg} transition-colors`}
-        >
-          <SkipBack className={`w-3.5 h-3.5 ${colors.textMuted}`} />
-        </button>
-        <button
-          onClick={togglePlay}
-          className="p-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 transition-all"
-          title={musicState.isPlaying ? "Mark as stopped" : "Open in YouTube"}
-        >
-          {musicState.isPlaying ? (
-            <Pause className="w-4 h-4" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
-        </button>
-        <button
-          onClick={nextStream}
-          className={`p-1.5 rounded-lg ${colors.buttonBg} transition-colors`}
-        >
-          <SkipForward className={`w-3.5 h-3.5 ${colors.textMuted}`} />
-        </button>
-      </div>
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-2 shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={prevStream}
+                className={`p-1.5 rounded-lg ${colors.buttonBg} transition-colors`}
+              >
+                <SkipBack className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Previous</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={togglePlay}
+                className="p-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 transition-all"
+              >
+                {musicState.isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{musicState.isPlaying ? "Mark as stopped" : "Open in YouTube"}</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={nextStream}
+                className={`p-1.5 rounded-lg ${colors.buttonBg} transition-colors`}
+              >
+                <SkipForward className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Next</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
-      {/* Waveform */}
-      <div className="mt-auto flex items-end justify-center gap-0.5 h-8 shrink-0">
-        {waveformBars.map((bar) => (
-          <div
-            key={bar.id}
-            className={`flex-1 rounded-full opacity-60 ${colors.progressBg}`}
-            style={{
-              height: `${
-                musicState.isPlaying
-                  ? Math.sin(bar.id * 0.5 + waveformOffset) * 20 + 30
-                  : bar.baseHeight
-              }%`,
-              transition: "height 0.05s ease-out",
-            }}
-          />
-        ))}
+        {/* Waveform */}
+        <div className="mt-auto flex items-end justify-center gap-0.5 h-8 shrink-0">
+          {waveformBars.map((bar) => (
+            <div
+              key={bar.id}
+              className={`flex-1 rounded-full opacity-60 ${colors.progressBg}`}
+              style={{
+                height: `${
+                  musicState.isPlaying
+                    ? Math.sin(bar.id * 0.5 + waveformOffset) * 20 + 30
+                    : bar.baseHeight
+                }%`,
+                transition: "height 0.05s ease-out",
+              }}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

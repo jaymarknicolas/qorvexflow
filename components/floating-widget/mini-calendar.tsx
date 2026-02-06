@@ -10,6 +10,12 @@ import {
 } from "lucide-react";
 import { useFocusTrackerContext } from "@/lib/contexts/focus-tracker-context";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -126,30 +132,53 @@ export default function MiniCalendar() {
       className={`flex flex-col h-full p-2 gap-1 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-1.5">
-          <div className={`p-0.5 rounded ${colors.accentBg}`}>
-            <Calendar className={`w-3 h-3 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`p-0.5 rounded ${colors.accentBg}`}>
+                  <Calendar className={`w-3 h-3 ${colors.iconColor}`} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Calendar</p>
+              </TooltipContent>
+            </Tooltip>
+            <span className={`text-[10px] font-semibold ${colors.textPrimary}`}>
+              {monthName}
+            </span>
           </div>
-          <span className={`text-[10px] font-semibold ${colors.textPrimary}`}>
-            {monthName}
-          </span>
+          <div className="flex items-center gap-0.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={prevMonth}
+                  className={`p-0.5 rounded ${colors.buttonBg} transition-colors`}
+                >
+                  <ChevronLeft className={`w-3 h-3 ${colors.textMuted}`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Previous month</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={nextMonth}
+                  className={`p-0.5 rounded ${colors.buttonBg} transition-colors`}
+                >
+                  <ChevronRight className={`w-3 h-3 ${colors.textMuted}`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Next month</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-        <div className="flex items-center gap-0.5">
-          <button
-            onClick={prevMonth}
-            className={`p-0.5 rounded ${colors.buttonBg} transition-colors`}
-          >
-            <ChevronLeft className={`w-3 h-3 ${colors.textMuted}`} />
-          </button>
-          <button
-            onClick={nextMonth}
-            className={`p-0.5 rounded ${colors.buttonBg} transition-colors`}
-          >
-            <ChevronRight className={`w-3 h-3 ${colors.textMuted}`} />
-          </button>
-        </div>
-      </div>
+      </TooltipProvider>
 
       {/* Day headers */}
       <div className="grid grid-cols-7 gap-px flex-shrink-0">

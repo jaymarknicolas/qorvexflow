@@ -22,6 +22,12 @@ import type { WidgetDefinition } from "@/types";
 import { useResponsive } from "@/lib/hooks/useResponsive";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Mark widgets as new (will show NEW badge)
 const newWidgets = new Set(["coffee"]);
@@ -147,7 +153,7 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
 
   const colors = widgetColors[id] || widgetColors.pomodoro;
 
-  return (
+  const iconContent = (
     <motion.div
       ref={setNodeRef}
       {...listeners}
@@ -212,26 +218,34 @@ function WidgetIcon({ id, icon: Icon, label, isMobile = false, showLabel = false
           {label}
         </span>
       )}
-
-      {/* Tooltip for desktop */}
-      {!showLabel && !isMobile && (
-        <span className="theme-tooltip pointer-events-none absolute left-full ml-3 rounded-lg backdrop-blur-sm px-3 py-1.5 text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap z-50 border shadow-xl">
-          <span className={`bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>
-            {label}
-          </span>
-          {isNew && (
-            <span className="ml-2 px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full">
-              NEW
-            </span>
-          )}
-          {isUpdated && !isNew && (
-            <span className="ml-2 px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full">
-              UPDATED
-            </span>
-          )}
-        </span>
-      )}
     </motion.div>
+  );
+
+  // For mobile with labels shown, no tooltip needed
+  if (showLabel || isMobile) {
+    return iconContent;
+  }
+
+  // Desktop/Tablet: wrap with Tooltip
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {iconContent}
+      </TooltipTrigger>
+      <TooltipContent side="right" className="flex items-center gap-2">
+        <span>{label}</span>
+        {isNew && (
+          <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full">
+            NEW
+          </span>
+        )}
+        {isUpdated && !isNew && (
+          <span className="px-1.5 py-0.5 text-[8px] font-bold bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full">
+            UPDATED
+          </span>
+        )}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -464,64 +478,68 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
   // Tablet: Bottom dock with modern design
   if (isTablet) {
     return (
-      <motion.aside
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl ${themeAccent.bg} backdrop-blur-xl border ${themeAccent.border} px-4 py-3 flex flex-row gap-2 shadow-2xl`}
-        aria-label="Widget sidebar"
-      >
-        {/* Decorative glow */}
-        <div
-          className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${themeAccent.primary} opacity-10 blur-xl`}
-        />
+      <TooltipProvider delayDuration={300}>
+        <motion.aside
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl ${themeAccent.bg} backdrop-blur-xl border ${themeAccent.border} px-4 py-3 flex flex-row gap-2 shadow-2xl`}
+          aria-label="Widget sidebar"
+        >
+          {/* Decorative glow */}
+          <div
+            className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${themeAccent.primary} opacity-10 blur-xl`}
+          />
 
-        {widgets.map((w, index) => (
-          <motion.div
-            key={w.id}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05 }}
-          >
-            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={shouldShowNew(w.id)} isUpdated={shouldShowUpdated(w.id)} />
-          </motion.div>
-        ))}
-      </motion.aside>
+          {widgets.map((w, index) => (
+            <motion.div
+              key={w.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={shouldShowNew(w.id)} isUpdated={shouldShowUpdated(w.id)} />
+            </motion.div>
+          ))}
+        </motion.aside>
+      </TooltipProvider>
     );
   }
 
   // Desktop: Left sidebar with modern glass design
   return (
-    <motion.aside
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      className={`fixed left-6 top-1/2 -translate-y-1/2 z-50 rounded-2xl ${themeAccent.bg} backdrop-blur-xl border ${themeAccent.border} p-3 flex flex-col gap-2 shadow-2xl`}
-      aria-label="Widget sidebar"
-    >
-      {/* Header accent */}
-      <div className="flex items-center justify-center mb-1">
-        <div className={`h-0.5 w-8 rounded-full bg-gradient-to-r ${themeAccent.primary}`} />
-      </div>
+    <TooltipProvider delayDuration={300}>
+      <motion.aside
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className={`fixed left-6 top-1/2 -translate-y-1/2 z-50 rounded-2xl ${themeAccent.bg} backdrop-blur-xl border ${themeAccent.border} p-3 flex flex-col gap-2 shadow-2xl`}
+        aria-label="Widget sidebar"
+      >
+        {/* Header accent */}
+        <div className="flex items-center justify-center mb-1">
+          <div className={`h-0.5 w-8 rounded-full bg-gradient-to-r ${themeAccent.primary}`} />
+        </div>
 
-      {/* Decorative glow */}
-      <div
-        className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${themeAccent.primary} opacity-10 blur-xl pointer-events-none`}
-      />
+        {/* Decorative glow */}
+        <div
+          className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${themeAccent.primary} opacity-10 blur-xl pointer-events-none`}
+        />
 
-      {widgets.map((w, index) => (
-        <motion.div
-          key={w.id}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.05 }}
-        >
-          <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={shouldShowNew(w.id)} isUpdated={shouldShowUpdated(w.id)} />
-        </motion.div>
-      ))}
+        {widgets.map((w, index) => (
+          <motion.div
+            key={w.id}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <WidgetIcon id={w.id} icon={w.icon} label={w.label} isNew={shouldShowNew(w.id)} isUpdated={shouldShowUpdated(w.id)} />
+          </motion.div>
+        ))}
 
-      {/* Footer accent */}
-      <div className="flex items-center justify-center mt-1">
-        <div className={`h-0.5 w-8 rounded-full bg-gradient-to-r ${themeAccent.secondary}`} />
-      </div>
-    </motion.aside>
+        {/* Footer accent */}
+        <div className="flex items-center justify-center mt-1">
+          <div className={`h-0.5 w-8 rounded-full bg-gradient-to-r ${themeAccent.secondary}`} />
+        </div>
+      </motion.aside>
+    </TooltipProvider>
   );
 }

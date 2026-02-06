@@ -15,6 +15,12 @@ import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useCountdown } from "@/lib/hooks/useCountdown";
 import { motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const COUNTDOWN_PRESETS = [
   { label: "1m", seconds: 60 },
@@ -254,74 +260,117 @@ export default function CountdownWidgetCanvas() {
 
           {/* Adjust buttons */}
           {!cdRunning && !cdFinished && (
-            <div className="flex items-center gap-4 mb-3 flex-shrink-0">
-              <button
-                onClick={() => cdAdjust(-60)}
-                className={`p-2 rounded-lg ${colors.buttonBg} ${colors.textMuted} transition-colors`}
-                title="-1 min"
-              >
-                <Minus className="w-4 h-4" />
-              </button>
-              <span className={`text-sm font-medium ${colors.textSecondary} min-w-[60px] text-center`}>
-                {Math.floor(cdDuration / 60)}m {cdDuration % 60 > 0 ? `${cdDuration % 60}s` : ""}
-              </span>
-              <button
-                onClick={() => cdAdjust(60)}
-                className={`p-2 rounded-lg ${colors.buttonBg} ${colors.textMuted} transition-colors`}
-                title="+1 min"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+            <TooltipProvider delayDuration={300}>
+              <div className="flex items-center gap-4 mb-3 flex-shrink-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => cdAdjust(-60)}
+                      className={`p-2 rounded-lg ${colors.buttonBg} ${colors.textMuted} transition-colors`}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>-1 minute</p>
+                  </TooltipContent>
+                </Tooltip>
+                <span className={`text-sm font-medium ${colors.textSecondary} min-w-[60px] text-center`}>
+                  {Math.floor(cdDuration / 60)}m {cdDuration % 60 > 0 ? `${cdDuration % 60}s` : ""}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => cdAdjust(60)}
+                      className={`p-2 rounded-lg ${colors.buttonBg} ${colors.textMuted} transition-colors`}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>+1 minute</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
           )}
 
           {/* Controls */}
-          <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-shrink-0">
-            {!cdRunning ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={cdStart}
-                disabled={cdRemaining <= 0 && !cdFinished}
-                className="flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20 transition-all text-sm disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Play className="w-4 h-4" />
-                {cdRemaining < cdDuration && cdRemaining > 0 ? "Resume" : "Start"}
-              </motion.button>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={cdPause}
-                className="flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/20 transition-all text-sm"
-              >
-                <Pause className="w-4 h-4" />
-                Pause
-              </motion.button>
-            )}
-            {(cdRemaining < cdDuration || cdFinished) && !cdRunning && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={cdReset}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 font-medium text-sm transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset
-              </motion.button>
-            )}
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`p-2.5 rounded-xl ${colors.buttonBg} ${colors.textMuted} transition-all`}
-              title={soundEnabled ? "Mute alarm" : "Enable alarm"}
-            >
-              {soundEnabled ? (
-                <Bell className="w-4 h-4" />
+          <TooltipProvider delayDuration={300}>
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 flex-shrink-0">
+              {!cdRunning ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={cdStart}
+                      disabled={cdRemaining <= 0 && !cdFinished}
+                      className="flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20 transition-all text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <Play className="w-4 h-4" />
+                      {cdRemaining < cdDuration && cdRemaining > 0 ? "Resume" : "Start"}
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{cdRemaining < cdDuration && cdRemaining > 0 ? "Resume timer" : "Start timer"}</p>
+                  </TooltipContent>
+                </Tooltip>
               ) : (
-                <BellOff className="w-4 h-4" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={cdPause}
+                      className="flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg shadow-amber-500/20 transition-all text-sm"
+                    >
+                      <Pause className="w-4 h-4" />
+                      Pause
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Pause timer</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
-            </button>
-          </div>
+              {(cdRemaining < cdDuration || cdFinished) && !cdRunning && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={cdReset}
+                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 font-medium text-sm transition-all"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Reset timer</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setSoundEnabled(!soundEnabled)}
+                    className={`p-2.5 rounded-xl ${colors.buttonBg} ${colors.textMuted} transition-all`}
+                  >
+                    {soundEnabled ? (
+                      <Bell className="w-4 h-4" />
+                    ) : (
+                      <BellOff className="w-4 h-4" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{soundEnabled ? "Mute alarm" : "Enable alarm"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
 
           {/* Presets */}
           {!cdRunning && (

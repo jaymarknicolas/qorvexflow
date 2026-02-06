@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Quote, RefreshCw, Copy, Check } from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface QuoteData {
   _id: string;
@@ -91,14 +97,23 @@ export default function MiniQuotes() {
       className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border}   overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-          <Quote className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+                <Quote className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Daily Quote</p>
+            </TooltipContent>
+          </Tooltip>
+          <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
+            Daily Quote
+          </h2>
         </div>
-        <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
-          Daily Quote
-        </h2>
-      </div>
+      </TooltipProvider>
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0 overflow-hidden relative">

@@ -22,6 +22,12 @@ import { useTasks } from "@/lib/hooks";
 import { validateTaskTitle } from "@/lib/utils/validation";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Using existing type: "low" | "medium" | "high" with user-friendly labels
 type Priority = "high" | "medium" | "low";
@@ -381,15 +387,24 @@ export default function TaskList() {
         </div>
 
         {/* Delete button */}
-        <button
-          onClick={() => removeTask(task.id)}
-          className={`opacity-0 group-hover/task:opacity-100 transition-opacity flex-shrink-0 ${
-            isVeryCompact ? "p-0.5" : "p-1"
-          }`}
-          aria-label="Delete task"
-        >
-          <Trash2 className={`${isVeryCompact ? "w-3 h-3" : "w-4 h-4"} text-red-400/60 hover:text-red-400`} />
-        </button>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => removeTask(task.id)}
+                className={`opacity-0 group-hover/task:opacity-100 transition-opacity flex-shrink-0 ${
+                  isVeryCompact ? "p-0.5" : "p-1"
+                }`}
+                aria-label="Delete task"
+              >
+                <Trash2 className={`${isVeryCompact ? "w-3 h-3" : "w-4 h-4"} text-red-400/60 hover:text-red-400`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     );
   };
@@ -439,15 +454,23 @@ export default function TaskList() {
 
             {/* History toggle */}
             {completedCount > 0 && !isVeryCompact && (
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className={`rounded-lg transition-colors ${
-                  showHistory ? `${colors.accentBg} ${colors.accent}` : `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'}`
-                } ${isVeryCompact ? "p-1" : "p-1.5"}`}
-                title="View history"
-              >
-                <History className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-              </button>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowHistory(!showHistory)}
+                      className={`rounded-lg transition-colors ${
+                        showHistory ? `${colors.accentBg} ${colors.accent}` : `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'}`
+                      } ${isVeryCompact ? "p-1" : "p-1.5"}`}
+                    >
+                      <History className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{showHistory ? "Hide history" : "View history"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>
@@ -471,22 +494,30 @@ export default function TaskList() {
 
               {/* Priority filter dropdown */}
               <div className="relative ml-1">
-                <button
-                  onClick={() => setShowPriorityFilter(!showPriorityFilter)}
-                  className={`rounded-lg flex items-center gap-1 transition-colors ${
-                    isVeryCompact ? "p-1" : "px-2 py-1.5"
-                  } ${
-                    priorityFilter !== "all"
-                      ? `${PRIORITY_CONFIG[priorityFilter].bg} ${PRIORITY_CONFIG[priorityFilter].color}`
-                      : `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'}`
-                  }`}
-                  title="Filter by priority"
-                >
-                  <Filter className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
-                  {!isVeryCompact && priorityFilter !== "all" && (
-                    <span className="text-[10px]">{PRIORITY_CONFIG[priorityFilter].label}</span>
-                  )}
-                </button>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setShowPriorityFilter(!showPriorityFilter)}
+                        className={`rounded-lg flex items-center gap-1 transition-colors ${
+                          isVeryCompact ? "p-1" : "px-2 py-1.5"
+                        } ${
+                          priorityFilter !== "all"
+                            ? `${PRIORITY_CONFIG[priorityFilter].bg} ${PRIORITY_CONFIG[priorityFilter].color}`
+                            : `${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'}`
+                        }`}
+                      >
+                        <Filter className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} />
+                        {!isVeryCompact && priorityFilter !== "all" && (
+                          <span className="text-[10px]">{PRIORITY_CONFIG[priorityFilter].label}</span>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Filter by priority</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
                 {showPriorityFilter && (
                   <>
@@ -538,15 +569,23 @@ export default function TaskList() {
               </div>
 
               {/* Sort button */}
-              <button
-                onClick={() => setSort(sort === "newest" ? "priority" : sort === "priority" ? "oldest" : "newest")}
-                className={`rounded-lg ${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'} transition-colors ${
-                  isVeryCompact ? "p-1" : "p-1.5"
-                }`}
-                title={`Sort: ${sort}`}
-              >
-                <ArrowUpDown className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
-              </button>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setSort(sort === "newest" ? "priority" : sort === "priority" ? "oldest" : "newest")}
+                      className={`rounded-lg ${isLightMode ? 'bg-black/10' : 'bg-white/10'} ${colors.textMuted} ${colors.hoverBg} hover:${isLightMode ? 'text-black' : 'text-white'} transition-colors ${
+                        isVeryCompact ? "p-1" : "p-1.5"
+                      }`}
+                    >
+                      <ArrowUpDown className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Sort: {sort}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         )}

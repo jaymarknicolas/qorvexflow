@@ -31,6 +31,12 @@ import {
   useYouTubeSearch,
   YouTubeSearchResult,
 } from "@/lib/hooks/useYouTubeSearch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Music source type
 type MusicSourceType = "youtube" | "spotify";
@@ -126,37 +132,20 @@ export default function MusicPlayerSimple() {
   const { effectiveColorScheme } = useAppSettings();
   const isLightMode = effectiveColorScheme === "light";
 
-  // Spotify hooks
-  const spotifyAuth = useSpotifyAuth();
-  const [musicSource, setMusicSource] = useState<MusicSourceType>(
-    () => persistedMusicState?.musicSource ?? "youtube",
-  );
-  const spotifyPlayback = useSpotifyPlayback(
-    spotifyAuth.accessToken,
-    musicSource === "spotify",
-  );
-
-  // YouTube hooks
-  const youtubePlayer = useYouTubePlayer("youtube-player-container");
-  const youtubeSearch = useYouTubeSearch();
-
-  // Local state
+  // Local state - defined first so they can be used in callbacks
   const [currentTrack, setCurrentTrack] = useState(
     () => persistedMusicState?.currentTrack ?? 0,
   );
-  const [volume, setVolume] = useState(() => persistedMusicState?.volume ?? 70);
   const [isShuffleOn, setIsShuffleOn] = useState(
     () => persistedMusicState?.isShuffleOn ?? false,
   );
   const [isRepeatOn, setIsRepeatOn] = useState(
     () => persistedMusicState?.isRepeatOn ?? false,
   );
-  const [waveformOffset, setWaveformOffset] = useState(0);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const [showSourceMenu, setShowSourceMenu] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [playHistory, setPlayHistory] = useState<number[]>([]);
+  const [musicSource, setMusicSource] = useState<MusicSourceType>(
+    () => persistedMusicState?.musicSource ?? "youtube",
+  );
 
   const prevThemeRef = useRef(persistedMusicState?.currentTheme ?? theme);
   const themeStateRef = useRef<ThemeState>(
@@ -174,6 +163,58 @@ export default function MusicPlayerSimple() {
       : theme === "coffeeshop"
         ? COFFEESHOP_VIDEO_IDS
         : LOFI_VIDEO_IDS;
+
+  // Auto-play callback ref - updated when dependencies change
+  const autoPlayNextRef = useRef<() => void>(() => {});
+
+  // Spotify hooks
+  const spotifyAuth = useSpotifyAuth();
+  const spotifyPlayback = useSpotifyPlayback(
+    spotifyAuth.accessToken,
+    musicSource === "spotify",
+  );
+
+  // YouTube hooks with onEnded callback
+  const youtubePlayer = useYouTubePlayer("youtube-player-container", {
+    onEnded: () => autoPlayNextRef.current(),
+  });
+  const youtubeSearch = useYouTubeSearch();
+
+  // Update auto-play callback when dependencies change
+  useEffect(() => {
+    autoPlayNextRef.current = () => {
+      if (musicSource !== "youtube") return;
+
+      if (isRepeatOn) {
+        // Repeat current track
+        const video = VIDEO_LIST[currentTrack];
+        youtubePlayer.loadVideo(video.id, {
+          title: video.name,
+          artist: video.artist,
+        });
+      } else {
+        // Play next track
+        const nextTrack = isShuffleOn
+          ? Math.floor(Math.random() * VIDEO_LIST.length)
+          : (currentTrack + 1) % VIDEO_LIST.length;
+        setPlayHistory((prev) => [...prev, currentTrack]);
+        setCurrentTrack(nextTrack);
+        const video = VIDEO_LIST[nextTrack];
+        youtubePlayer.loadVideo(video.id, {
+          title: video.name,
+          artist: video.artist,
+        });
+      }
+    };
+  }, [musicSource, isRepeatOn, isShuffleOn, currentTrack, VIDEO_LIST, youtubePlayer]);
+
+  // Rest of local state
+  const [volume, setVolume] = useState(() => persistedMusicState?.volume ?? 70);
+  const [waveformOffset, setWaveformOffset] = useState(0);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Persist state
   useEffect(() => {
@@ -606,12 +647,20 @@ export default function MusicPlayerSimple() {
           </div>
         )}
         {/* Header */}
-        <div className="flex items-center justify-between mb-4 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
-              <Music2 className={`w-4 h-4 ${colors.iconColor}`} />
-            </div>
-            <div>
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
+                    <Music2 className={`w-4 h-4 ${colors.iconColor}`} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Music Player</p>
+                </TooltipContent>
+              </Tooltip>
+              <div>
               <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
                 {musicSource === "spotify"
                   ? "Spotify"
@@ -651,29 +700,43 @@ export default function MusicPlayerSimple() {
           <div className="flex items-center gap-1">
             {/* Search (YouTube only) */}
             {musicSource === "youtube" && (
-              <button
-                onClick={() => setShowSearch(true)}
-                className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
-                aria-label="Search"
-              >
-                <Search className="w-4 h-4" />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShowSearch(true)}
+                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                    aria-label="Search"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search YouTube</p>
+                </TooltipContent>
+              </Tooltip>
             )}
 
             {/* Source Toggle */}
             <div className="relative">
-              <button
-                onClick={() => setShowSourceMenu(!showSourceMenu)}
-                className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${
-                  musicSource === "spotify" ? "text-green-500" : colors.accent
-                }`}
-              >
-                {musicSource === "spotify" ? (
-                  <Youtube className="w-4 h-4" />
-                ) : (
-                  <SpotifyIcon className="w-4 h-4" />
-                )}
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShowSourceMenu(!showSourceMenu)}
+                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${
+                      musicSource === "spotify" ? "text-green-500" : colors.accent
+                    }`}
+                  >
+                    {musicSource === "spotify" ? (
+                      <Youtube className="w-4 h-4" />
+                    ) : (
+                      <SpotifyIcon className="w-4 h-4" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Switch source</p>
+                </TooltipContent>
+              </Tooltip>
 
               {showSourceMenu && (
                 <div className={`absolute right-0 top-full mt-2 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-30 min-w-[180px]`}>
@@ -738,36 +801,46 @@ export default function MusicPlayerSimple() {
               onMouseEnter={() => setShowVolumeSlider(true)}
               onMouseLeave={() => setShowVolumeSlider(false)}
             >
-              <button
-                className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
-              >
-                <VolumeIcon className="w-4 h-4" />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                  >
+                    <VolumeIcon className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Volume</p>
+                </TooltipContent>
+              </Tooltip>
 
               {showVolumeSlider && (
-                <div className={`absolute right-0 top-full mt-2 p-3 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-20 min-w-[140px]`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <VolumeIcon className={`w-3 h-3 ${colors.accent}`} />
-                    <span className={`text-xs ${colors.textSecondary}`}>
-                      {Math.round(volume)}%
-                    </span>
+                <div className="absolute right-0 top-full pt-2 z-20">
+                  <div className={`p-3 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl min-w-[140px]`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <VolumeIcon className={`w-3 h-3 ${colors.accent}`} />
+                      <span className={`text-xs ${colors.textSecondary}`}>
+                        {Math.round(volume)}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      className={`w-full h-1.5 ${isLightMode ? 'bg-black/10' : 'bg-white/20'} rounded-full appearance-none cursor-pointer`}
+                      style={{
+                        background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'} ${volume}%)`,
+                      }}
+                    />
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    className={`w-full h-1.5 ${isLightMode ? 'bg-black/10' : 'bg-white/20'} rounded-full appearance-none cursor-pointer`}
-                    style={{
-                      background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'} ${volume}%)`,
-                    }}
-                  />
                 </div>
               )}
             </div>
           </div>
         </div>
+        </TooltipProvider>
         {/* Album Art */}
         <div className="relative mb-4 flex items-center justify-center flex-shrink-0">
           <div className="relative w-24 h-24 sm:w-28 sm:h-28">
@@ -869,65 +942,102 @@ export default function MusicPlayerSimple() {
           </div>
         )}
         {/* Main Controls */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
-          <button
-            onClick={() => {
-              setIsShuffleOn(!isShuffleOn);
-              setPlayHistory([]);
-            }}
-            className={`p-2 rounded-lg transition-all ${
-              isShuffleOn
-                ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
-            }`}
-          >
-            <Shuffle className="w-4 h-4" />
-          </button>
+        <TooltipProvider delayDuration={300}>
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => {
+                    setIsShuffleOn(!isShuffleOn);
+                    setPlayHistory([]);
+                  }}
+                  className={`p-2 rounded-lg transition-all ${
+                    isShuffleOn
+                      ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
+                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
+                  }`}
+                >
+                  <Shuffle className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isShuffleOn ? "Shuffle on" : "Shuffle off"}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <button
-            onClick={handlePrev}
-            disabled={effectiveIsLoading}
-            className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
-          >
-            <SkipBack className="w-5 h-5" />
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handlePrev}
+                  disabled={effectiveIsLoading}
+                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
+                >
+                  <SkipBack className="w-5 h-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Previous</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <button
-            onClick={handlePlayPause}
-            disabled={
-              effectiveIsLoading ||
-              (musicSource === "spotify" && !spotifyPlayback.hasActiveDevice)
-            }
-            className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100`}
-          >
-            {effectiveIsLoading ? (
-              <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
-            ) : effectiveIsPlaying ? (
-              <Pause className="w-5 h-5 sm:w-6 sm:h-6" />
-            ) : (
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" />
-            )}
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handlePlayPause}
+                  disabled={
+                    effectiveIsLoading ||
+                    (musicSource === "spotify" && !spotifyPlayback.hasActiveDevice)
+                  }
+                  className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100`}
+                >
+                  {effectiveIsLoading ? (
+                    <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
+                  ) : effectiveIsPlaying ? (
+                    <Pause className="w-5 h-5 sm:w-6 sm:h-6" />
+                  ) : (
+                    <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{effectiveIsPlaying ? "Pause" : "Play"}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <button
-            onClick={handleNext}
-            disabled={effectiveIsLoading}
-            className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
-          >
-            <SkipForward className="w-5 h-5" />
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleNext}
+                  disabled={effectiveIsLoading}
+                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
+                >
+                  <SkipForward className="w-5 h-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Next</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <button
-            onClick={() => setIsRepeatOn(!isRepeatOn)}
-            className={`p-2 rounded-lg transition-all ${
-              isRepeatOn
-                ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
-            }`}
-          >
-            <Repeat className="w-4 h-4" />
-          </button>
-        </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setIsRepeatOn(!isRepeatOn)}
+                  className={`p-2 rounded-lg transition-all ${
+                    isRepeatOn
+                      ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
+                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
+                  }`}
+                >
+                  <Repeat className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isRepeatOn ? "Repeat on" : "Repeat off"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
 
         {/* Footer */}
         <div className="flex items-center justify-center gap-1 mt-3 flex-shrink-0">

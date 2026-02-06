@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Youtube, ExternalLink } from "lucide-react";
 import { useWidgetTheme } from "@/lib/hooks/useWidgetTheme";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface VideoItem {
   id: string;
@@ -72,14 +78,22 @@ export default function MiniYouTube() {
   }, []);
 
   return (
+    <TooltipProvider delayDuration={300}>
     <div
       className={`flex flex-col h-full p-3 gap-2 bg-gradient-to-br ${colors.gradient} backdrop-blur-xl border ${colors.border} rounded-2xl overflow-hidden`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 shrink-0">
-        <div className={`p-1 rounded-lg ${colors.accentBg}`}>
-          <Youtube className={`w-3.5 h-3.5 ${colors.iconColor}`} />
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={`p-1 rounded-lg ${colors.accentBg}`}>
+              <Youtube className={`w-3.5 h-3.5 ${colors.iconColor}`} />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Lofi Streams</p>
+          </TooltipContent>
+        </Tooltip>
         <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
           Lofi Streams
         </h2>
@@ -128,7 +142,16 @@ export default function MiniYouTube() {
             <p className={`text-[10px] ${colors.textSecondary} truncate flex-1`}>
               {v.title}
             </p>
-            <ExternalLink className={`w-3 h-3 ${colors.textMuted} shrink-0`} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="shrink-0">
+                  <ExternalLink className={`w-3 h-3 ${colors.textMuted}`} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open in YouTube</p>
+              </TooltipContent>
+            </Tooltip>
           </button>
         ))}
       </div>
@@ -137,5 +160,6 @@ export default function MiniYouTube() {
         Opens in YouTube
       </p>
     </div>
+    </TooltipProvider>
   );
 }
