@@ -28,6 +28,7 @@ import {
   DragOverEvent,
   DragOverlay,
   useDroppable,
+  TouchSensor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -35,7 +36,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-// CSS import removed - no longer applying transforms to prevent slide animations
+import { CSS } from "@dnd-kit/utilities";
 import { useTasks } from "@/lib/hooks";
 import { validateTaskTitle } from "@/lib/utils/validation";
 import { useTheme } from "@/lib/contexts/theme-context";
@@ -148,10 +149,14 @@ function SortableTaskCard({
     attributes,
     listeners,
     setNodeRef,
+    transform,
+    transition,
     isDragging,
   } = useSortable({ id: task.id });
 
   const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? "none" : transition,
     opacity: isDragging ? 0.3 : 1,
     zIndex: isDragging ? 50 : undefined,
     position: "relative" as const,
@@ -167,15 +172,14 @@ function SortableTaskCard({
       <div
         ref={setNodeRef}
         style={style}
-        className={`group flex items-center gap-2 rounded-lg ${colors.cardBg} ${colors.cardHover} border ${colors.border} ${
+        {...attributes}
+        {...listeners}
+        className={`group flex items-center gap-2 rounded-lg ${colors.cardBg} ${colors.cardHover} border ${colors.border} cursor-grab active:cursor-grabbing select-none ${
           isCompact ? "p-2" : "p-2.5"
         } ${isDragging ? "shadow-lg ring-2 ring-violet-500/30" : ""}`}
       >
         <div
-          {...attributes}
-          {...listeners}
-          className={`flex-shrink-0 cursor-grab active:cursor-grabbing ${colors.textMuted} touch-none`}
-          title="Drag to reorder"
+          className={`flex-shrink-0 ${colors.textMuted}`}
         >
           <GripVertical className={isCompact ? "w-3.5 h-3.5" : "w-4 h-4"} />
         </div>
@@ -388,7 +392,13 @@ export default function TaskList() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
