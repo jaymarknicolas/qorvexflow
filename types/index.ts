@@ -60,6 +60,8 @@ export interface PomodoroSettings {
 // Task Types
 // ============================================
 
+export type TaskStatus = "todo" | "in_progress" | "done";
+
 export interface Task {
   id: string;
   title: string;
@@ -67,6 +69,7 @@ export interface Task {
   createdAt: number;
   completedAt?: number;
   priority?: "low" | "medium" | "high";
+  status?: TaskStatus;
   tags?: string[];
 }
 

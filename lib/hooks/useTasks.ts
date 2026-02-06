@@ -4,16 +4,19 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import type { Task } from "@/types";
+import type { Task, TaskStatus } from "@/types";
 import { tasksStorage } from "@/lib/services/storage";
 import { TASK_LIMITS } from "@/lib/constants";
 
 export interface UseTasksReturn {
   tasks: Task[];
-  addTask: (title: string) => boolean;
+  addTask: (title: string, status?: TaskStatus, priority?: "low" | "medium" | "high") => boolean;
   toggleTask: (id: string) => void;
   removeTask: (id: string) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
+  updateTaskStatus: (id: string, status: TaskStatus) => void;
+  reorderTasks: (activeId: string, overId: string) => void;
+  moveTaskToColumn: (taskId: string, targetStatus: TaskStatus, targetIndex?: number) => void;
   clearCompleted: () => void;
   completedCount: number;
   activeCount: number;
@@ -49,7 +52,7 @@ export function useTasks(): UseTasksReturn {
   }, [tasks]);
 
   const addTask = useCallback(
-    (title: string): boolean => {
+    (title: string, status: TaskStatus = "todo", priority: "low" | "medium" | "high" = "low"): boolean => {
       const trimmedTitle = title.trim();
 
       // Validation
@@ -69,10 +72,13 @@ export function useTasks(): UseTasksReturn {
       }
 
       const newTask: Task = {
-        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `task_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         title: trimmedTitle,
-        completed: false,
+        completed: status === "done",
+        status,
+        priority,
         createdAt: Date.now(),
+        completedAt: status === "done" ? Date.now() : undefined,
       };
 
       setTasks((prev) => [...prev, newTask]);
@@ -109,6 +115,65 @@ export function useTasks(): UseTasksReturn {
     setTasks((prev) => prev.filter((task) => !task.completed));
   }, []);
 
+  const updateTaskStatus = useCallback((id: string, status: TaskStatus) => {
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.id !== id) return task;
+        const completed = status === "done";
+        return {
+          ...task,
+          status,
+          completed,
+          completedAt: completed ? Date.now() : undefined,
+        };
+      })
+    );
+  }, []);
+
+  const moveTaskToColumn = useCallback((taskId: string, targetStatus: TaskStatus, targetIndex?: number) => {
+    setTasks((prev) => {
+      const taskIndex = prev.findIndex((t) => t.id === taskId);
+      if (taskIndex === -1) return prev;
+
+      const task = prev[taskIndex];
+      const completed = targetStatus === "done";
+      const updatedTask: Task = {
+        ...task,
+        status: targetStatus,
+        completed,
+        completedAt: completed ? Date.now() : undefined,
+      };
+
+      // Remove task from current position
+      const newTasks = prev.filter((t) => t.id !== taskId);
+
+      // If targetIndex is specified, insert at that position
+      if (targetIndex !== undefined) {
+        newTasks.splice(targetIndex, 0, updatedTask);
+      } else {
+        // Otherwise add to end
+        newTasks.push(updatedTask);
+      }
+
+      return newTasks;
+    });
+  }, []);
+
+  const reorderTasks = useCallback((activeId: string, overId: string) => {
+    setTasks((prev) => {
+      const oldIndex = prev.findIndex((task) => task.id === activeId);
+      const newIndex = prev.findIndex((task) => task.id === overId);
+
+      if (oldIndex === -1 || newIndex === -1) return prev;
+
+      const newTasks = [...prev];
+      const [movedTask] = newTasks.splice(oldIndex, 1);
+      newTasks.splice(newIndex, 0, movedTask);
+
+      return newTasks;
+    });
+  }, []);
+
   const completedCount = tasks.filter((t) => t.completed).length;
   const activeCount = tasks.filter((t) => !t.completed).length;
   const completionRate =
@@ -120,6 +185,9 @@ export function useTasks(): UseTasksReturn {
     toggleTask,
     removeTask,
     updateTask,
+    updateTaskStatus,
+    reorderTasks,
+    moveTaskToColumn,
     clearCompleted,
     completedCount,
     activeCount,
