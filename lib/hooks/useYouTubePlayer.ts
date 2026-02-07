@@ -41,7 +41,7 @@ interface UseYouTubePlayerReturn {
   togglePlay: () => void;
   seekTo: (seconds: number) => void;
   setVolume: (percent: number) => void;
-  loadVideo: (videoId: string, track?: Partial<YouTubeTrack>) => void;
+  loadVideo: (videoId: string, track?: Partial<YouTubeTrack>, autoPlay?: boolean) => void;
 
   // Player element ref
   playerContainerId: string;
@@ -188,10 +188,10 @@ export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayer
             setIsLoading(false);
             event.target.setVolume(volume);
 
-            // Load pending video if any
+            // Load pending video if any (cue only, don't auto-play)
             if (pendingVideoRef.current) {
               const { videoId, track } = pendingVideoRef.current;
-              event.target.loadVideoById(videoId);
+              event.target.cueVideoById(videoId);
               if (track) {
                 setCurrentTrack({
                   videoId,
@@ -404,7 +404,7 @@ export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayer
   );
 
   const loadVideo = useCallback(
-    (videoId: string, track?: Partial<YouTubeTrack>) => {
+    (videoId: string, track?: Partial<YouTubeTrack>, autoPlay = true) => {
       setError(null);
       setIsLoading(true);
       setCurrentTime(0);
@@ -421,7 +421,11 @@ export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayer
       setCurrentTrack(trackInfo);
 
       if (playerRef.current && isReady) {
-        playerRef.current.loadVideoById(videoId);
+        if (autoPlay) {
+          playerRef.current.loadVideoById(videoId);
+        } else {
+          playerRef.current.cueVideoById(videoId);
+        }
       } else {
         // Store for when player is ready
         pendingVideoRef.current = { videoId, track };

@@ -498,7 +498,7 @@ export default function MusicPlayerSimple() {
     setShowSourceMenu(false);
   };
 
-  // Load initial video when player is ready
+  // Load initial video when player is ready (cue only, don't auto-play on startup)
   useEffect(() => {
     if (
       youtubePlayer.isReady &&
@@ -509,7 +509,7 @@ export default function MusicPlayerSimple() {
       youtubePlayer.loadVideo(video.id, {
         title: video.name,
         artist: video.artist,
-      });
+      }, false);
     }
   }, [youtubePlayer.isReady, musicSource]);
 
