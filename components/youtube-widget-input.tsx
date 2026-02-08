@@ -115,7 +115,7 @@ export default function YouTubeWidgetInput() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isCompact, setIsCompact] = useState(false);
   const [isVeryCompact, setIsVeryCompact] = useState(false);
-
+  const hasStartedRef = useRef(false);
   // Container resize observer
   useEffect(() => {
     const container = containerRef.current;
@@ -252,8 +252,9 @@ export default function YouTubeWidgetInput() {
     }
   };
 
-  // Play video
+  // When user clicks a search result or stream
   const playVideo = (video: VideoItem) => {
+    hasStartedRef.current = true; // Mark that the user wants to play music
     setCurrentVideo({
       ...video,
       thumbnail: video.thumbnail || getThumbnail(video.id),
@@ -294,9 +295,12 @@ export default function YouTubeWidgetInput() {
     const cv = currentVideoRef.current;
     const pl = playlistRef.current;
     if (!cv || pl.length === 0) return;
+
     const currentIndex = pl.findIndex((p) => p.id === cv.id);
     const nextIndex = currentIndex + 1;
+
     if (nextIndex < pl.length) {
+      hasStartedRef.current = true; // Ensure autoplay is allowed for the next track
       setCurrentVideo(pl[nextIndex]);
     }
   }, []);
@@ -331,7 +335,6 @@ export default function YouTubeWidgetInput() {
     document.head.appendChild(tag);
   }, []);
 
-  // Create/update player when video changes - KEEP ONLY THIS ONE
   useEffect(() => {
     if (!currentVideo) {
       if (playerRef.current) {
@@ -347,7 +350,6 @@ export default function YouTubeWidgetInput() {
       const wrapper = playerWrapperRef.current;
       if (!wrapper) return;
 
-      // Destroy old player
       if (playerRef.current) {
         try {
           playerRef.current.destroy();
@@ -355,26 +357,38 @@ export default function YouTubeWidgetInput() {
         playerRef.current = null;
       }
 
-      // Clear wrapper and create fresh div for player
       wrapper.innerHTML = "";
       const playerDiv = document.createElement("div");
       playerDiv.id = "yt-api-player";
       wrapper.appendChild(playerDiv);
+
+      // If hasStartedRef is true, we autoplay.
+      // If false (first load/refresh), we wait for user.
+      const shouldAutoplay = hasStartedRef.current ? 1 : 0;
 
       playerRef.current = new (window as any).YT.Player("yt-api-player", {
         videoId: currentVideo.id,
         width: "100%",
         height: "100%",
         playerVars: {
-          autoplay: 1, // Changed to 1 for autoplay
+          autoplay: shouldAutoplay,
           rel: 0,
           modestbranding: 1,
         },
         events: {
+          onReady: (event: any) => {
+            if (shouldAutoplay) {
+              event.target.playVideo();
+            }
+          },
           onStateChange: (event: any) => {
-            // YT.PlayerState.ENDED = 0
+            // 0 = Ended
             if (event.data === 0) {
               playNext();
+            }
+            // If the user manually clicks "Play" on the YT embed for the first time
+            if (event.data === 1) {
+              hasStartedRef.current = true;
             }
           },
         },
@@ -385,16 +399,10 @@ export default function YouTubeWidgetInput() {
       if ((window as any).YT?.Player) {
         createPlayer();
       } else {
-        // Store callback for when API loads
-        const prev = (window as any).onYouTubeIframeAPIReady;
-        (window as any).onYouTubeIframeAPIReady = () => {
-          if (prev) prev();
-          createPlayer();
-        };
+        (window as any).onYouTubeIframeAPIReady = createPlayer;
       }
     };
 
-    // Small delay to ensure DOM is ready after React render
     const timer = setTimeout(waitForAPI, 50);
     return () => clearTimeout(timer);
   }, [currentVideo?.id, playNext]);
@@ -412,72 +420,72 @@ export default function YouTubeWidgetInput() {
   }, []);
 
   // Create/update player when video changes
-  useEffect(() => {
-    if (!currentVideo) {
-      if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
-        } catch {}
-        playerRef.current = null;
-      }
-      return;
-    }
+  // useEffect(() => {
+  //   if (!currentVideo) {
+  //     if (playerRef.current) {
+  //       try {
+  //         playerRef.current.destroy();
+  //       } catch {}
+  //       playerRef.current = null;
+  //     }
+  //     return;
+  //   }
 
-    const createPlayer = () => {
-      const wrapper = playerWrapperRef.current;
-      if (!wrapper) return;
+  //   const createPlayer = () => {
+  //     const wrapper = playerWrapperRef.current;
+  //     if (!wrapper) return;
 
-      // Destroy old player
-      if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
-        } catch {}
-        playerRef.current = null;
-      }
+  //     // Destroy old player
+  //     if (playerRef.current) {
+  //       try {
+  //         playerRef.current.destroy();
+  //       } catch {}
+  //       playerRef.current = null;
+  //     }
 
-      // Clear wrapper and create fresh div for player
-      wrapper.innerHTML = "";
-      const playerDiv = document.createElement("div");
-      playerDiv.id = "yt-api-player";
-      wrapper.appendChild(playerDiv);
+  //     // Clear wrapper and create fresh div for player
+  //     wrapper.innerHTML = "";
+  //     const playerDiv = document.createElement("div");
+  //     playerDiv.id = "yt-api-player";
+  //     wrapper.appendChild(playerDiv);
 
-      playerRef.current = new (window as any).YT.Player("yt-api-player", {
-        videoId: currentVideo.id,
-        width: "100%",
-        height: "100%",
-        playerVars: {
-          autoplay: 0,
-          rel: 0,
-          modestbranding: 1,
-        },
-        events: {
-          onStateChange: (event: any) => {
-            // YT.PlayerState.ENDED = 0
-            if (event.data === 0) {
-              playNext();
-            }
-          },
-        },
-      });
-    };
+  //     playerRef.current = new (window as any).YT.Player("yt-api-player", {
+  //       videoId: currentVideo.id,
+  //       width: "100%",
+  //       height: "100%",
+  //       playerVars: {
+  //         autoplay: 0,
+  //         rel: 0,
+  //         modestbranding: 1,
+  //       },
+  //       events: {
+  //         onStateChange: (event: any) => {
+  //           // YT.PlayerState.ENDED = 0
+  //           if (event.data === 0) {
+  //             playNext();
+  //           }
+  //         },
+  //       },
+  //     });
+  //   };
 
-    const waitForAPI = () => {
-      if ((window as any).YT?.Player) {
-        createPlayer();
-      } else {
-        // Store callback for when API loads
-        const prev = (window as any).onYouTubeIframeAPIReady;
-        (window as any).onYouTubeIframeAPIReady = () => {
-          if (prev) prev();
-          createPlayer();
-        };
-      }
-    };
+  //   const waitForAPI = () => {
+  //     if ((window as any).YT?.Player) {
+  //       createPlayer();
+  //     } else {
+  //       // Store callback for when API loads
+  //       const prev = (window as any).onYouTubeIframeAPIReady;
+  //       (window as any).onYouTubeIframeAPIReady = () => {
+  //         if (prev) prev();
+  //         createPlayer();
+  //       };
+  //     }
+  //   };
 
-    // Small delay to ensure DOM is ready after React render
-    const timer = setTimeout(waitForAPI, 50);
-    return () => clearTimeout(timer);
-  }, [currentVideo?.id, playNext]);
+  //   // Small delay to ensure DOM is ready after React render
+  //   const timer = setTimeout(waitForAPI, 50);
+  //   return () => clearTimeout(timer);
+  // }, [currentVideo?.id, playNext]);
 
   // Cleanup player on unmount
   useEffect(() => {
