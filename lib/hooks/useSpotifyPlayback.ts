@@ -54,13 +54,15 @@ const DEFAULT_STATE: PlaybackState = {
 
 export function useSpotifyPlayback(
   accessToken: string | null,
-  isActive: boolean = true
+  isActive: boolean = true,
 ): UseSpotifyPlaybackReturn {
   const [state, setState] = useState<PlaybackState>(DEFAULT_STATE);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastPollRef = useRef<number>(0);
+  const [player, setPlayer] = useState<any>(null);
+  const [isSDKReady, setIsSDKReady] = useState(false);
 
   // Update spotifyAPI token when it changes
   useEffect(() => {
@@ -115,74 +117,89 @@ export function useSpotifyPlayback(
 
   // Poll for playback state when active
   useEffect(() => {
-    if (!accessToken || !isActive) {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-      return;
-    }
+    if (!accessToken || !isActive) return;
 
-    // Initial fetch
-    refreshPlayback();
+    const script = document.createElement("script");
+    script.src = "https://sdk.scdn.co/spotify-player.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-    // Poll every 2 seconds when playing, every 5 seconds when paused
-    const startPolling = () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      // Accessing window.Spotify is now safe
+      const newPlayer = new window.Spotify.Player({
+        name: "Qorvex Flow Player",
+        getOAuthToken: (cb: (token: string) => void) => {
+          cb(accessToken);
+        },
+        volume: 0.5,
+      });
 
-      const interval = state.isPlaying ? 2000 : 5000;
-      pollIntervalRef.current = setInterval(refreshPlayback, interval);
+      // FIX: Type the device_id argument
+      newPlayer.addListener("ready", ({ device_id }: { device_id: string }) => {
+        console.log("Ready with Device ID", device_id);
+
+        fetch("https://api.spotify.com/v1/me/player", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            device_ids: [device_id],
+            play: true,
+          }),
+        });
+      });
+
+      // FIX: Type the state argument
+      newPlayer.addListener("player_state_changed", (state: any) => {
+        if (!state) return;
+
+        setState((prev) => ({
+          ...prev,
+          isPlaying: !state.paused,
+          progress_ms: state.position,
+          currentTrack: state.track_window.current_track
+            ? {
+                id: state.track_window.current_track.id,
+                name: state.track_window.current_track.name,
+                artist: state.track_window.current_track.artists[0].name,
+                album: state.track_window.current_track.album.name,
+                albumArt: state.track_window.current_track.album.images[0].url,
+                duration_ms: state.duration,
+                uri: state.track_window.current_track.uri,
+              }
+            : null,
+        }));
+      });
+
+      newPlayer.connect();
+      setPlayer(newPlayer);
     };
-
-    startPolling();
 
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
+      if (player) {
+        player.disconnect();
       }
     };
-  }, [accessToken, isActive, state.isPlaying, refreshPlayback]);
+  }, [accessToken, isActive]);
 
   // Control functions
   const play = useCallback(async (): Promise<boolean> => {
-    if (!accessToken) return false;
-
-    setIsLoading(true);
-    try {
-      const success = await spotifyAPI.play();
-      if (success) {
-        setState((prev) => ({ ...prev, isPlaying: true }));
-        setTimeout(refreshPlayback, 300);
-      }
-      return success;
-    } catch (err) {
-      setError("Failed to play");
-      return false;
-    } finally {
-      setIsLoading(false);
+    if (player) {
+      await player.resume();
+      return true;
     }
-  }, [accessToken, refreshPlayback]);
+    return false;
+  }, [player]);
 
   const pause = useCallback(async (): Promise<boolean> => {
-    if (!accessToken) return false;
-
-    setIsLoading(true);
-    try {
-      const success = await spotifyAPI.pause();
-      if (success) {
-        setState((prev) => ({ ...prev, isPlaying: false }));
-      }
-      return success;
-    } catch (err) {
-      setError("Failed to pause");
-      return false;
-    } finally {
-      setIsLoading(false);
+    if (player) {
+      await player.pause();
+      return true;
     }
-  }, [accessToken]);
+    return false;
+  }, [player]);
 
   const skipNext = useCallback(async (): Promise<boolean> => {
     if (!accessToken) return false;
@@ -231,7 +248,7 @@ export function useSpotifyPlayback(
         return false;
       }
     },
-    [accessToken]
+    [accessToken],
   );
 
   const seek = useCallback(
@@ -249,7 +266,7 @@ export function useSpotifyPlayback(
         return false;
       }
     },
-    [accessToken]
+    [accessToken],
   );
 
   const transferPlayback = useCallback(
@@ -282,7 +299,7 @@ export function useSpotifyPlayback(
         setIsLoading(false);
       }
     },
-    [accessToken, state.isPlaying, refreshPlayback]
+    [accessToken, state.isPlaying, refreshPlayback],
   );
 
   return {
