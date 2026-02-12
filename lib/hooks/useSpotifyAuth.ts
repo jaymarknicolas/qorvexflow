@@ -79,26 +79,19 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
     const redirectUri = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI;
 
-    if (!clientId || !redirectUri) {
-      setError("Spotify credentials not configured");
-      return;
-    }
-
     const scopes = [
       "user-read-playback-state",
       "user-modify-playback-state",
       "user-read-currently-playing",
       "streaming",
-      "playlist-read-private",
-      "playlist-read-collaborative",
     ];
 
     const authUrl = new URL("https://accounts.spotify.com/authorize");
-    authUrl.searchParams.set("client_id", clientId);
-    authUrl.searchParams.set("response_type", "token");
-    authUrl.searchParams.set("redirect_uri", redirectUri);
+    authUrl.searchParams.set("client_id", clientId!);
+    authUrl.searchParams.set("response_type", "code"); // CHANGED THIS
+    authUrl.searchParams.set("redirect_uri", redirectUri!);
     authUrl.searchParams.set("scope", scopes.join(" "));
-    authUrl.searchParams.set("show_dialog", "false");
+    authUrl.searchParams.set("show_dialog", "true");
 
     window.location.href = authUrl.toString();
   }, []);
