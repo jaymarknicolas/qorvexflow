@@ -269,11 +269,18 @@ export function useSpotifyPlayback(
   }, [accessToken]);
 
   // Pause playback when switching away from Spotify (isActive becomes false)
+  // Don't gate on state.isPlaying — our local state can be out of sync with Spotify
   useEffect(() => {
-    if (!isActive && playerRef.current && state.isPlaying) {
-      playerRef.current.pause().catch(() => {});
+    if (!isActive) {
+      // Try SDK pause first, then REST API as fallback
+      if (playerRef.current) {
+        playerRef.current.pause().catch(() => {});
+      }
+      if (accessToken) {
+        spotifyAPI.pause().catch(() => {});
+      }
     }
-  }, [isActive, state.isPlaying]);
+  }, [isActive, accessToken]);
 
   // Control functions - use SDK player methods (more reliable than REST API,
   // works even when token approaches expiry since SDK handles refresh internally)
@@ -291,17 +298,27 @@ export function useSpotifyPlayback(
   }, []);
 
   const pause = useCallback(async (): Promise<boolean> => {
+    let success = false;
+    // Try SDK pause
     if (playerRef.current) {
       try {
         await playerRef.current.pause();
-        return true;
+        success = true;
       } catch (err) {
-        console.error("Failed to pause:", err);
-        return false;
+        console.error("Failed to pause via SDK:", err);
       }
     }
-    return false;
-  }, []);
+    // Always also call REST API as fallback to ensure Spotify actually stops
+    if (accessToken) {
+      try {
+        await spotifyAPI.pause();
+        success = true;
+      } catch (err) {
+        console.error("Failed to pause via API:", err);
+      }
+    }
+    return success;
+  }, [accessToken]);
 
   const skipNext = useCallback(async (): Promise<boolean> => {
     if (playerRef.current) {
