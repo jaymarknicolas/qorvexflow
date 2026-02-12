@@ -94,11 +94,16 @@ export class SpotifyAPIService {
   /**
    * Play/resume playback
    */
-  async play(trackUri?: string): Promise<boolean> {
+  async play(trackUri?: string, allUris?: string[], offset?: { position: number }): Promise<boolean> {
     if (!this.accessToken) return false;
 
     try {
-      const body = trackUri ? JSON.stringify({ uris: [trackUri] }) : undefined;
+      let body: string | undefined;
+      if (allUris && allUris.length > 0) {
+        body = JSON.stringify({ uris: allUris, offset });
+      } else if (trackUri) {
+        body = JSON.stringify({ uris: [trackUri] });
+      }
 
       const response = await fetch(`${SPOTIFY_API_BASE}/me/player/play`, {
         method: "PUT",

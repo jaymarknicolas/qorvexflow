@@ -144,6 +144,9 @@ export default function MusicPlayerSimple() {
     () => persistedMusicState?.isRepeatOn ?? false,
   );
   const [playHistory, setPlayHistory] = useState<number[]>([]);
+  // YouTube search queue - when set, next/prev cycle through search results instead of preset list
+  const [youtubeSearchQueue, setYoutubeSearchQueue] = useState<{ id: string; name: string; artist: string }[] | null>(null);
+  const [youtubeQueueIndex, setYoutubeQueueIndex] = useState(0);
   const [musicSource, setMusicSource] = useState<MusicSourceType>(
     () => persistedMusicState?.musicSource ?? "youtube",
   );
@@ -186,25 +189,33 @@ export default function MusicPlayerSimple() {
     autoPlayNextRef.current = () => {
       if (musicSource !== "youtube") return;
 
-      if (isRepeatOn) {
-        // Repeat current track
-        const video = VIDEO_LIST[currentTrack];
-        youtubePlayer.loadVideo(video.id, {
-          title: video.name,
-          artist: video.artist,
-        });
+      if (youtubeSearchQueue && youtubeSearchQueue.length > 0) {
+        // Playing from search queue
+        if (isRepeatOn) {
+          const video = youtubeSearchQueue[youtubeQueueIndex];
+          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+        } else {
+          const nextIdx = isShuffleOn
+            ? Math.floor(Math.random() * youtubeSearchQueue.length)
+            : (youtubeQueueIndex + 1) % youtubeSearchQueue.length;
+          setYoutubeQueueIndex(nextIdx);
+          const video = youtubeSearchQueue[nextIdx];
+          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+        }
       } else {
-        // Play next track
-        const nextTrack = isShuffleOn
-          ? Math.floor(Math.random() * VIDEO_LIST.length)
-          : (currentTrack + 1) % VIDEO_LIST.length;
-        setPlayHistory((prev) => [...prev, currentTrack]);
-        setCurrentTrack(nextTrack);
-        const video = VIDEO_LIST[nextTrack];
-        youtubePlayer.loadVideo(video.id, {
-          title: video.name,
-          artist: video.artist,
-        });
+        // Playing from preset list
+        if (isRepeatOn) {
+          const video = VIDEO_LIST[currentTrack];
+          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+        } else {
+          const nextTrack = isShuffleOn
+            ? Math.floor(Math.random() * VIDEO_LIST.length)
+            : (currentTrack + 1) % VIDEO_LIST.length;
+          setPlayHistory((prev) => [...prev, currentTrack]);
+          setCurrentTrack(nextTrack);
+          const video = VIDEO_LIST[nextTrack];
+          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+        }
       }
     };
   }, [
@@ -214,6 +225,8 @@ export default function MusicPlayerSimple() {
     currentTrack,
     VIDEO_LIST,
     youtubePlayer,
+    youtubeSearchQueue,
+    youtubeQueueIndex,
   ]);
 
   // Rest of local state
@@ -426,6 +439,13 @@ export default function MusicPlayerSimple() {
   const handleNext = async () => {
     if (musicSource === "spotify") {
       await spotifyPlayback.skipNext();
+    } else if (youtubeSearchQueue && youtubeSearchQueue.length > 0) {
+      const nextIdx = isShuffleOn
+        ? Math.floor(Math.random() * youtubeSearchQueue.length)
+        : (youtubeQueueIndex + 1) % youtubeSearchQueue.length;
+      setYoutubeQueueIndex(nextIdx);
+      const video = youtubeSearchQueue[nextIdx];
+      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
     } else {
       const nextTrack = isShuffleOn
         ? Math.floor(Math.random() * VIDEO_LIST.length)
@@ -433,16 +453,20 @@ export default function MusicPlayerSimple() {
       setPlayHistory((prev) => [...prev, currentTrack]);
       setCurrentTrack(nextTrack);
       const video = VIDEO_LIST[nextTrack];
-      youtubePlayer.loadVideo(video.id, {
-        title: video.name,
-        artist: video.artist,
-      });
+      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
     }
   };
 
   const handlePrev = async () => {
     if (musicSource === "spotify") {
       await spotifyPlayback.skipPrevious();
+    } else if (youtubeSearchQueue && youtubeSearchQueue.length > 0) {
+      const prevIdx = isShuffleOn
+        ? Math.floor(Math.random() * youtubeSearchQueue.length)
+        : (youtubeQueueIndex - 1 + youtubeSearchQueue.length) % youtubeSearchQueue.length;
+      setYoutubeQueueIndex(prevIdx);
+      const video = youtubeSearchQueue[prevIdx];
+      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
     } else {
       let prevTrack;
       if (playHistory.length > 0) {
@@ -453,10 +477,7 @@ export default function MusicPlayerSimple() {
       }
       setCurrentTrack(prevTrack);
       const video = VIDEO_LIST[prevTrack];
-      youtubePlayer.loadVideo(video.id, {
-        title: video.name,
-        artist: video.artist,
-      });
+      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
     }
   };
 
@@ -500,13 +521,37 @@ export default function MusicPlayerSimple() {
   };
 
   const handleSelectSpotifyResult = async (track: SpotifyTrack) => {
-    await spotifyAPI.play(track.uri);
+    // Pass all search results as the queue so next/prev work
+    const allUris = spotifySearchResults.map((t) => t.uri);
+    const trackIndex = spotifySearchResults.findIndex((t) => t.id === track.id);
+    await spotifyAPI.play(
+      undefined,
+      allUris,
+      { position: trackIndex >= 0 ? trackIndex : 0 },
+    );
+    // Sync shuffle/repeat state to Spotify so the queue respects current settings
+    if (isShuffleOn) {
+      await spotifyPlayback.setShuffle(true);
+    }
+    if (isRepeatOn) {
+      await spotifyPlayback.setRepeat("track");
+    }
     setShowSearch(false);
     setSearchQuery("");
     setSpotifySearchResults([]);
   };
 
   const handleSelectSearchResult = (result: YouTubeSearchResult) => {
+    // Store all search results as queue so next/prev cycle through them
+    const queue = youtubeSearch.results.map((r) => ({
+      id: r.videoId,
+      name: r.title,
+      artist: r.channelTitle,
+    }));
+    const resultIndex = youtubeSearch.results.findIndex((r) => r.videoId === result.videoId);
+    setYoutubeSearchQueue(queue);
+    setYoutubeQueueIndex(resultIndex >= 0 ? resultIndex : 0);
+
     youtubePlayer.loadVideo(result.videoId, {
       title: result.title,
       artist: result.channelTitle,
@@ -1183,6 +1228,7 @@ export default function MusicPlayerSimple() {
                 key={idx}
                 disabled={effectiveIsLoading}
                 onClick={() => {
+                  setYoutubeSearchQueue(null); // Clear search queue, back to preset list
                   setCurrentTrack(idx);
                   const video = VIDEO_LIST[idx];
                   youtubePlayer.loadVideo(video.id, {
