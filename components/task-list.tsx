@@ -89,6 +89,39 @@ const COLUMNS: {
   { id: "done", label: "Done", shortLabel: "Done", icon: CheckCircle2 },
 ];
 
+const STATUS_CONFIG: Record<
+  TaskStatus,
+  {
+    icon: React.ElementType;
+    color: string;
+    bg: string;
+    label: string;
+    next: TaskStatus;
+  }
+> = {
+  todo: {
+    icon: Circle,
+    color: "text-slate-400",
+    bg: "bg-slate-500/20",
+    label: "To Do",
+    next: "in_progress",
+  },
+  in_progress: {
+    icon: Loader2,
+    color: "text-blue-400",
+    bg: "bg-blue-500/20",
+    label: "In Progress",
+    next: "done",
+  },
+  done: {
+    icon: CheckCircle2,
+    color: "text-green-400",
+    bg: "bg-green-500/20",
+    label: "Done",
+    next: "todo",
+  },
+};
+
 const PRIORITY_CONFIG = {
   high: {
     label: "High",
@@ -134,6 +167,7 @@ function SortableTaskCard({
   isCompact,
   onRemove,
   onCyclePriority,
+  onCycleStatus,
   showIndicatorBefore,
   showIndicatorAfter,
 }: {
@@ -142,6 +176,7 @@ function SortableTaskCard({
   isCompact: boolean;
   onRemove: (id: string) => void;
   onCyclePriority: (id: string, priority?: string) => void;
+  onCycleStatus: (id: string, currentStatus?: TaskStatus) => void;
   showIndicatorBefore?: boolean;
   showIndicatorAfter?: boolean;
 }) {
@@ -185,6 +220,31 @@ function SortableTaskCard({
         </div>
 
         <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {(() => {
+                const taskStatus = (task.status || (task.completed ? "done" : "todo")) as TaskStatus;
+                const statusConfig = STATUS_CONFIG[taskStatus];
+                const StatusIcon = statusConfig.icon;
+                return (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCycleStatus(task.id, taskStatus);
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={`flex-shrink-0 p-1 rounded transition-all ${statusConfig.bg} ${statusConfig.color} hover:opacity-80`}
+                  >
+                    <StatusIcon className={`${isCompact ? "w-3 h-3" : "w-3.5 h-3.5"} ${taskStatus === "in_progress" ? "animate-spin" : ""}`} style={taskStatus === "in_progress" ? { animationDuration: "2s" } : undefined} />
+                  </button>
+                );
+              })()}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{STATUS_CONFIG[task.status || (task.completed ? "done" : "todo")].label} (click to change)</p>
+            </TooltipContent>
+          </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -274,6 +334,7 @@ function DroppableColumn({
   isCompact,
   onRemove,
   onCyclePriority,
+  onCycleStatus,
   overInfo,
 }: {
   column: (typeof COLUMNS)[0];
@@ -282,6 +343,7 @@ function DroppableColumn({
   isCompact: boolean;
   onRemove: (id: string) => void;
   onCyclePriority: (id: string, priority?: string) => void;
+  onCycleStatus: (id: string, currentStatus?: TaskStatus) => void;
   overInfo: { overId: string; position: "before" | "after" } | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -326,6 +388,7 @@ function DroppableColumn({
               isCompact={isCompact}
               onRemove={onRemove}
               onCyclePriority={onCyclePriority}
+              onCycleStatus={onCycleStatus}
               showIndicatorBefore={overInfo?.overId === task.id && overInfo.position === "before"}
               showIndicatorAfter={overInfo?.overId === task.id && overInfo.position === "after"}
             />
@@ -371,6 +434,7 @@ export default function TaskList() {
     addTask,
     removeTask,
     updateTask,
+    updateTaskStatus,
     reorderTasks,
     moveTaskToColumn,
     clearCompleted,
@@ -675,6 +739,15 @@ export default function TaskList() {
       updateTask(taskId, { priority: nextPriority });
     },
     [updateTask],
+  );
+
+  const cycleStatus = useCallback(
+    (taskId: string, currentStatus?: TaskStatus) => {
+      const current = currentStatus || "todo";
+      const nextStatus = STATUS_CONFIG[current].next;
+      updateTaskStatus(taskId, nextStatus);
+    },
+    [updateTaskStatus],
   );
 
   const currentTasks = tasksByStatus[activeTab];
@@ -1145,6 +1218,7 @@ export default function TaskList() {
                       isCompact={isCompact}
                       onRemove={removeTask}
                       onCyclePriority={cyclePriority}
+                      onCycleStatus={cycleStatus}
                       showIndicatorBefore={overInfo?.overId === task.id && overInfo.position === "before"}
                       showIndicatorAfter={overInfo?.overId === task.id && overInfo.position === "after"}
                     />
@@ -1183,6 +1257,7 @@ export default function TaskList() {
                   isCompact={isCompact}
                   onRemove={removeTask}
                   onCyclePriority={cyclePriority}
+                  onCycleStatus={cycleStatus}
                   overInfo={overInfo}
                 />
               ))}

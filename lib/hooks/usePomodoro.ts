@@ -279,6 +279,9 @@ export function usePomodoro(): UsePomodoroReturn {
     // Play notification sound
     playNotificationSound();
 
+    // Always stop the timer first
+    setIsRunning(false);
+
     if (mode === "work") {
       // Focus session completed
       const newSessions = sessions + 1;
@@ -299,61 +302,62 @@ export function usePomodoro(): UsePomodoroReturn {
         showNotification("✨ Focus Complete!", `Great work! Take a ${settings.breakDuration}-minute break.`);
       }
 
-      // Auto-start break if enabled
+      // Auto-start break if enabled (after a brief pause)
       if (settings.autoStartBreaks) {
         setTimeout(() => {
           setIsRunning(true);
         }, 1000);
-      } else {
-        setIsRunning(false);
       }
     } else {
       // Break completed, start work
+      const wasLongBreak = mode === "long-break";
       setMode("work");
       setTimeLeft(workDuration);
 
-      if (mode === "long-break") {
+      if (wasLongBreak) {
         showNotification("💪 Long Break Complete!", "Ready to start a new focus cycle?");
       } else {
         showNotification("💪 Break Complete!", "Time to focus again!");
       }
 
-      // Auto-start focus session if enabled
+      // Auto-start focus session if enabled (after a brief pause)
       if (settings.autoStartPomodoros) {
         setTimeout(() => {
           setIsRunning(true);
         }, 1000);
-      } else {
-        setIsRunning(false);
       }
     }
   }, [mode, sessions, cycleCount, playNotificationSound, showNotification, settings, workDuration, shortBreakDuration, longBreakDuration]);
 
-  // Timer logic
+  // Stable timer effect - only depends on isRunning to avoid recreating interval every second
+  // This prevents timing drift caused by clearing/creating intervals on every tick
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleTimerComplete();
-            return getDurationForMode(mode);
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
+    if (!isRunning) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      return;
     }
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [isRunning, timeLeft, mode, handleTimerComplete, getDurationForMode]);
+  }, [isRunning]);
+
+  // Handle timer completion separately - fires when timeLeft reaches 0
+  useEffect(() => {
+    if (timeLeft === 0 && isRunning) {
+      handleTimerComplete();
+    }
+  }, [timeLeft, isRunning, handleTimerComplete]);
 
   // Update timeLeft when settings change and timer is not running
   // Use a ref to track previous settings to avoid resetting on pause

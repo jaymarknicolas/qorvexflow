@@ -206,7 +206,14 @@ export default function MusicPlayerSimple() {
         });
       }
     };
-  }, [musicSource, isRepeatOn, isShuffleOn, currentTrack, VIDEO_LIST, youtubePlayer]);
+  }, [
+    musicSource,
+    isRepeatOn,
+    isShuffleOn,
+    currentTrack,
+    VIDEO_LIST,
+    youtubePlayer,
+  ]);
 
   // Rest of local state
   const [volume, setVolume] = useState(() => persistedMusicState?.volume ?? 70);
@@ -506,10 +513,14 @@ export default function MusicPlayerSimple() {
       musicSource === "youtube"
     ) {
       const video = VIDEO_LIST[currentTrack];
-      youtubePlayer.loadVideo(video.id, {
-        title: video.name,
-        artist: video.artist,
-      }, false);
+      youtubePlayer.loadVideo(
+        video.id,
+        {
+          title: video.name,
+          artist: video.artist,
+        },
+        false,
+      );
     }
   }, [youtubePlayer.isReady, musicSource]);
 
@@ -573,7 +584,9 @@ export default function MusicPlayerSimple() {
       >
         {/* Search Overlay */}
         {showSearch && (
-          <div className={`absolute inset-0 ${colors.surfaceBg} backdrop-blur-xl z-40 p-4 pt-12 flex flex-col rounded-2xl`}>
+          <div
+            className={`absolute inset-0 ${colors.surfaceBg} backdrop-blur-xl z-40 p-4 pt-12 flex flex-col rounded-2xl`}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-sm font-bold ${colors.textPrimary}`}>
                 Search YouTube Music
@@ -661,185 +674,193 @@ export default function MusicPlayerSimple() {
                 </TooltipContent>
               </Tooltip>
               <div>
-              <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
-                {musicSource === "spotify"
-                  ? "Spotify"
-                  : theme === "lofi"
-                    ? "Lofi"
-                    : theme === "coffeeshop"
-                      ? "Coffee Shop"
-                      : "Ghibli"}{" "}
-                {musicSource === "spotify" ? "Connect" : "Beats"}
-              </h2>
-              <p className={`text-[10px] ${colors.textMuted}`}>
-                {effectiveIsLoading ? (
-                  <span className="flex items-center gap-1">
-                    <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                    Loading...
-                  </span>
-                ) : musicSource === "spotify" ? (
-                  spotifyPlayback.hasActiveDevice ? (
+                <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
+                  {musicSource === "spotify"
+                    ? "Spotify"
+                    : theme === "lofi"
+                      ? "Lofi"
+                      : theme === "coffeeshop"
+                        ? "Coffee Shop"
+                        : "Ghibli"}{" "}
+                  {musicSource === "spotify" ? "Connect" : "Beats"}
+                </h2>
+                <p className={`text-[10px] ${colors.textMuted}`}>
+                  {effectiveIsLoading ? (
                     <span className="flex items-center gap-1">
-                      <Wifi className="w-2.5 h-2.5" />
-                      {spotifyPlayback.activeDevice?.name || "Connected"}
+                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      Loading...
                     </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <WifiOff className="w-2.5 h-2.5" />
-                      No device
-                    </span>
-                  )
-                ) : (
-                  <>{effectiveIsPlaying ? "Now Playing" : "Paused"}</>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center gap-1">
-            {/* Search (YouTube only) */}
-            {musicSource === "youtube" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setShowSearch(true)}
-                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
-                    aria-label="Search"
-                  >
-                    <Search className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Search YouTube</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-
-            {/* Source Toggle */}
-            <div className="relative">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setShowSourceMenu(!showSourceMenu)}
-                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${
-                      musicSource === "spotify" ? "text-green-500" : colors.accent
-                    }`}
-                  >
-                    {musicSource === "spotify" ? (
-                      <Youtube className="w-4 h-4" />
-                    ) : (
-                      <SpotifyIcon className="w-4 h-4" />
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Switch source</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {showSourceMenu && (
-                <div className={`absolute right-0 top-full mt-2 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-30 min-w-[180px]`}>
-                  <div className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}>
-                    Music Source
-                  </div>
-
-                  <button
-                    onClick={() => handleSourceChange("youtube")}
-                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors ${
-                      musicSource === "youtube"
-                        ? `bg-gradient-to-r ${colors.primary} text-white`
-                        : `${colors.hoverBg} ${colors.textSecondary}`
-                    }`}
-                  >
-                    <Youtube className="w-4 h-4" />
-                    <span className="text-sm">YouTube Music</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSourceChange("spotify")}
-                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 ${
-                      musicSource === "spotify"
-                        ? "bg-green-500/20 text-green-600"
-                        : `${colors.hoverBg} ${colors.textSecondary}`
-                    }`}
-                  >
-                    <SpotifyIcon className="w-4 h-4" />
-                    <span className="text-sm flex-1 text-left">
-                      {spotifyAuth.isConnected
-                        ? "Spotify Connect"
-                        : "Connect Spotify"}
-                    </span>
-                    {spotifyAuth.isConnected ? (
-                      <Wifi className="w-3 h-3 text-green-500" />
-                    ) : (
-                      <LogIn className="w-3 h-3" />
-                    )}
-                  </button>
-
-                  {spotifyAuth.isConnected && (
-                    <button
-                      onClick={() => {
-                        spotifyAuth.disconnect();
-                        if (musicSource === "spotify")
-                          setMusicSource("youtube");
-                        setShowSourceMenu(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 hover:bg-red-500/10 text-red-500"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span className="text-sm">Disconnect</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Volume */}
-            <div
-              className="relative"
-              onMouseEnter={() => setShowVolumeSlider(true)}
-              onMouseLeave={() => setShowVolumeSlider(false)}
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
-                  >
-                    <VolumeIcon className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Volume</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {showVolumeSlider && (
-                <div className="absolute right-0 top-full pt-2 z-20">
-                  <div className={`p-3 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl min-w-[140px]`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <VolumeIcon className={`w-3 h-3 ${colors.accent}`} />
-                      <span className={`text-xs ${colors.textSecondary}`}>
-                        {Math.round(volume)}%
+                  ) : musicSource === "spotify" ? (
+                    spotifyPlayback.hasActiveDevice ? (
+                      <span className="flex items-center gap-1">
+                        <Wifi className="w-2.5 h-2.5" />
+                        {spotifyPlayback.activeDevice?.name || "Connected"}
                       </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={volume}
-                      onChange={handleVolumeChange}
-                      className={`w-full h-1.5 ${isLightMode ? 'bg-black/10' : 'bg-white/20'} rounded-full appearance-none cursor-pointer`}
-                      style={{
-                        background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'} ${volume}%)`,
-                      }}
-                    />
-                  </div>
-                </div>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <WifiOff className="w-2.5 h-2.5" />
+                        No device
+                      </span>
+                    )
+                  ) : (
+                    <>{effectiveIsPlaying ? "Now Playing" : "Paused"}</>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-1">
+              {/* Search (YouTube only) */}
+              {musicSource === "youtube" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowSearch(true)}
+                      className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                      aria-label="Search"
+                    >
+                      <Search className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search YouTube</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
+
+              {/* Source Toggle */}
+              <div className="relative">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setShowSourceMenu(!showSourceMenu)}
+                      className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${
+                        musicSource === "spotify"
+                          ? "text-green-500"
+                          : colors.accent
+                      }`}
+                    >
+                      {musicSource === "spotify" ? (
+                        <Youtube className="w-4 h-4" />
+                      ) : (
+                        <SpotifyIcon className="w-4 h-4" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Switch source</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {showSourceMenu && (
+                  <div
+                    className={`absolute right-0 top-full mt-2 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-[9999] min-w-[180px]`}
+                  >
+                    <div
+                      className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}
+                    >
+                      Music Source
+                    </div>
+
+                    <button
+                      onClick={() => handleSourceChange("youtube")}
+                      className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors ${
+                        musicSource === "youtube"
+                          ? `bg-gradient-to-r ${colors.primary} text-white`
+                          : `${colors.hoverBg} ${colors.textSecondary}`
+                      }`}
+                    >
+                      <Youtube className="w-4 h-4" />
+                      <span className="text-sm">YouTube Music</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleSourceChange("spotify")}
+                      className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 ${
+                        musicSource === "spotify"
+                          ? "bg-green-500/20 text-green-600"
+                          : `${colors.hoverBg} ${colors.textSecondary}`
+                      }`}
+                    >
+                      <SpotifyIcon className="w-4 h-4" />
+                      <span className="text-sm flex-1 text-left">
+                        {spotifyAuth.isConnected
+                          ? "Spotify Connect"
+                          : "Connect Spotify"}
+                      </span>
+                      {spotifyAuth.isConnected ? (
+                        <Wifi className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <LogIn className="w-3 h-3" />
+                      )}
+                    </button>
+
+                    {spotifyAuth.isConnected && (
+                      <button
+                        onClick={() => {
+                          spotifyAuth.disconnect();
+                          if (musicSource === "spotify")
+                            setMusicSource("youtube");
+                          setShowSourceMenu(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-colors mt-1 hover:bg-red-500/10 text-red-500"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span className="text-sm">Disconnect</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Volume */}
+              <div
+                className="relative"
+                onMouseEnter={() => setShowVolumeSlider(true)}
+                onMouseLeave={() => setShowVolumeSlider(false)}
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                    >
+                      <VolumeIcon className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Volume</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                {showVolumeSlider && (
+                  <div className="absolute right-0 top-full pt-2 z-20">
+                    <div
+                      className={`p-3 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl min-w-[140px]`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <VolumeIcon className={`w-3 h-3 ${colors.accent}`} />
+                        <span className={`text-xs ${colors.textSecondary}`}>
+                          {Math.round(volume)}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={volume}
+                        onChange={handleVolumeChange}
+                        className={`w-full h-1.5 ${isLightMode ? "bg-black/10" : "bg-white/20"} rounded-full appearance-none cursor-pointer`}
+                        style={{
+                          background: `linear-gradient(to right, ${colors.progressBg} ${volume}%, ${isLightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)"} ${volume}%)`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         </TooltipProvider>
         {/* Album Art */}
         <div className="relative mb-4 flex items-center justify-center flex-shrink-0">
@@ -852,7 +873,7 @@ export default function MusicPlayerSimple() {
             />
 
             <div
-              className={`absolute inset-2 rounded-full ${isLightMode ? 'bg-white/80' : 'bg-gradient-to-br from-slate-800 to-slate-900'} border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
+              className={`absolute inset-2 rounded-full ${isLightMode ? "bg-white/80" : "bg-gradient-to-br from-slate-800 to-slate-900"} border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
                 effectiveIsPlaying && !effectiveIsLoading ? "animate-spin" : ""
               }`}
               style={{ animationDuration: "4s" }}
@@ -904,7 +925,9 @@ export default function MusicPlayerSimple() {
         </div>
         {/* Track Info */}
         <div className="text-center mb-2 flex-shrink-0 px-2">
-          <h3 className={`text-base sm:text-lg font-bold ${colors.textPrimary} truncate`}>
+          <h3
+            className={`text-base sm:text-lg font-bold ${colors.textPrimary} truncate`}
+          >
             {musicSource === "spotify"
               ? spotifyPlayback.currentTrack?.name || "Not Playing"
               : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
@@ -928,14 +951,16 @@ export default function MusicPlayerSimple() {
               max={totalDuration}
               value={currentProgress}
               onChange={handleSeek}
-              className={`w-full h-1 ${isLightMode ? 'bg-black/10' : 'bg-white/20'} rounded-full appearance-none cursor-pointer`}
+              className={`w-full h-1 ${isLightMode ? "bg-black/10" : "bg-white/20"} rounded-full appearance-none cursor-pointer`}
               style={{
                 background: `linear-gradient(to right, ${colors.progressBg} ${
                   (currentProgress / totalDuration) * 100
-                }%, ${isLightMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'} ${(currentProgress / totalDuration) * 100}%)`,
+                }%, ${isLightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)"} ${(currentProgress / totalDuration) * 100}%)`,
               }}
             />
-            <div className={`flex justify-between mt-1 text-[10px] ${colors.textMuted}`}>
+            <div
+              className={`flex justify-between mt-1 text-[10px] ${colors.textMuted}`}
+            >
               <span>{formatTime(currentProgress)}</span>
               <span>{formatTime(totalDuration)}</span>
             </div>
@@ -954,7 +979,7 @@ export default function MusicPlayerSimple() {
                   className={`p-2 rounded-lg transition-all ${
                     isShuffleOn
                       ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
+                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"}`
                   }`}
                 >
                   <Shuffle className="w-4 h-4" />
@@ -970,7 +995,7 @@ export default function MusicPlayerSimple() {
                 <button
                   onClick={handlePrev}
                   disabled={effectiveIsLoading}
-                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
+                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"} disabled:opacity-50`}
                 >
                   <SkipBack className="w-5 h-5" />
                 </button>
@@ -986,7 +1011,8 @@ export default function MusicPlayerSimple() {
                   onClick={handlePlayPause}
                   disabled={
                     effectiveIsLoading ||
-                    (musicSource === "spotify" && !spotifyPlayback.hasActiveDevice)
+                    (musicSource === "spotify" &&
+                      !spotifyPlayback.hasActiveDevice)
                   }
                   className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100`}
                 >
@@ -1009,7 +1035,7 @@ export default function MusicPlayerSimple() {
                 <button
                   onClick={handleNext}
                   disabled={effectiveIsLoading}
-                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'} disabled:opacity-50`}
+                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"} disabled:opacity-50`}
                 >
                   <SkipForward className="w-5 h-5" />
                 </button>
@@ -1026,7 +1052,7 @@ export default function MusicPlayerSimple() {
                   className={`p-2 rounded-lg transition-all ${
                     isRepeatOn
                       ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? 'hover:text-gray-900' : 'hover:text-white'}`
+                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"}`
                   }`}
                 >
                   <Repeat className="w-4 h-4" />
@@ -1057,12 +1083,14 @@ export default function MusicPlayerSimple() {
                 className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
                   currentTrack === idx
                     ? `bg-gradient-to-r ${colors.primary} w-4`
-                    : `${isLightMode ? 'bg-black/20 hover:bg-black/40' : 'bg-white/20 hover:bg-white/40'}`
+                    : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
                 }`}
               />
             ))
           ) : (
-            <div className={`flex items-center gap-2 text-[10px] ${colors.textMuted}`}>
+            <div
+              className={`flex items-center gap-2 text-[10px] ${colors.textMuted}`}
+            >
               <Smartphone className="w-3 h-3" />
               <span>
                 {spotifyPlayback.hasActiveDevice
@@ -1119,7 +1147,7 @@ export default function MusicPlayerSimple() {
 
       {showSourceMenu && (
         <div
-          className="fixed inset-0 z-20"
+          className="fixed inset-0 -z-1"
           onClick={() => setShowSourceMenu(false)}
         />
       )}
