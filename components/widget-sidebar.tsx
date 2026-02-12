@@ -34,7 +34,13 @@ import {
 const newWidgets = new Set(["coffee"]);
 
 // Mark widgets as updated (will show UPDATED badge)
-const updatedWidgets = new Set(["calendar", "stats", "quotes", "youtube", "tasks"]);
+const updatedWidgets = new Set([
+  "calendar",
+  "stats",
+  "quotes",
+  "youtube",
+  "tasks",
+]);
 
 // Storage key for used widgets
 const USED_WIDGETS_KEY = "qorvexflow_used_widgets";
@@ -78,7 +84,10 @@ const widgets: WidgetDefinition[] = [
 ];
 
 // Widget color scheme
-const widgetColors: Record<string, { gradient: string; glow: string; icon: string }> = {
+const widgetColors: Record<
+  string,
+  { gradient: string; glow: string; icon: string }
+> = {
   pomodoro: {
     gradient: "from-rose-500 to-orange-500",
     glow: "group-hover:shadow-rose-500/30",
@@ -144,7 +153,13 @@ interface WidgetIconProps {
   isUpdated?: boolean;
 }
 
-function WidgetIcon({ id, icon: Icon, label, isNew = false, isUpdated = false }: WidgetIconProps) {
+function WidgetIcon({
+  id,
+  icon: Icon,
+  label,
+  isNew = false,
+  isUpdated = false,
+}: WidgetIconProps) {
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id,
     data: { from: "sidebar" },
@@ -238,7 +253,9 @@ interface WidgetSidebarProps {
   onWidgetPlaced?: () => void;
 }
 
-export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {}) {
+export default function WidgetSidebar({
+  onWidgetPlaced,
+}: WidgetSidebarProps = {}) {
   const { isMobile } = useResponsive();
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -262,14 +279,16 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
 
   // Check if widget should show NEW badge
   const shouldShowNew = useCallback(
-    (widgetId: string) => newWidgets.has(widgetId) && !usedWidgets.has(widgetId),
-    [usedWidgets]
+    (widgetId: string) =>
+      newWidgets.has(widgetId) && !usedWidgets.has(widgetId),
+    [usedWidgets],
   );
 
   // Check if widget should show UPDATED badge
   const shouldShowUpdated = useCallback(
-    (widgetId: string) => updatedWidgets.has(widgetId) && !usedWidgets.has(widgetId),
-    [usedWidgets]
+    (widgetId: string) =>
+      updatedWidgets.has(widgetId) && !usedWidgets.has(widgetId),
+    [usedWidgets],
   );
 
   // Get theme-based colors
@@ -348,48 +367,55 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
   return (
     <TooltipProvider delayDuration={300}>
       {/* FAB Button - consistent position across all breakpoints */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={`fixed left-4 bottom-4 z-[60] h-14 w-14 rounded-2xl bg-gradient-to-br ${themeAccent.primary} text-white shadow-lg ${themeAccent.glow} hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden`}
-        aria-label="Toggle widget menu"
-      >
-        {/* Animated icon */}
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <X className="h-6 w-6" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="open"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Sparkles className="h-6 w-6" />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <motion.button
+            onClick={() => setIsOpen(!isOpen)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`fixed left-4 bottom-4 z-[60] h-14 w-14 rounded-2xl bg-gradient-to-br ${themeAccent.primary} text-white shadow-lg ${themeAccent.glow} hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden`}
+            aria-label="Toggle widget menu"
+          >
+            {/* Animated icon */}
+            <AnimatePresence mode="wait">
+              {isOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <X className="h-6 w-6" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="open"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Sparkles className="h-6 w-6" />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* Pulse ring when closed */}
-        {!isOpen && (
-          <motion.div
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${themeAccent.primary}`}
-            initial={{ scale: 1, opacity: 0.5 }}
-            animate={{ scale: 1.5, opacity: 0 }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        )}
-      </motion.button>
+            {/* Pulse ring when closed */}
+            {!isOpen && (
+              <motion.div
+                className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${themeAccent.primary}`}
+                initial={{ scale: 1, opacity: 0.5 }}
+                animate={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+            )}
+          </motion.button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <p>Show Widgets</p>
+        </TooltipContent>
+      </Tooltip>
 
       {/* Widget Panel */}
       <AnimatePresence>
@@ -404,7 +430,9 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                 transition={{ duration: 0.3 }}
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
                 onClick={() => !isDraggingFromSidebar && setIsOpen(false)}
-                style={{ pointerEvents: isDraggingFromSidebar ? "none" : "auto" }}
+                style={{
+                  pointerEvents: isDraggingFromSidebar ? "none" : "auto",
+                }}
               />
             )}
 
@@ -433,7 +461,9 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                 }}
                 className={`fixed left-0 right-0 bottom-0 z-[56] ${themeAccent.bg} backdrop-blur-xl rounded-t-3xl border-t ${themeAccent.border} p-4 pb-8 max-h-[70vh] overflow-y-auto`}
                 aria-label="Widget panel"
-                style={{ pointerEvents: isDraggingFromSidebar ? "none" : "auto" }}
+                style={{
+                  pointerEvents: isDraggingFromSidebar ? "none" : "auto",
+                }}
               >
                 {/* Handle bar */}
                 <div className="flex justify-center mb-4">
@@ -444,7 +474,9 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                 <div className="flex items-center justify-between mb-4 px-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className={`h-5 w-5 ${themeAccent.text}`} />
-                    <h3 className="text-lg font-semibold text-white">Add Widgets</h3>
+                    <h3 className="text-lg font-semibold text-white">
+                      Add Widgets
+                    </h3>
                   </div>
                   <span className="text-xs text-white/40">Drag to canvas</span>
                 </div>
@@ -486,7 +518,9 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                 }}
                 className={`fixed left-4 bottom-22 z-[56] w-[280px] ${themeAccent.bg} backdrop-blur-xl rounded-2xl border ${themeAccent.border} shadow-2xl overflow-hidden`}
                 aria-label="Widget panel"
-                style={{ pointerEvents: isDraggingFromSidebar ? "none" : "auto" }}
+                style={{
+                  pointerEvents: isDraggingFromSidebar ? "none" : "auto",
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Decorative glow */}
@@ -498,14 +532,20 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
                 <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className={`h-4 w-4 ${themeAccent.text}`} />
-                    <h3 className="text-sm font-semibold text-white">Widgets</h3>
+                    <h3 className="text-sm font-semibold text-white">
+                      Widgets
+                    </h3>
                   </div>
-                  <span className="text-[10px] text-white/40 font-medium">Drag to canvas</span>
+                  <span className="text-[10px] text-white/40 font-medium">
+                    Drag to canvas
+                  </span>
                 </div>
 
                 {/* Divider */}
                 <div className="mx-4 mb-2">
-                  <div className={`h-px bg-gradient-to-r ${themeAccent.primary} opacity-30`} />
+                  <div
+                    className={`h-px bg-gradient-to-r ${themeAccent.primary} opacity-30`}
+                  />
                 </div>
 
                 {/* Widget Grid - 3 columns for desktop/tablet floating panel */}
@@ -532,7 +572,9 @@ export default function WidgetSidebar({ onWidgetPlaced }: WidgetSidebarProps = {
 
                 {/* Bottom accent */}
                 <div className="px-4 pb-3">
-                  <div className={`h-0.5 w-full rounded-full bg-gradient-to-r ${themeAccent.secondary} opacity-30`} />
+                  <div
+                    className={`h-0.5 w-full rounded-full bg-gradient-to-r ${themeAccent.secondary} opacity-30`}
+                  />
                 </div>
               </motion.aside>
             )}

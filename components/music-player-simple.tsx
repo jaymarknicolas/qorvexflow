@@ -26,6 +26,7 @@ import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useSpotifyAuth } from "@/lib/hooks/useSpotifyAuth";
 import { useSpotifyPlayback } from "@/lib/hooks/useSpotifyPlayback";
+import { spotifyAPI, SpotifyTrack } from "@/lib/services/spotify-api";
 import { useYouTubePlayer } from "@/lib/hooks/useYouTubePlayer";
 import {
   useYouTubeSearch,
@@ -222,6 +223,9 @@ export default function MusicPlayerSimple() {
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [spotifySearchResults, setSpotifySearchResults] = useState<SpotifyTrack[]>([]);
+  const [isSpotifySearching, setIsSpotifySearching] = useState(false);
+  const [spotifySearchError, setSpotifySearchError] = useState<string | null>(null);
 
   // Persist state
   useEffect(() => {
@@ -475,11 +479,31 @@ export default function MusicPlayerSimple() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
+    if (!searchQuery.trim()) return;
+
+    if (musicSource === "spotify") {
+      setIsSpotifySearching(true);
+      setSpotifySearchError(null);
+      try {
+        const results = await spotifyAPI.searchTracks(searchQuery);
+        setSpotifySearchResults(results);
+      } catch (err) {
+        setSpotifySearchError("Failed to search Spotify");
+      } finally {
+        setIsSpotifySearching(false);
+      }
+    } else {
       youtubeSearch.search(searchQuery);
     }
+  };
+
+  const handleSelectSpotifyResult = async (track: SpotifyTrack) => {
+    await spotifyAPI.play(track.uri);
+    setShowSearch(false);
+    setSearchQuery("");
+    setSpotifySearchResults([]);
   };
 
   const handleSelectSearchResult = (result: YouTubeSearchResult) => {
@@ -493,17 +517,39 @@ export default function MusicPlayerSimple() {
     youtubeSearch.clearResults();
   };
 
-  const handleSourceChange = (source: MusicSourceType) => {
+  const handleSourceChange = async (source: MusicSourceType) => {
+    // Close search if open
+    setShowSearch(false);
+    setSearchQuery("");
+    setSpotifySearchResults([]);
+    youtubeSearch.clearResults();
+
     if (source === "spotify" && !spotifyAuth.isConnected) {
+      sessionStorage.setItem("pending_spotify_switch", "true");
       spotifyAuth.connect();
       return;
     }
     if (musicSource === "youtube" && source === "spotify") {
       youtubePlayer.pause();
     }
+    if (musicSource === "spotify" && source === "youtube") {
+      await spotifyPlayback.pause();
+    }
     setMusicSource(source);
     setShowSourceMenu(false);
   };
+
+  // Auto-switch to Spotify after OAuth redirect
+  useEffect(() => {
+    if (spotifyAuth.isConnected && musicSource !== "spotify") {
+      const pending = sessionStorage.getItem("pending_spotify_switch");
+      if (pending) {
+        sessionStorage.removeItem("pending_spotify_switch");
+        youtubePlayer.pause();
+        setMusicSource("spotify");
+      }
+    }
+  }, [spotifyAuth.isConnected]);
 
   // Load initial video when player is ready (cue only, don't auto-play on startup)
   useEffect(() => {
@@ -540,7 +586,8 @@ export default function MusicPlayerSimple() {
   const effectiveIsLoading =
     musicSource === "youtube"
       ? youtubePlayer.isLoading
-      : spotifyPlayback.isLoading;
+      : spotifyPlayback.isLoading ||
+        (spotifyAuth.isConnected && !spotifyPlayback.isSDKReady);
 
   const currentTrackInfo =
     musicSource === "youtube"
@@ -589,12 +636,15 @@ export default function MusicPlayerSimple() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className={`text-sm font-bold ${colors.textPrimary}`}>
-                Search YouTube Music
+                Search {musicSource === "spotify" ? "Spotify" : "YouTube Music"}
               </h3>
               <button
                 onClick={() => {
                   setShowSearch(false);
+                  setSearchQuery("");
                   youtubeSearch.clearResults();
+                  setSpotifySearchResults([]);
+                  setSpotifySearchError(null);
                 }}
                 className={`p-1 ${colors.hoverBg} rounded-lg`}
               >
@@ -607,16 +657,16 @@ export default function MusicPlayerSimple() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for songs..."
+                placeholder={`Search ${musicSource === "spotify" ? "Spotify" : "YouTube"} for songs...`}
                 className={`flex-1 ${colors.accentBg} border ${colors.border} rounded-lg px-3 py-2 text-sm ${colors.textPrimary} placeholder:${colors.textMuted} focus:outline-none focus:border-current`}
                 autoFocus
               />
               <button
                 type="submit"
-                disabled={youtubeSearch.isSearching}
+                disabled={musicSource === "spotify" ? isSpotifySearching : youtubeSearch.isSearching}
                 className={`px-3 py-2 bg-gradient-to-r ${colors.primary} rounded-lg text-white text-sm font-medium disabled:opacity-50`}
               >
-                {youtubeSearch.isSearching ? (
+                {(musicSource === "spotify" ? isSpotifySearching : youtubeSearch.isSearching) ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Search className="w-4 h-4" />
@@ -625,36 +675,78 @@ export default function MusicPlayerSimple() {
             </form>
 
             <div className="flex-1 overflow-y-auto space-y-2">
-              {youtubeSearch.results.map((result) => (
-                <button
-                  key={result.videoId}
-                  onClick={() => handleSelectSearchResult(result)}
-                  className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
-                >
-                  <img
-                    src={result.thumbnail}
-                    alt={result.title}
-                    className="w-12 h-12 rounded object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm ${colors.textPrimary} truncate`}>
-                      {result.title}
+              {musicSource === "spotify" ? (
+                <>
+                  {spotifySearchResults.map((track) => (
+                    <button
+                      key={track.id}
+                      onClick={() => handleSelectSpotifyResult(track)}
+                      className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                    >
+                      {track.albumArt ? (
+                        <img
+                          src={track.albumArt}
+                          alt={track.name}
+                          className="w-12 h-12 rounded object-cover"
+                        />
+                      ) : (
+                        <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center`}>
+                          <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${colors.textPrimary} truncate`}>
+                          {track.name}
+                        </p>
+                        <p className={`text-xs ${colors.textMuted} truncate`}>
+                          {track.artist} · {track.album}
+                        </p>
+                      </div>
+                      <span className={`text-xs ${colors.textMuted}`}>
+                        {formatTime(track.duration_ms / 1000)}
+                      </span>
+                    </button>
+                  ))}
+                  {spotifySearchError && (
+                    <p className="text-center text-red-400 text-sm">
+                      {spotifySearchError}
                     </p>
-                    <p className={`text-xs ${colors.textMuted} truncate`}>
-                      {result.channelTitle}
-                    </p>
-                  </div>
-                  {result.duration && (
-                    <span className={`text-xs ${colors.textMuted}`}>
-                      {formatTime(result.duration)}
-                    </span>
                   )}
-                </button>
-              ))}
-              {youtubeSearch.error && (
-                <p className="text-center text-red-400 text-sm">
-                  {youtubeSearch.error}
-                </p>
+                </>
+              ) : (
+                <>
+                  {youtubeSearch.results.map((result) => (
+                    <button
+                      key={result.videoId}
+                      onClick={() => handleSelectSearchResult(result)}
+                      className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                    >
+                      <img
+                        src={result.thumbnail}
+                        alt={result.title}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${colors.textPrimary} truncate`}>
+                          {result.title}
+                        </p>
+                        <p className={`text-xs ${colors.textMuted} truncate`}>
+                          {result.channelTitle}
+                        </p>
+                      </div>
+                      {result.duration && (
+                        <span className={`text-xs ${colors.textMuted}`}>
+                          {formatTime(result.duration)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                  {youtubeSearch.error && (
+                    <p className="text-center text-red-400 text-sm">
+                      {youtubeSearch.error}
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -685,7 +777,14 @@ export default function MusicPlayerSimple() {
                   {musicSource === "spotify" ? "Connect" : "Beats"}
                 </h2>
                 <p className={`text-[10px] ${colors.textMuted}`}>
-                  {effectiveIsLoading ? (
+                  {musicSource === "spotify" &&
+                  spotifyAuth.isConnected &&
+                  !spotifyPlayback.isSDKReady ? (
+                    <span className="flex items-center gap-1">
+                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      Connecting to Spotify...
+                    </span>
+                  ) : effectiveIsLoading ? (
                     <span className="flex items-center gap-1">
                       <Loader2 className="w-2.5 h-2.5 animate-spin" />
                       Loading...
@@ -711,23 +810,21 @@ export default function MusicPlayerSimple() {
 
             {/* Controls */}
             <div className="flex items-center gap-1">
-              {/* Search (YouTube only) */}
-              {musicSource === "youtube" && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setShowSearch(true)}
-                      className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
-                      aria-label="Search"
-                    >
-                      <Search className="w-4 h-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Search YouTube</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
+              {/* Search */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShowSearch(true)}
+                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                    aria-label="Search"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search {musicSource === "spotify" ? "Spotify" : "YouTube"}</p>
+                </TooltipContent>
+              </Tooltip>
 
               {/* Source Toggle */}
               <div className="relative">
@@ -798,7 +895,8 @@ export default function MusicPlayerSimple() {
 
                     {spotifyAuth.isConnected && (
                       <button
-                        onClick={() => {
+                        onClick={async () => {
+                          await spotifyPlayback.pause();
                           spotifyAuth.disconnect();
                           if (musicSource === "spotify")
                             setMusicSource("youtube");
@@ -929,14 +1027,16 @@ export default function MusicPlayerSimple() {
             className={`text-base sm:text-lg font-bold ${colors.textPrimary} truncate`}
           >
             {musicSource === "spotify"
-              ? spotifyPlayback.currentTrack?.name || "Not Playing"
+              ? spotifyPlayback.currentTrack?.name ||
+                (spotifyPlayback.isSDKReady ? "Ready to Play" : "Connecting...")
               : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
                 VIDEO_LIST[currentTrack]?.name ||
                 "Loading..."}
           </h3>
           <p className={`text-xs sm:text-sm ${colors.accent} truncate`}>
             {musicSource === "spotify"
-              ? spotifyPlayback.currentTrack?.artist || "-"
+              ? spotifyPlayback.currentTrack?.artist ||
+                (spotifyPlayback.isSDKReady ? "Spotify" : "")
               : (currentTrackInfo && (currentTrackInfo as any)?.artist) ||
                 VIDEO_LIST[currentTrack]?.artist ||
                 "YouTube"}
@@ -972,9 +1072,13 @@ export default function MusicPlayerSimple() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => {
-                    setIsShuffleOn(!isShuffleOn);
+                  onClick={async () => {
+                    const newState = !isShuffleOn;
+                    setIsShuffleOn(newState);
                     setPlayHistory([]);
+                    if (musicSource === "spotify") {
+                      await spotifyPlayback.setShuffle(newState);
+                    }
                   }}
                   className={`p-2 rounded-lg transition-all ${
                     isShuffleOn
@@ -1048,7 +1152,13 @@ export default function MusicPlayerSimple() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => setIsRepeatOn(!isRepeatOn)}
+                  onClick={async () => {
+                    const newState = !isRepeatOn;
+                    setIsRepeatOn(newState);
+                    if (musicSource === "spotify") {
+                      await spotifyPlayback.setRepeat(newState ? "track" : "off");
+                    }
+                  }}
                   className={`p-2 rounded-lg transition-all ${
                     isRepeatOn
                       ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`

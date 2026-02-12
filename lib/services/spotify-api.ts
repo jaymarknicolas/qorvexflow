@@ -341,6 +341,54 @@ export class SpotifyAPIService {
   }
 
   /**
+   * Set shuffle mode
+   */
+  async setShuffle(state: boolean): Promise<boolean> {
+    if (!this.accessToken) return false;
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/me/player/shuffle?state=${state}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      return response.ok || response.status === 204;
+    } catch (error) {
+      console.error("Failed to set shuffle:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Set repeat mode
+   */
+  async setRepeat(state: "off" | "track" | "context"): Promise<boolean> {
+    if (!this.accessToken) return false;
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/me/player/repeat?state=${state}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      return response.ok || response.status === 204;
+    } catch (error) {
+      console.error("Failed to set repeat:", error);
+      return false;
+    }
+  }
+
+  /**
    * Get available devices
    */
   async getDevices(): Promise<any[]> {
