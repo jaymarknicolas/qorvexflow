@@ -3,18 +3,21 @@
 import { useState, useEffect } from "react";
 
 interface ResponsiveState {
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
+  isSmallMobile: boolean; // < 475px
+  isMobile: boolean; // < 640px
+  isTablet: boolean; // 640px - 1023px
+  isDesktop: boolean; // >= 1024px
   width: number;
   height: number;
 }
 
+const SMALL_MOBILE_BREAKPOINT = 475;
 const MOBILE_BREAKPOINT = 640; // sm
 const TABLET_BREAKPOINT = 1024; // lg
 
 export function useResponsive(): ResponsiveState {
   const [state, setState] = useState<ResponsiveState>({
+    isSmallMobile: false,
     isMobile: false,
     isTablet: false,
     isDesktop: true,
@@ -29,6 +32,7 @@ export function useResponsive(): ResponsiveState {
       const height = window.innerHeight;
 
       setState({
+        isSmallMobile: width < SMALL_MOBILE_BREAKPOINT,
         isMobile: width < MOBILE_BREAKPOINT,
         isTablet: width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT,
         isDesktop: width >= TABLET_BREAKPOINT,

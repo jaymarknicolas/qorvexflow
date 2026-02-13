@@ -2,7 +2,27 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
-export type LayoutType = "grid-5" | "grid-4" | "grid-6" | "asymmetric" | "focus" | "kanban";
+// Desktop layouts
+// mobile-1: 1 centered square canvas
+// mobile-2: 2 stacked square canvases
+// mobile-3: 1 top + 2 bottom square canvases
+// mobile-4: 2x2 square canvases (tablet only)
+export type LayoutType =
+  | "grid-5"
+  | "grid-4"
+  | "grid-6"
+  | "asymmetric"
+  | "focus"
+  | "kanban"
+  | "mobile-1"
+  | "mobile-2"
+  | "mobile-3"
+  | "mobile-4";
+
+const ALL_LAYOUTS: LayoutType[] = [
+  "grid-5", "grid-4", "grid-6", "asymmetric", "focus", "kanban",
+  "mobile-1", "mobile-2", "mobile-3", "mobile-4",
+];
 
 interface LayoutContextType {
   layout: LayoutType;
@@ -20,7 +40,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     setIsMounted(true);
     if (typeof window !== "undefined") {
       const savedLayout = localStorage.getItem("qorvexflow_layout") as LayoutType;
-      if (savedLayout && ["grid-5", "grid-4", "grid-6", "asymmetric", "focus", "kanban"].includes(savedLayout)) {
+      if (savedLayout && ALL_LAYOUTS.includes(savedLayout)) {
         setLayoutState(savedLayout);
       }
     }

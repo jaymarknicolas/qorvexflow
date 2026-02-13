@@ -844,6 +844,11 @@ html {
   color: var(--theme-text) !important;
 }
 
+/* Preserve white text on gradient backgrounds (logos, avatars) */
+:root[data-color-scheme="light"] .keep-white {
+  color: #ffffff !important;
+}
+
 :root[data-color-scheme="light"] .text-white\/40,
 :root[data-color-scheme="light"] .text-white\/50,
 :root[data-color-scheme="light"] .text-white\/60 {

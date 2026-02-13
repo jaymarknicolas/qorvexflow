@@ -49,6 +49,7 @@ import CanvasVideoBackground from "@/components/canvas-video-background";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useResponsive } from "@/lib/hooks/useResponsive";
+import ResponsiveCanvasCarousel from "@/components/responsive-canvas-carousel";
 import { toast } from "sonner";
 
 // Memoized widget components to prevent re-renders when parent state changes
@@ -144,9 +145,9 @@ const DraggableWidgetContent = memo(function DraggableWidgetContent({
 
 export default function Home() {
   const { slotWidgets, placeWidget, removeWidget, moveWidget } = useWorkspace();
-  const { layout } = useLayout();
+  const { layout, setLayout } = useLayout();
   const { resetSettings } = useWidgetSettings();
-  const { isMobile } = useResponsive();
+  const { isMobile, isTablet, isSmallMobile, isDesktop } = useResponsive();
   const [isMounted, setIsMounted] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [maximizedWidget, setMaximizedWidget] = useState<{
@@ -156,11 +157,54 @@ export default function Home() {
   const { theme } = useTheme();
   const { settings } = useAppSettings();
 
+  // Use carousel mode on mobile and tablet (no scroll, paginated)
+  const useCarouselMode = isMobile || isTablet;
+
+  // Auto-switch to mobile layout when entering mobile/tablet if on a desktop layout
+  useEffect(() => {
+    if (!useCarouselMode) return;
+    const isMobileLayout = layout.startsWith("mobile-");
+    if (!isMobileLayout) {
+      // Switch to a sensible default mobile layout
+      if (isSmallMobile) {
+        setLayout("mobile-3"); // 1+2 for small phones
+      } else {
+        setLayout("mobile-4"); // 2x2 for tablets / larger phones
+      }
+    }
+  }, [useCarouselMode, isSmallMobile]);
+
+  // Auto-switch back to desktop layout when entering desktop if on a mobile layout
+  useEffect(() => {
+    if (!isDesktop) return;
+    const isMobileLayout = layout.startsWith("mobile-");
+    if (isMobileLayout) {
+      setLayout("grid-5"); // default desktop layout
+    }
+  }, [isDesktop]);
+
+  // Compute which slots have widgets (for carousel pagination dots)
+  const filledSlots = useMemo(() => {
+    const filled = new Set<string>();
+    Object.entries(slotWidgets).forEach(([key, value]) => {
+      if (value) filled.add(key);
+    });
+    return filled;
+  }, [slotWidgets]);
+
   // Reference to workspace content for dynamic scaling
   const workspaceRef = useRef<HTMLDivElement>(null);
   // Reference to scrollable container for auto-scroll on mobile
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { scale, shouldScale } = useDynamicScale(workspaceRef, 80);
+
+  // Sidebar open trigger for empty slot taps in carousel mode
+  const sidebarTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const handleEmptySlotTap = useCallback(() => {
+    // Find and click the widget sidebar FAB button to open it
+    const fabButton = document.querySelector('[data-widget-sidebar-fab]') as HTMLButtonElement;
+    if (fabButton) fabButton.click();
+  }, []);
 
   // Auto-scroll configuration for mobile drag
   const autoScrollThreshold = 100; // pixels from edge to trigger scroll
@@ -272,13 +316,12 @@ export default function Home() {
 
   // Get responsive widget height classes
   const getWidgetHeightClass = useCallback(() => {
-    if (isMobile) {
-      // On mobile, widgets should occupy full width and have consistent height
-      // Use fixed height for scrollable experience
-      return "min-h-[400px] h-[400px]";
+    if (useCarouselMode) {
+      // In carousel mode, widgets fill the carousel slide height
+      return "h-full";
     }
     return "min-h-[320px] sm:min-h-[360px] lg:min-h-[400px] max-h-[320px] sm:max-h-[360px] lg:max-h-[400px]";
-  }, [isMobile]);
+  }, [useCarouselMode]);
 
   // Memoized callbacks for widget actions to prevent unnecessary re-renders
   const createWidgetHandlers = useCallback(
@@ -381,6 +424,27 @@ export default function Home() {
           slots: ["slot-1", "slot-2", "slot-3"],
           gridClass: "grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8",
         };
+      // Mobile/Tablet layouts
+      case "mobile-1":
+        return {
+          slots: ["slot-1"],
+          gridClass: "grid grid-cols-1 gap-4",
+        };
+      case "mobile-2":
+        return {
+          slots: ["slot-1", "slot-2"],
+          gridClass: "grid grid-cols-1 gap-4",
+        };
+      case "mobile-3":
+        return {
+          slots: ["slot-1", "slot-2", "slot-3"],
+          gridClass: "grid grid-cols-1 gap-4",
+        };
+      case "mobile-4":
+        return {
+          slots: ["slot-1", "slot-2", "slot-3", "slot-4"],
+          gridClass: "grid grid-cols-2 gap-4",
+        };
       default:
         return {
           slots: ["slot-1", "slot-2", "slot-3", "slot-4", "slot-5"],
@@ -400,42 +464,55 @@ export default function Home() {
     }
   };
 
+  // Get flat list of all slots from layout config
+  const getAllSlots = useCallback(() => {
+    const config = getLayoutConfig();
+    return config.slots;
+  }, [layout]);
+
   // Render workspace content
   const renderWorkspace = () => {
     const config = getLayoutConfig();
 
+    // Mobile & Tablet: Use paginated carousel instead of grid
+    if (useCarouselMode) {
+      return (
+        <div
+          ref={workspaceRef}
+          className="w-full h-full px-2 sm:px-3 flex flex-col"
+        >
+          <ResponsiveCanvasCarousel
+            slots={getAllSlots()}
+            layout={layout}
+            renderSlot={renderWidgetSlot}
+            filledSlots={filledSlots}
+            onEmptySlotTap={handleEmptySlotTap}
+          />
+        </div>
+      );
+    }
+
+    // Desktop: Original grid layout
     return (
       <div
         ref={workspaceRef}
-        className={`max-w-7xl w-full px-3 sm:px-4 md:px-6 lg:px-8 ${
-          isMobile ? "py-4 pb-24" : ""
-        }`}
+        className="max-w-7xl w-full px-3 sm:px-4 md:px-6 lg:px-8"
         style={{
-          // Don't scale on mobile - let users scroll instead
-          transform: shouldScale && !isMobile ? `scale(${scale})` : "scale(1)",
+          transform: shouldScale ? `scale(${scale})` : "scale(1)",
           transformOrigin: "center center",
           transition: "transform 0.3s ease-out",
         }}
       >
         {"sections" in config ? (
-          // Layouts with sections
           <div className="grid grid-cols-1 gap-4 md:gap-6 lg:gap-8">
             {config.sections?.map((section, idx) => (
-              <div
-                key={idx}
-                className={
-                  isMobile ? "grid grid-cols-1 gap-4" : section.gridClass
-                }
-              >
+              <div key={idx} className={section.gridClass}>
                 {section.slots.map((id) => renderWidgetSlot(id))}
               </div>
             ))}
           </div>
         ) : (
-          // Single grid layouts
-          <div
-            className={isMobile ? "grid grid-cols-1 gap-4" : config.gridClass}
-          >
+          <div className={config.gridClass}>
             {config.slots.map((id) => renderWidgetSlot(id))}
           </div>
         )}
@@ -467,10 +544,10 @@ export default function Home() {
       <div
         ref={scrollContainerRef}
         className={`relative z-[10] flex-1 flex justify-center ${
-          isMobile
-            ? "items-start overflow-y-auto overflow-x-hidden"
+          useCarouselMode
+            ? "items-stretch overflow-hidden"
             : "items-center overflow-hidden"
-        } py-4 md:py-0`}
+        } py-2 md:py-0`}
       >
         {/* Only render DndContext on client to avoid hydration mismatch */}
         {isMounted ? (

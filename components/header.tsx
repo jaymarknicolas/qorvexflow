@@ -34,6 +34,9 @@ import SettingsModal from "@/components/settings-modal";
 import clsx from "clsx";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useLayout } from "@/lib/contexts/layout-context";
+import type { LayoutType } from "@/lib/contexts/layout-context";
+import { useResponsive } from "@/lib/hooks/useResponsive";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,7 +82,10 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { layout, setLayout } = useLayout();
-  // PiP is now auto-triggered or pinned per-widget, no header toggle needed
+  const { isSmallMobile, isMobile, isTablet, isDesktop, width } = useResponsive();
+  const { effectiveColorScheme } = useAppSettings();
+  const isLight = effectiveColorScheme === "light";
+  const showMobileLayouts = !isDesktop; // tablet and below get mobile layouts
 
   // Track scroll position for header styling
   useEffect(() => {
@@ -113,9 +119,40 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
     };
   }, [mobileMenuOpen]);
 
-  // Theme-aware colors
+  // Theme-aware colors (responds to both theme AND color mode)
   const getThemeColors = () => {
     if (theme === "ghibli") {
+      if (isLight) {
+        return {
+          logoGradient: "from-green-500 via-emerald-600 to-amber-500",
+          logoShadow: "shadow-green-500/25 group-hover:shadow-green-500/40",
+          logoGlow: "from-green-500 to-amber-500",
+          textGradient: "from-green-600 via-emerald-600 to-amber-600",
+          primaryAccent: "text-green-700",
+          secondaryAccent: "text-amber-700",
+          buttonGradient: "from-green-600 to-amber-500",
+          buttonHover: "hover:from-green-500 hover:to-amber-400",
+          badgeBg: "from-green-500/20 to-amber-500/20",
+          badgeText: "text-green-700",
+          badgeBorder: "border-green-500/30",
+          headerBg: "bg-green-50/90",
+          surfaceBg: "bg-green-100/60",
+          surfaceHover: "hover:bg-green-200/60",
+          surfaceBorder: "border-green-300/40",
+          mobileMenuBg: "bg-green-50",
+          menuSurfaceBg: "bg-green-100/80",
+          menuSurfaceHover: "hover:bg-green-200/80",
+          menuSurfaceBorder: "border-green-300/50",
+          menuActiveBg: "bg-gradient-to-r from-green-200/80 to-amber-200/60",
+          menuActiveBorder: "border-green-500/50",
+          menuDivider: "border-green-200/60",
+          // Light-mode text tokens
+          menuText: "text-green-900",
+          menuTextSecondary: "text-green-800",
+          menuTextMuted: "text-green-700/70",
+          menuIconColor: "text-green-600",
+        };
+      }
       return {
         logoGradient: "from-green-400 via-emerald-500 to-amber-400",
         logoShadow: "shadow-green-500/25 group-hover:shadow-green-500/40",
@@ -132,10 +169,50 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
         surfaceBg: "bg-green-900/30",
         surfaceHover: "hover:bg-green-900/50",
         surfaceBorder: "border-green-500/20",
-        mobileMenuBg: "bg-green-950/95",
+        mobileMenuBg: "bg-green-950",
+        menuSurfaceBg: "bg-green-900/60",
+        menuSurfaceHover: "hover:bg-green-800/70",
+        menuSurfaceBorder: "border-green-400/25",
+        menuActiveBg: "bg-gradient-to-r from-green-500/30 to-amber-500/25",
+        menuActiveBorder: "border-green-400/50",
+        menuDivider: "border-green-400/15",
+        menuText: "text-white",
+        menuTextSecondary: "text-white/90",
+        menuTextMuted: "text-white/50",
+        menuIconColor: "text-white/70",
       };
     }
     if (theme === "coffeeshop") {
+      if (isLight) {
+        return {
+          logoGradient: "from-amber-500 via-orange-600 to-amber-700",
+          logoShadow: "shadow-amber-500/25 group-hover:shadow-amber-500/40",
+          logoGlow: "from-amber-500 to-orange-600",
+          textGradient: "from-amber-600 via-orange-600 to-amber-700",
+          primaryAccent: "text-amber-700",
+          secondaryAccent: "text-orange-700",
+          buttonGradient: "from-amber-600 to-amber-800",
+          buttonHover: "hover:from-amber-500 hover:to-amber-700",
+          badgeBg: "from-amber-500/20 to-orange-500/20",
+          badgeText: "text-amber-700",
+          badgeBorder: "border-amber-500/30",
+          headerBg: "bg-amber-50/90",
+          surfaceBg: "bg-amber-100/60",
+          surfaceHover: "hover:bg-amber-200/60",
+          surfaceBorder: "border-amber-300/40",
+          mobileMenuBg: "bg-amber-50",
+          menuSurfaceBg: "bg-amber-100/80",
+          menuSurfaceHover: "hover:bg-amber-200/80",
+          menuSurfaceBorder: "border-amber-300/50",
+          menuActiveBg: "bg-gradient-to-r from-amber-200/80 to-orange-200/60",
+          menuActiveBorder: "border-amber-500/50",
+          menuDivider: "border-amber-200/60",
+          menuText: "text-amber-950",
+          menuTextSecondary: "text-amber-900",
+          menuTextMuted: "text-amber-800/70",
+          menuIconColor: "text-amber-700",
+        };
+      }
       return {
         logoGradient: "from-amber-400 via-orange-500 to-amber-600",
         logoShadow: "shadow-amber-500/25 group-hover:shadow-amber-500/40",
@@ -152,10 +229,50 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
         surfaceBg: "bg-stone-700/30",
         surfaceHover: "hover:bg-stone-700/50",
         surfaceBorder: "border-amber-500/20",
-        mobileMenuBg: "bg-stone-800/95",
+        mobileMenuBg: "bg-stone-900",
+        menuSurfaceBg: "bg-stone-800/80",
+        menuSurfaceHover: "hover:bg-stone-700/70",
+        menuSurfaceBorder: "border-amber-400/25",
+        menuActiveBg: "bg-gradient-to-r from-amber-500/30 to-orange-500/25",
+        menuActiveBorder: "border-amber-400/50",
+        menuDivider: "border-amber-400/15",
+        menuText: "text-white",
+        menuTextSecondary: "text-white/90",
+        menuTextMuted: "text-white/50",
+        menuIconColor: "text-white/70",
       };
     }
     // Lo-Fi theme (default)
+    if (isLight) {
+      return {
+        logoGradient: "from-violet-500 via-purple-600 to-pink-500",
+        logoShadow: "shadow-violet-500/25 group-hover:shadow-violet-500/40",
+        logoGlow: "from-violet-500 to-pink-500",
+        textGradient: "from-violet-600 via-purple-600 to-pink-600",
+        primaryAccent: "text-violet-600",
+        secondaryAccent: "text-pink-600",
+        buttonGradient: "from-violet-600 to-pink-600",
+        buttonHover: "hover:from-violet-500 hover:to-pink-500",
+        badgeBg: "from-violet-500/20 to-pink-500/20",
+        badgeText: "text-violet-600",
+        badgeBorder: "border-violet-500/30",
+        headerBg: "bg-violet-50/90",
+        surfaceBg: "bg-violet-100/60",
+        surfaceHover: "hover:bg-violet-200/60",
+        surfaceBorder: "border-violet-300/40",
+        mobileMenuBg: "bg-violet-50",
+        menuSurfaceBg: "bg-violet-100/80",
+        menuSurfaceHover: "hover:bg-violet-200/80",
+        menuSurfaceBorder: "border-violet-300/50",
+        menuActiveBg: "bg-gradient-to-r from-violet-200/80 to-pink-200/60",
+        menuActiveBorder: "border-violet-500/50",
+        menuDivider: "border-violet-200/60",
+        menuText: "text-indigo-950",
+        menuTextSecondary: "text-indigo-900",
+        menuTextMuted: "text-indigo-800/70",
+        menuIconColor: "text-violet-600",
+      };
+    }
     return {
       logoGradient: "from-violet-400 via-purple-500 to-pink-400",
       logoShadow: "shadow-violet-500/25 group-hover:shadow-violet-500/40",
@@ -172,7 +289,17 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
       surfaceBg: "bg-indigo-900/30",
       surfaceHover: "hover:bg-indigo-900/50",
       surfaceBorder: "border-violet-500/20",
-      mobileMenuBg: "bg-indigo-950/95",
+      mobileMenuBg: "bg-indigo-950",
+      menuSurfaceBg: "bg-indigo-900/60",
+      menuSurfaceHover: "hover:bg-indigo-800/60",
+      menuSurfaceBorder: "border-violet-400/25",
+      menuActiveBg: "bg-gradient-to-r from-violet-500/30 to-pink-500/25",
+      menuActiveBorder: "border-violet-400/50",
+      menuDivider: "border-violet-400/15",
+      menuText: "text-white",
+      menuTextSecondary: "text-white/90",
+      menuTextMuted: "text-white/50",
+      menuIconColor: "text-white/70",
     };
   };
 
@@ -273,24 +400,85 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
     },
   ];
 
-  const layoutOptions = [
+  // Desktop layout options
+  const desktopLayoutOptions = [
     {
-      id: "grid-5",
+      id: "grid-5" as LayoutType,
       label: "Classic Grid",
       desc: "2 + 3 layout",
       icon: Grid2x2,
     },
-    { id: "grid-4", label: "Quad Grid", desc: "2 × 2 layout", icon: Grid2x2 },
-    { id: "grid-6", label: "Hexagon", desc: "3 × 2 layout", icon: Grid3x3 },
+    { id: "grid-4" as LayoutType, label: "Quad Grid", desc: "2 × 2 layout", icon: Grid2x2 },
+    { id: "grid-6" as LayoutType, label: "Hexagon", desc: "3 × 2 layout", icon: Grid3x3 },
     {
-      id: "asymmetric",
+      id: "asymmetric" as LayoutType,
       label: "Asymmetric",
       desc: "1 + 4 layout",
       icon: Maximize,
     },
-    { id: "focus", label: "Focus Mode", desc: "1 + 2 layout", icon: Target },
-    { id: "kanban", label: "Kanban", desc: "3 columns", icon: Rows },
+    { id: "focus" as LayoutType, label: "Focus Mode", desc: "1 + 2 layout", icon: Target },
+    { id: "kanban" as LayoutType, label: "Kanban", desc: "3 columns", icon: Rows },
   ];
+
+  // Mobile layout options (visual preview based)
+  const mobileLayoutOptions: { id: LayoutType; label: string; desc: string; preview: React.ReactNode }[] = [
+    {
+      id: "mobile-1",
+      label: "Single",
+      desc: "1 canvas",
+      preview: (
+        <div className="w-10 h-10 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-sm border-2 border-current opacity-80" />
+        </div>
+      ),
+    },
+    {
+      id: "mobile-2",
+      label: "Dual",
+      desc: "2 stacked",
+      preview: (
+        <div className="w-10 h-10 flex flex-col items-center justify-center gap-0.5">
+          <div className="w-6 h-[11px] rounded-sm border-2 border-current opacity-80" />
+          <div className="w-6 h-[11px] rounded-sm border-2 border-current opacity-80" />
+        </div>
+      ),
+    },
+    {
+      id: "mobile-3",
+      label: "Trio",
+      desc: "1 + 2 layout",
+      preview: (
+        <div className="w-10 h-10 flex flex-col items-center justify-center gap-0.5">
+          <div className="w-6 h-[11px] rounded-sm border-2 border-current opacity-80" />
+          <div className="flex gap-0.5">
+            <div className="w-[11px] h-[11px] rounded-sm border-2 border-current opacity-80" />
+            <div className="w-[11px] h-[11px] rounded-sm border-2 border-current opacity-80" />
+          </div>
+        </div>
+      ),
+    },
+    // 4-grid only for tablet (>= 475px)
+    ...(!isSmallMobile
+      ? [
+          {
+            id: "mobile-4" as LayoutType,
+            label: "Quad",
+            desc: "2 × 2 grid",
+            preview: (
+              <div className="w-10 h-10 grid grid-cols-2 gap-0.5 place-items-center p-1">
+                <div className="w-[11px] h-[11px] rounded-sm border-2 border-current opacity-80" />
+                <div className="w-[11px] h-[11px] rounded-sm border-2 border-current opacity-80" />
+                <div className="w-[11px] h-[11px] rounded-sm border-2 border-current opacity-80" />
+                <div className="w-[11px] h-[11px] rounded-sm border-2 border-current opacity-80" />
+              </div>
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  // Pick layout options based on screen size
+  const layoutOptions = showMobileLayouts ? mobileLayoutOptions : desktopLayoutOptions;
 
   const themeOptions = [
     {
@@ -322,8 +510,8 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
         className={clsx(
           "border-b backdrop-blur-xl sticky top-0 z-40 transition-all duration-300",
           scrolled
-            ? `${colors.headerBg} shadow-lg shadow-black/20 border-white/10`
-            : "bg-slate-950/50 border-white/5",
+            ? `${colors.headerBg} shadow-lg ${isLight ? "shadow-black/10 border-black/10" : "shadow-black/20 border-white/10"}`
+            : `${isLight ? "bg-white/50 border-black/5" : "bg-slate-950/50 border-white/5"}`,
         )}
       >
         <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -346,7 +534,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   >
                     QORVEX
                   </span>
-                  <span className="text-[10px] text-white/40 font-medium tracking-wider">
+                  <span className={`text-[10px] font-medium tracking-wider ${colors.menuTextMuted}`}>
                     PRODUCTIVITY FLOW
                   </span>
                 </div>
@@ -357,7 +545,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                 {upcomingFeatures.map((item) => (
                   <DropdownMenu key={item.label}>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-all text-sm font-medium group">
+                      <button className={`flex items-center gap-1.5 px-3 py-2 rounded-lg ${colors.menuTextMuted} ${isLight ? "hover:bg-black/5" : "hover:bg-white/5"} transition-all text-sm font-medium group`}>
                         {item.icon}
                         <span>{item.label}</span>
                         <ChevronRight className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity rotate-90" />
@@ -404,11 +592,11 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
 
             {/* Right Section: Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Layout Selector - Desktop */}
+              {/* Layout Selector - Desktop (hidden on mobile, use burger menu) */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
+                    className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuText} ${colors.surfaceHover} transition-all`}
                   >
                     <Layout className={`w-4 h-4`} />
                     <span className="text-sm font-medium hidden md:inline">
@@ -420,10 +608,10 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                 <DropdownMenuContent align="end" className="w-56 z-[999]">
                   <DropdownMenuLabel>Select Layout</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {layoutOptions.map((option) => (
+                  {desktopLayoutOptions.map((option) => (
                     <DropdownMenuItem
                       key={option.id}
-                      onClick={() => setLayout(option.id as any)}
+                      onClick={() => setLayout(option.id as LayoutType)}
                       className="cursor-pointer py-2.5"
                     >
                       <div className="flex items-center justify-between w-full">
@@ -453,7 +641,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
+                    className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuText} ${colors.surfaceHover} transition-all`}
                   >
                     <span className="text-sm font-medium hidden md:inline">
                       {themeOptions.find((t) => t.id === theme)?.emoji}{" "}
@@ -505,7 +693,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setFeedbackModalOpen(true)}
-                      className={`hidden lg:flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                      className={`hidden lg:flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuIconColor} ${colors.surfaceHover} transition-all`}
                     >
                       <MessageSquarePlus className="w-4 h-4" />
                     </button>
@@ -521,7 +709,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      className={`hidden lg:flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white/60 hover:text-white ${colors.surfaceHover} transition-all relative`}
+                      className={`hidden lg:flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuIconColor} ${colors.surfaceHover} transition-all relative`}
                     >
                       <Bell className="w-4 h-4" />
                       <span
@@ -548,7 +736,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     <div
                       className={`absolute inset-0 bg-gradient-to-br ${colors.logoGradient} blur-lg opacity-0 group-hover:opacity-50 transition-opacity`}
                     />
-                    <User2 className="relative w-5 h-5 text-white" />
+                    <User2 className="relative w-5 h-5 text-white keep-white" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 z-[999]" align="end">
@@ -557,7 +745,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                       <div
                         className={`w-10 h-10 rounded-full bg-gradient-to-br ${colors.logoGradient} flex items-center justify-center`}
                       >
-                        <User2 className="w-5 h-5 text-white" />
+                        <User2 className="w-5 h-5 text-white keep-white" />
                       </div>
                       <div>
                         <p className="font-medium text-white">Guest User</p>
@@ -611,7 +799,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                      className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} text-white ${colors.surfaceHover} transition-all`}
+                      className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuText} ${colors.surfaceHover} transition-all`}
                       aria-label="Toggle menu"
                     >
                       {mobileMenuOpen ? (
@@ -641,7 +829,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
+              className={`fixed inset-0 ${isLight ? "bg-black/30" : "bg-black/60"} backdrop-blur-sm z-[100] lg:hidden`}
               onClick={() => setMobileMenuOpen(false)}
             />
 
@@ -651,15 +839,15 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={`fixed top-0 right-0 bottom-0 w-full max-w-sm ${colors.mobileMenuBg} backdrop-blur-xl border-l border-white/10 z-[101] lg:hidden overflow-y-auto`}
+              className={`fixed top-0 right-0 bottom-0 w-full max-w-sm ${colors.mobileMenuBg} backdrop-blur-xl border-l ${colors.menuSurfaceBorder} z-[101] lg:hidden overflow-y-auto`}
             >
               {/* Mobile Menu Header */}
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <div className={`flex items-center justify-between p-4 border-b ${colors.menuDivider}`}>
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colors.logoGradient} flex items-center justify-center`}
                   >
-                    <span className="text-white font-bold text-sm">Q</span>
+                    <span className="text-white keep-white font-bold text-sm">Q</span>
                   </div>
                   <span
                     className={`text-lg font-bold bg-gradient-to-r ${colors.textGradient} bg-clip-text text-transparent`}
@@ -667,47 +855,37 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                     QORVEX
                   </span>
                 </div>
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`p-2 rounded-lg ${colors.surfaceBg} text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Close menu</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`p-2 rounded-lg ${colors.menuSurfaceBg} border ${colors.menuSurfaceBorder} ${colors.menuText} ${colors.menuSurfaceHover} transition-all`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
               {/* Mobile Menu Content */}
               <div className="p-4 space-y-6">
-                {/* Layout Selection */}
+                {/* Layout Selection — responsive presets */}
                 <div>
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 px-2">
+                  <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 px-2 ${colors.primaryAccent}`}>
                     Layout
                   </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {layoutOptions.map((option) => (
+                  <div className={`grid gap-2 ${mobileLayoutOptions.length >= 4 ? "grid-cols-4" : "grid-cols-3"}`}>
+                    {mobileLayoutOptions.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => {
-                          setLayout(option.id as any);
-                          setMobileMenuOpen(false);
+                          setLayout(option.id as LayoutType);
                         }}
                         className={clsx(
-                          "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all",
+                          "flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all",
                           layout === option.id
-                            ? `bg-gradient-to-br ${colors.badgeBg} ${colors.badgeBorder} text-white`
-                            : `${colors.surfaceBg} ${colors.surfaceBorder} text-white/60 ${colors.surfaceHover} hover:text-white`,
+                            ? `${colors.menuActiveBg} border-2 ${colors.menuActiveBorder} ${colors.primaryAccent}`
+                            : `${colors.menuSurfaceBg} ${colors.menuSurfaceBorder} ${colors.menuTextMuted} ${colors.menuSurfaceHover}`,
                         )}
                       >
-                        <option.icon className="w-5 h-5" />
-                        <span className="text-xs font-medium">
+                        {option.preview}
+                        <span className="text-[10px] font-semibold tracking-wide">
                           {option.label}
                         </span>
                       </button>
@@ -717,7 +895,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
 
                 {/* Theme Selection */}
                 <div>
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 px-2">
+                  <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 px-2 ${colors.primaryAccent}`}>
                     Theme
                   </h3>
                   <div className="space-y-2">
@@ -726,31 +904,30 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         key={option.id}
                         onClick={() => {
                           setTheme(option.id as any);
-                          setMobileMenuOpen(false);
                         }}
                         className={clsx(
                           "flex items-center gap-3 w-full p-3 rounded-xl border transition-all",
                           theme === option.id
-                            ? `bg-gradient-to-r ${colors.badgeBg} ${colors.badgeBorder}`
-                            : `${colors.surfaceBg} ${colors.surfaceBorder} ${colors.surfaceHover}`,
+                            ? `${colors.menuActiveBg} border-2 ${colors.menuActiveBorder}`
+                            : `${colors.menuSurfaceBg} ${colors.menuSurfaceBorder} ${colors.menuSurfaceHover}`,
                         )}
                       >
                         <div
-                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${option.gradient} flex items-center justify-center text-xl`}
+                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${option.gradient} flex items-center justify-center text-xl shrink-0`}
                         >
                           {option.emoji}
                         </div>
                         <div className="flex-1 text-left">
-                          <div className="font-medium text-white">
+                          <div className={`font-medium ${theme === option.id ? colors.menuText : colors.menuTextSecondary}`}>
                             {option.label}
                           </div>
-                          <div className="text-xs text-white/50">
+                          <div className={`text-xs ${theme === option.id ? colors.menuTextSecondary : colors.menuTextMuted}`}>
                             {option.description}
                           </div>
                         </div>
                         {theme === option.id && (
                           <Check
-                            className={`w-4 h-4 ${colors.primaryAccent}`}
+                            className={`w-5 h-5 ${colors.primaryAccent}`}
                           />
                         )}
                       </button>
@@ -760,35 +937,35 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
 
                 {/* Upcoming Features */}
                 <div>
-                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 px-2">
+                  <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 px-2 ${colors.secondaryAccent}`}>
                     Coming Soon
                   </h3>
                   <div className="space-y-1">
                     {upcomingFeatures.map((category) => (
                       <div key={category.label} className="mb-4">
-                        <div className="flex items-center gap-2 px-2 mb-2 text-white/60">
+                        <div className={`flex items-center gap-2 px-2 mb-2 ${colors.primaryAccent}`}>
                           {category.icon}
                           <span className="text-sm font-medium">
                             {category.label}
                           </span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           {category.subItems?.map((item) => (
                             <div
                               key={item.label}
-                              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder}`}
+                              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${colors.menuSurfaceBg} border ${colors.menuSurfaceBorder}`}
                             >
                               {item.icon}
                               <div className="flex-1">
-                                <div className="text-sm font-medium text-white">
+                                <div className={`text-sm font-medium ${colors.menuText}`}>
                                   {item.label}
                                 </div>
-                                <div className="text-xs text-white/40">
+                                <div className={`text-xs ${colors.menuTextMuted}`}>
                                   {item.description}
                                 </div>
                               </div>
                               <span
-                                className={`px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r ${colors.badgeBg} ${colors.badgeText} rounded-full`}
+                                className={`px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r ${colors.badgeBg} ${colors.badgeText} rounded-full border ${colors.badgeBorder}`}
                               >
                                 {item.badge}
                               </span>
@@ -801,10 +978,10 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="border-t border-white/10 pt-4">
+                <div className={`border-t ${colors.menuDivider} pt-4`}>
                   <div className="space-y-1">
                     <button
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl ${colors.menuTextSecondary} ${colors.menuSurfaceHover} transition-all`}
                     >
                       <User2 className="w-5 h-5" />
                       <span className="font-medium">Profile</span>
@@ -814,7 +991,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         setSettingsModalOpen(true);
                         setMobileMenuOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl ${colors.menuTextSecondary} ${colors.menuSurfaceHover} transition-all`}
                     >
                       <Settings className="w-5 h-5" />
                       <span className="font-medium">Settings</span>
@@ -824,18 +1001,18 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         setFeedbackModalOpen(true);
                         setMobileMenuOpen(false);
                       }}
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl ${colors.menuTextSecondary} ${colors.menuSurfaceHover} transition-all`}
                     >
                       <MessageSquarePlus className="w-5 h-5" />
                       <span className="font-medium">Send Feedback</span>
                     </button>
                     <button
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl text-white/60 hover:text-white ${colors.surfaceHover} transition-all`}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl ${colors.menuTextSecondary} ${colors.menuSurfaceHover} transition-all`}
                     >
                       <HelpCircle className="w-5 h-5" />
                       <span className="font-medium">Help & Support</span>
                     </button>
-                    <button className="flex items-center gap-3 w-full p-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all">
+                    <button className={`flex items-center gap-3 w-full p-3 rounded-xl ${isLight ? "text-red-600 hover:bg-red-100/60" : "text-red-400 hover:bg-red-500/15"} transition-all`}>
                       <LogOut className="w-5 h-5" />
                       <span className="font-medium">Log out</span>
                     </button>
