@@ -876,6 +876,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         key={option.id}
                         onClick={() => {
                           setLayout(option.id as LayoutType);
+                          setMobileMenuOpen(false);
                         }}
                         className={clsx(
                           "flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all",
@@ -904,6 +905,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                         key={option.id}
                         onClick={() => {
                           setTheme(option.id as any);
+                          setMobileMenuOpen(false);
                         }}
                         className={clsx(
                           "flex items-center gap-3 w-full p-3 rounded-xl border transition-all",

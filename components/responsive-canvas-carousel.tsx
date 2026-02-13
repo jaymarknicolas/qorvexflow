@@ -246,22 +246,20 @@ function PageLayout({
   if (layout === "mobile-3") {
     return (
       <div className="h-full flex flex-col gap-2 p-1">
-        {/* Top: 1 wide canvas */}
-        <div className="flex-1 min-h-0 flex items-center justify-center">
-          <div className="w-full h-full max-w-[min(100%,calc(50vh-1rem))] aspect-square mx-auto">
-            <SlotRenderer
-              slotId={pageSlots[0]}
-              renderSlot={renderSlot}
-              filled={filledSlots.has(pageSlots[0])}
-              onEmptySlotTap={onEmptySlotTap}
-            />
-          </div>
+        {/* Top: 1 wide canvas (not square) */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <SlotRenderer
+            slotId={pageSlots[0]}
+            renderSlot={renderSlot}
+            filled={filledSlots.has(pageSlots[0])}
+            onEmptySlotTap={onEmptySlotTap}
+          />
         </div>
-        {/* Bottom: 2 side-by-side canvases */}
-        <div className="flex-1 min-h-0 grid grid-cols-2 gap-2">
+        {/* Bottom: 2 side-by-side square canvases */}
+        <div className="min-h-0 grid grid-cols-2 gap-2">
           {pageSlots.slice(1).map((slotId) => (
             <div key={slotId} className="flex items-center justify-center">
-              <div className="w-full h-full aspect-square max-w-full max-h-full">
+              <div className="w-full aspect-square">
                 <SlotRenderer
                   slotId={slotId}
                   renderSlot={renderSlot}

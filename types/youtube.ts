@@ -37,3 +37,26 @@ export interface YouTubeAPIError {
   code: string;
   message: string;
 }
+
+// Custom playlist types for multi-playlist support
+export interface PlaylistVideoItem {
+  id: string;
+  title: string;
+  channel?: string;
+  thumbnail?: string;
+  addedAt: number;
+}
+
+export interface CustomPlaylist {
+  id: string;
+  name: string;
+  videos: PlaylistVideoItem[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface PlaylistsState {
+  activePlaylistId: string | null;
+  playlists: CustomPlaylist[];
+  version: number;
+}
