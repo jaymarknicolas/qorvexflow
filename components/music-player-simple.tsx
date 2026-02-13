@@ -21,12 +21,22 @@ import {
   LogOut,
   Search,
   X,
+  Heart,
+  Plus,
+  ChevronDown,
+  Compass,
+  Trash2,
+  Pencil,
+  Check,
+  ListMusic,
+  RefreshCw,
+  LayoutGrid,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useSpotifyAuth } from "@/lib/hooks/useSpotifyAuth";
 import { useSpotifyPlayback } from "@/lib/hooks/useSpotifyPlayback";
-import { spotifyAPI, SpotifyTrack } from "@/lib/services/spotify-api";
+import { spotifyAPI, SpotifyTrack, SpotifyPlaylist as SpotifyAPIPlaylist } from "@/lib/services/spotify-api";
 import { useYouTubePlayer } from "@/lib/hooks/useYouTubePlayer";
 import {
   useYouTubeSearch,
@@ -38,6 +48,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { MusicTrack, MusicPlaylist, MusicPlaylistsState } from "@/types/music";
 
 // Music source type
 type MusicSourceType = "youtube" | "spotify";
@@ -120,12 +131,57 @@ let persistedMusicState: {
   musicSource: MusicSourceType;
 } | null = null;
 
+// localStorage keys
+const PLAYLISTS_STORAGE_KEY = "qorvexflow_music_playlists";
+const SEARCH_HISTORY_KEY = "qorvexflow_music_search_history";
+
 // Format seconds to mm:ss
 function formatTime(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "0:00";
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+// Load playlists from localStorage
+function loadPlaylists(): MusicPlaylistsState {
+  try {
+    const stored = localStorage.getItem(PLAYLISTS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {}
+  return {
+    activeYoutubePlaylistId: null,
+    activeSpotifyPlaylistId: null,
+    playlists: [],
+    version: 1,
+  };
+}
+
+// Save playlists to localStorage
+function savePlaylists(state: MusicPlaylistsState) {
+  try {
+    localStorage.setItem(PLAYLISTS_STORAGE_KEY, JSON.stringify(state));
+  } catch {}
+}
+
+// Search history helpers
+function getSearchHistory(): string[] {
+  try {
+    const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveSearchHistory(query: string) {
+  try {
+    const history = getSearchHistory();
+    const updated = [query, ...history.filter((q) => q !== query)].slice(0, 20);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+  } catch {}
 }
 
 export default function MusicPlayerSimple() {
@@ -160,6 +216,50 @@ export default function MusicPlayerSimple() {
     },
   );
 
+  // Playlist state
+  const [playlistsState, setPlaylistsState] = useState<MusicPlaylistsState>(() => loadPlaylists());
+  const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [showPlaylistPicker, setShowPlaylistPicker] = useState(false);
+
+  // Dashboard state - shows on init
+  const [showDashboard, setShowDashboard] = useState(true);
+  const [dashboardVideos, setDashboardVideos] = useState<{ id: string; title: string; channel: string; thumbnail?: string }[]>([]);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(false);
+  const [dashboardSpotifyPlaylists, setDashboardSpotifyPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
+  const [isDashboardSpotifyLoading, setIsDashboardSpotifyLoading] = useState(false);
+
+  // Browse state
+  const [showBrowse, setShowBrowse] = useState(false);
+  const [browseVideos, setBrowseVideos] = useState<{ id: string; title: string; channel: string; thumbnail?: string }[]>([]);
+  const [isBrowseLoading, setIsBrowseLoading] = useState(false);
+  const [spotifyUserPlaylists, setSpotifyUserPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
+  const [isSpotifyBrowseLoading, setIsSpotifyBrowseLoading] = useState(false);
+  const [browseSpotifyTracks, setBrowseSpotifyTracks] = useState<SpotifyTrack[]>([]);
+  const [browseSpotifyPlaylistName, setBrowseSpotifyPlaylistName] = useState<string | null>(null);
+  const [isBrowseSpotifyTracksLoading, setIsBrowseSpotifyTracksLoading] = useState(false);
+
+  // Save playlists whenever state changes
+  useEffect(() => {
+    savePlaylists(playlistsState);
+  }, [playlistsState]);
+
+  // Derived playlist values
+  const activePlaylistId = musicSource === "youtube"
+    ? playlistsState.activeYoutubePlaylistId
+    : playlistsState.activeSpotifyPlaylistId;
+
+  const activePlaylist = playlistsState.playlists.find(
+    (p) => p.id === activePlaylistId && p.source === musicSource,
+  );
+
+  const sourcePlaylists = playlistsState.playlists.filter(
+    (p) => p.source === musicSource,
+  );
+
   // Get current theme's video list
   const VIDEO_LIST =
     theme === "ghibli"
@@ -183,6 +283,355 @@ export default function MusicPlayerSimple() {
     onEnded: () => autoPlayNextRef.current(),
   });
   const youtubeSearch = useYouTubeSearch();
+
+  // Playlist CRUD functions
+  const createPlaylist = useCallback((name: string, source: MusicSourceType) => {
+    if (playlistsState.playlists.length >= 10) return null;
+    const id = crypto.randomUUID();
+    const now = Date.now();
+    const newPlaylist: MusicPlaylist = {
+      id,
+      name,
+      source,
+      tracks: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    setPlaylistsState((prev) => {
+      const updated = {
+        ...prev,
+        playlists: [...prev.playlists, newPlaylist],
+        ...(source === "youtube"
+          ? { activeYoutubePlaylistId: id }
+          : { activeSpotifyPlaylistId: id }),
+      };
+      return updated;
+    });
+    return id;
+  }, [playlistsState.playlists.length]);
+
+  const deletePlaylist = useCallback((id: string) => {
+    setPlaylistsState((prev) => {
+      const playlist = prev.playlists.find((p) => p.id === id);
+      const updated = {
+        ...prev,
+        playlists: prev.playlists.filter((p) => p.id !== id),
+      };
+      if (playlist?.source === "youtube" && prev.activeYoutubePlaylistId === id) {
+        updated.activeYoutubePlaylistId = null;
+      }
+      if (playlist?.source === "spotify" && prev.activeSpotifyPlaylistId === id) {
+        updated.activeSpotifyPlaylistId = null;
+      }
+      return updated;
+    });
+  }, []);
+
+  const renamePlaylist = useCallback((id: string, newName: string) => {
+    setPlaylistsState((prev) => ({
+      ...prev,
+      playlists: prev.playlists.map((p) =>
+        p.id === id ? { ...p, name: newName, updatedAt: Date.now() } : p,
+      ),
+    }));
+  }, []);
+
+  const switchPlaylist = useCallback((id: string | null) => {
+    setPlaylistsState((prev) => ({
+      ...prev,
+      ...(musicSource === "youtube"
+        ? { activeYoutubePlaylistId: id }
+        : { activeSpotifyPlaylistId: id }),
+    }));
+    // If switching to a custom playlist and it has tracks, load them
+    if (id) {
+      const playlist = playlistsState.playlists.find((p) => p.id === id);
+      if (playlist && playlist.tracks.length > 0 && musicSource === "youtube") {
+        const queue = playlist.tracks.map((t) => ({
+          id: t.id,
+          name: t.name,
+          artist: t.artist,
+        }));
+        setYoutubeSearchQueue(queue);
+        setYoutubeQueueIndex(0);
+        const video = queue[0];
+        youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist }, false);
+      } else if (playlist && playlist.tracks.length > 0 && musicSource === "spotify") {
+        const uris = playlist.tracks.filter((t) => t.uri).map((t) => t.uri!);
+        if (uris.length > 0) {
+          spotifyAPI.play(undefined, uris, { position: 0 });
+        }
+      }
+    } else {
+      // Switching back to presets
+      if (musicSource === "youtube") {
+        setYoutubeSearchQueue(null);
+        const video = VIDEO_LIST[currentTrack];
+        youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist }, false);
+      }
+    }
+    setShowPlaylistDropdown(false);
+  }, [musicSource, playlistsState.playlists, VIDEO_LIST, currentTrack, youtubePlayer]);
+
+  const addTrackToPlaylist = useCallback((track: MusicTrack, playlistId?: string) => {
+    const targetId = playlistId || activePlaylistId;
+    if (!targetId) {
+      // Auto-create "Favorites" playlist
+      const id = crypto.randomUUID();
+      const now = Date.now();
+      const newPlaylist: MusicPlaylist = {
+        id,
+        name: "Favorites",
+        source: musicSource,
+        tracks: [track],
+        createdAt: now,
+        updatedAt: now,
+      };
+      setPlaylistsState((prev) => ({
+        ...prev,
+        playlists: [...prev.playlists, newPlaylist],
+        ...(musicSource === "youtube"
+          ? { activeYoutubePlaylistId: id }
+          : { activeSpotifyPlaylistId: id }),
+      }));
+      return;
+    }
+
+    setPlaylistsState((prev) => ({
+      ...prev,
+      playlists: prev.playlists.map((p) => {
+        if (p.id !== targetId) return p;
+        if (p.tracks.some((t) => t.id === track.id)) return p;
+        return { ...p, tracks: [...p.tracks, track], updatedAt: Date.now() };
+      }),
+    }));
+  }, [activePlaylistId, musicSource]);
+
+  const removeTrackFromPlaylist = useCallback((trackId: string, playlistId?: string) => {
+    const targetId = playlistId || activePlaylistId;
+    if (!targetId) return;
+    setPlaylistsState((prev) => ({
+      ...prev,
+      playlists: prev.playlists.map((p) => {
+        if (p.id !== targetId) return p;
+        return { ...p, tracks: p.tracks.filter((t) => t.id !== trackId), updatedAt: Date.now() };
+      }),
+    }));
+  }, [activePlaylistId]);
+
+  // Check if current track is in a playlist
+  const isCurrentTrackInPlaylist = useCallback((playlistId?: string) => {
+    const targetId = playlistId || activePlaylistId;
+    if (!targetId) return false;
+    const playlist = playlistsState.playlists.find((p) => p.id === targetId);
+    if (!playlist) return false;
+
+    if (musicSource === "youtube") {
+      const trackInfo = youtubePlayer.currentTrack;
+      if (!trackInfo) return false;
+      // Match by video ID from the search queue or preset
+      if (youtubeSearchQueue && youtubeSearchQueue[youtubeQueueIndex]) {
+        return playlist.tracks.some((t) => t.id === youtubeSearchQueue[youtubeQueueIndex].id);
+      }
+      const presetVideo = VIDEO_LIST[currentTrack];
+      return playlist.tracks.some((t) => t.id === presetVideo?.id);
+    } else {
+      const spotTrack = spotifyPlayback.currentTrack;
+      if (!spotTrack) return false;
+      return playlist.tracks.some((t) => t.id === spotTrack.id);
+    }
+  }, [activePlaylistId, playlistsState.playlists, musicSource, youtubePlayer.currentTrack, youtubeSearchQueue, youtubeQueueIndex, VIDEO_LIST, currentTrack, spotifyPlayback.currentTrack]);
+
+  // Build current track as MusicTrack for saving
+  const getCurrentMusicTrack = useCallback((): MusicTrack | null => {
+    if (musicSource === "youtube") {
+      let id: string, name: string, artist: string;
+      if (youtubeSearchQueue && youtubeSearchQueue[youtubeQueueIndex]) {
+        const q = youtubeSearchQueue[youtubeQueueIndex];
+        id = q.id;
+        name = q.name;
+        artist = q.artist;
+      } else {
+        const preset = VIDEO_LIST[currentTrack];
+        if (!preset) return null;
+        id = preset.id;
+        name = preset.name;
+        artist = preset.artist;
+      }
+      return { id, name, artist, source: "youtube", addedAt: Date.now() };
+    } else {
+      const track = spotifyPlayback.currentTrack;
+      if (!track) return null;
+      return {
+        id: track.id,
+        name: track.name,
+        artist: track.artist,
+        thumbnail: track.albumArt,
+        uri: track.uri,
+        source: "spotify",
+        addedAt: Date.now(),
+      };
+    }
+  }, [musicSource, youtubeSearchQueue, youtubeQueueIndex, VIDEO_LIST, currentTrack, spotifyPlayback.currentTrack]);
+
+  // Handle heart/save click
+  const handleHeartClick = useCallback(() => {
+    const track = getCurrentMusicTrack();
+    if (!track) return;
+
+    if (sourcePlaylists.length === 0) {
+      // No playlists - auto-create Favorites and add
+      addTrackToPlaylist(track);
+      return;
+    }
+
+    if (sourcePlaylists.length === 1 && activePlaylistId) {
+      // Only one playlist - toggle directly
+      if (isCurrentTrackInPlaylist(activePlaylistId)) {
+        removeTrackFromPlaylist(track.id, activePlaylistId);
+      } else {
+        addTrackToPlaylist(track, activePlaylistId);
+      }
+      return;
+    }
+
+    // Multiple playlists - show picker
+    setShowPlaylistPicker(!showPlaylistPicker);
+  }, [getCurrentMusicTrack, sourcePlaylists, activePlaylistId, addTrackToPlaylist, removeTrackFromPlaylist, isCurrentTrackInPlaylist, showPlaylistPicker]);
+
+  // Browse: fetch YouTube suggestions
+  const fetchBrowseVideos = useCallback(async () => {
+    setIsBrowseLoading(true);
+    try {
+      const history = getSearchHistory();
+      const themeParam = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : "default";
+      const params = new URLSearchParams({ theme: themeParam });
+      if (history.length > 0) {
+        params.set("interests", history.slice(0, 10).join(","));
+      }
+      const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setBrowseVideos(data.videos || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch browse videos:", err);
+    } finally {
+      setIsBrowseLoading(false);
+    }
+  }, [theme]);
+
+  // Browse: fetch Spotify user playlists
+  const fetchSpotifyBrowse = useCallback(async () => {
+    if (!spotifyAuth.isConnected) return;
+    setIsSpotifyBrowseLoading(true);
+    try {
+      const playlists = await spotifyAPI.getUserPlaylists(20);
+      setSpotifyUserPlaylists(playlists);
+    } catch (err) {
+      console.error("Failed to fetch Spotify playlists:", err);
+    } finally {
+      setIsSpotifyBrowseLoading(false);
+    }
+  }, [spotifyAuth.isConnected]);
+
+  // Browse: fetch tracks from a Spotify playlist
+  const fetchSpotifyPlaylistTracks = useCallback(async (playlistId: string, playlistName: string) => {
+    setIsBrowseSpotifyTracksLoading(true);
+    setBrowseSpotifyPlaylistName(playlistName);
+    try {
+      const tracks = await spotifyAPI.getPlaylistTracks(playlistId);
+      setBrowseSpotifyTracks(tracks);
+    } catch (err) {
+      console.error("Failed to fetch Spotify playlist tracks:", err);
+    } finally {
+      setIsBrowseSpotifyTracksLoading(false);
+    }
+  }, []);
+
+  // Dashboard: fetch YouTube suggestions on mount
+  const fetchDashboardVideos = useCallback(async () => {
+    setIsDashboardLoading(true);
+    try {
+      const history = getSearchHistory();
+      const themeParam = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : "default";
+      const params = new URLSearchParams({ theme: themeParam });
+      if (history.length > 0) {
+        params.set("interests", history.slice(0, 10).join(","));
+      }
+      const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setDashboardVideos(data.videos || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch dashboard videos:", err);
+    } finally {
+      setIsDashboardLoading(false);
+    }
+  }, [theme]);
+
+  // Dashboard: fetch Spotify user playlists on mount
+  const fetchDashboardSpotify = useCallback(async () => {
+    if (!spotifyAuth.isConnected) return;
+    setIsDashboardSpotifyLoading(true);
+    try {
+      const playlists = await spotifyAPI.getUserPlaylists(20);
+      setDashboardSpotifyPlaylists(playlists);
+    } catch (err) {
+      console.error("Failed to fetch dashboard Spotify playlists:", err);
+    } finally {
+      setIsDashboardSpotifyLoading(false);
+    }
+  }, [spotifyAuth.isConnected]);
+
+  // Auto-fetch dashboard on mount
+  useEffect(() => {
+    if (musicSource === "youtube") {
+      fetchDashboardVideos();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch Spotify dashboard when connected
+  useEffect(() => {
+    if (musicSource === "spotify" && spotifyAuth.isConnected) {
+      fetchDashboardSpotify();
+    }
+  }, [spotifyAuth.isConnected, musicSource]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Refetch dashboard on theme change
+  useEffect(() => {
+    if (musicSource === "youtube" && showDashboard) {
+      fetchDashboardVideos();
+    }
+  }, [theme]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Dashboard play handlers
+  const handleDashboardPlayVideo = (video: { id: string; title: string; channel: string; thumbnail?: string }) => {
+    const queue = dashboardVideos.map((v) => ({
+      id: v.id,
+      name: v.title,
+      artist: v.channel,
+    }));
+    const idx = dashboardVideos.findIndex((v) => v.id === video.id);
+    setYoutubeSearchQueue(queue);
+    setYoutubeQueueIndex(idx >= 0 ? idx : 0);
+    youtubePlayer.loadVideo(video.id, { title: video.title, artist: video.channel });
+    setShowDashboard(false);
+  };
+
+  const handleDashboardPlaySpotifyPlaylist = async (playlist: SpotifyAPIPlaylist) => {
+    try {
+      const tracks = await spotifyAPI.getPlaylistTracks(playlist.id);
+      if (tracks.length > 0) {
+        const uris = tracks.map((t) => t.uri);
+        await spotifyAPI.play(undefined, uris, { position: 0 });
+      }
+    } catch (err) {
+      console.error("Failed to play Spotify playlist:", err);
+    }
+    setShowDashboard(false);
+  };
 
   // Update auto-play callback when dependencies change
   useEffect(() => {
@@ -325,6 +774,7 @@ export default function MusicPlayerSimple() {
         textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
         hoverBg: isLightMode ? "hover:bg-green-200/50" : "hover:bg-white/10",
         surfaceBg: isLightMode ? "bg-green-100/80" : "bg-slate-900/95",
+        heartActive: isLightMode ? "text-green-600" : "text-emerald-400",
       };
     }
     if (theme === "coffeeshop") {
@@ -349,6 +799,7 @@ export default function MusicPlayerSimple() {
         textMuted: isLightMode ? "text-amber-800/70" : "text-white/50",
         hoverBg: isLightMode ? "hover:bg-amber-200/50" : "hover:bg-white/10",
         surfaceBg: isLightMode ? "bg-amber-100/80" : "bg-slate-900/95",
+        heartActive: isLightMode ? "text-amber-600" : "text-amber-400",
       };
     }
     // lofi theme
@@ -373,6 +824,7 @@ export default function MusicPlayerSimple() {
       textMuted: isLightMode ? "text-violet-800/70" : "text-white/50",
       hoverBg: isLightMode ? "hover:bg-violet-200/50" : "hover:bg-white/10",
       surfaceBg: isLightMode ? "bg-violet-100/80" : "bg-slate-900/95",
+      heartActive: isLightMode ? "text-pink-600" : "text-pink-400",
     };
   };
 
@@ -504,6 +956,9 @@ export default function MusicPlayerSimple() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
+    // Save search history for personalized browse
+    saveSearchHistory(searchQuery.trim());
+
     if (musicSource === "spotify") {
       setIsSpotifySearching(true);
       setSpotifySearchError(null);
@@ -565,6 +1020,7 @@ export default function MusicPlayerSimple() {
   const handleSourceChange = async (source: MusicSourceType) => {
     // Close search if open
     setShowSearch(false);
+    setShowBrowse(false);
     setSearchQuery("");
     setSpotifySearchResults([]);
     youtubeSearch.clearResults();
@@ -649,6 +1105,55 @@ export default function MusicPlayerSimple() {
       ? youtubePlayer.duration
       : (spotifyPlayback.currentTrack?.duration_ms || 0) / 1000;
 
+  // Play a browse video (YouTube)
+  const handlePlayBrowseVideo = (video: { id: string; title: string; channel: string; thumbnail?: string }) => {
+    const queue = browseVideos.map((v) => ({
+      id: v.id,
+      name: v.title,
+      artist: v.channel,
+    }));
+    const idx = browseVideos.findIndex((v) => v.id === video.id);
+    setYoutubeSearchQueue(queue);
+    setYoutubeQueueIndex(idx >= 0 ? idx : 0);
+    youtubePlayer.loadVideo(video.id, { title: video.title, artist: video.channel });
+    setShowBrowse(false);
+  };
+
+  // Add browse video to active playlist
+  const handleAddBrowseVideoToPlaylist = (video: { id: string; title: string; channel: string; thumbnail?: string }) => {
+    const track: MusicTrack = {
+      id: video.id,
+      name: video.title,
+      artist: video.channel,
+      thumbnail: video.thumbnail,
+      source: "youtube",
+      addedAt: Date.now(),
+    };
+    addTrackToPlaylist(track);
+  };
+
+  // Play Spotify browse track
+  const handlePlaySpotifyBrowseTrack = async (track: SpotifyTrack) => {
+    const allUris = browseSpotifyTracks.map((t) => t.uri);
+    const trackIndex = browseSpotifyTracks.findIndex((t) => t.id === track.id);
+    await spotifyAPI.play(undefined, allUris, { position: trackIndex >= 0 ? trackIndex : 0 });
+    setShowBrowse(false);
+  };
+
+  // Add Spotify browse track to local playlist
+  const handleAddSpotifyBrowseTrackToPlaylist = (track: SpotifyTrack) => {
+    const musicTrack: MusicTrack = {
+      id: track.id,
+      name: track.name,
+      artist: track.artist,
+      thumbnail: track.albumArt,
+      uri: track.uri,
+      source: "spotify",
+      addedAt: Date.now(),
+    };
+    addTrackToPlaylist(musicTrack);
+  };
+
   return (
     <div className="relative group h-full w-full overflow-hidden">
       {/* Hidden YouTube player container - kept in viewport to prevent browser power-saving pause */}
@@ -722,35 +1227,59 @@ export default function MusicPlayerSimple() {
             <div className="flex-1 overflow-y-auto space-y-2">
               {musicSource === "spotify" ? (
                 <>
-                  {spotifySearchResults.map((track) => (
-                    <button
-                      key={track.id}
-                      onClick={() => handleSelectSpotifyResult(track)}
+                  {spotifySearchResults.map((track, idx) => (
+                    <div
+                      key={`${track.id}-${idx}`}
                       className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
                     >
-                      {track.albumArt ? (
-                        <img
-                          src={track.albumArt}
-                          alt={track.name}
-                          className="w-12 h-12 rounded object-cover"
-                        />
-                      ) : (
-                        <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center`}>
-                          <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                      <button
+                        onClick={() => handleSelectSpotifyResult(track)}
+                        className="flex items-center gap-3 flex-1 min-w-0"
+                      >
+                        {track.albumArt ? (
+                          <img
+                            src={track.albumArt}
+                            alt={track.name}
+                            className="w-12 h-12 rounded object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                            <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm ${colors.textPrimary} truncate`}>
+                            {track.name}
+                          </p>
+                          <p className={`text-xs ${colors.textMuted} truncate`}>
+                            {track.artist} · {track.album}
+                          </p>
                         </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${colors.textPrimary} truncate`}>
-                          {track.name}
-                        </p>
-                        <p className={`text-xs ${colors.textMuted} truncate`}>
-                          {track.artist} · {track.album}
-                        </p>
-                      </div>
-                      <span className={`text-xs ${colors.textMuted}`}>
+                      </button>
+                      <span className={`text-xs ${colors.textMuted} flex-shrink-0`}>
                         {formatTime(track.duration_ms / 1000)}
                       </span>
-                    </button>
+                      {activePlaylistId && (
+                        <button
+                          onClick={() => {
+                            const musicTrack: MusicTrack = {
+                              id: track.id,
+                              name: track.name,
+                              artist: track.artist,
+                              thumbnail: track.albumArt,
+                              uri: track.uri,
+                              source: "spotify",
+                              addedAt: Date.now(),
+                            };
+                            addTrackToPlaylist(musicTrack);
+                          }}
+                          className={`p-1 ${colors.hoverBg} rounded flex-shrink-0`}
+                          title="Add to playlist"
+                        >
+                          <Plus className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+                        </button>
+                      )}
+                    </div>
                   ))}
                   {spotifySearchError && (
                     <p className="text-center text-red-400 text-sm">
@@ -760,31 +1289,54 @@ export default function MusicPlayerSimple() {
                 </>
               ) : (
                 <>
-                  {youtubeSearch.results.map((result) => (
-                    <button
-                      key={result.videoId}
-                      onClick={() => handleSelectSearchResult(result)}
+                  {youtubeSearch.results.map((result, idx) => (
+                    <div
+                      key={`${result.videoId}-${idx}`}
                       className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
                     >
-                      <img
-                        src={result.thumbnail}
-                        alt={result.title}
-                        className="w-12 h-12 rounded object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${colors.textPrimary} truncate`}>
-                          {result.title}
-                        </p>
-                        <p className={`text-xs ${colors.textMuted} truncate`}>
-                          {result.channelTitle}
-                        </p>
-                      </div>
+                      <button
+                        onClick={() => handleSelectSearchResult(result)}
+                        className="flex items-center gap-3 flex-1 min-w-0"
+                      >
+                        <img
+                          src={result.thumbnail}
+                          alt={result.title}
+                          className="w-12 h-12 rounded object-cover flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm ${colors.textPrimary} truncate`}>
+                            {result.title}
+                          </p>
+                          <p className={`text-xs ${colors.textMuted} truncate`}>
+                            {result.channelTitle}
+                          </p>
+                        </div>
+                      </button>
                       {result.duration && (
-                        <span className={`text-xs ${colors.textMuted}`}>
+                        <span className={`text-xs ${colors.textMuted} flex-shrink-0`}>
                           {formatTime(result.duration)}
                         </span>
                       )}
-                    </button>
+                      {activePlaylistId && (
+                        <button
+                          onClick={() => {
+                            const musicTrack: MusicTrack = {
+                              id: result.videoId,
+                              name: result.title,
+                              artist: result.channelTitle,
+                              thumbnail: result.thumbnail,
+                              source: "youtube",
+                              addedAt: Date.now(),
+                            };
+                            addTrackToPlaylist(musicTrack);
+                          }}
+                          className={`p-1 ${colors.hoverBg} rounded flex-shrink-0`}
+                          title="Add to playlist"
+                        >
+                          <Plus className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+                        </button>
+                      )}
+                    </div>
                   ))}
                   {youtubeSearch.error && (
                     <p className="text-center text-red-400 text-sm">
@@ -796,13 +1348,224 @@ export default function MusicPlayerSimple() {
             </div>
           </div>
         )}
+
+        {/* Browse Overlay */}
+        {showBrowse && (
+          <div
+            className={`absolute inset-0 ${colors.surfaceBg} backdrop-blur-xl z-40 p-4 pt-12 flex flex-col rounded-2xl`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                {browseSpotifyPlaylistName && musicSource === "spotify" && (
+                  <button
+                    onClick={() => {
+                      setBrowseSpotifyTracks([]);
+                      setBrowseSpotifyPlaylistName(null);
+                    }}
+                    className={`p-1 ${colors.hoverBg} rounded-lg`}
+                  >
+                    <ChevronDown className={`w-4 h-4 ${colors.textMuted} rotate-90`} />
+                  </button>
+                )}
+                <h3 className={`text-sm font-bold ${colors.textPrimary}`}>
+                  {musicSource === "spotify"
+                    ? browseSpotifyPlaylistName || "Your Spotify Playlists"
+                    : "Suggested for You"}
+                </h3>
+              </div>
+              <div className="flex items-center gap-1">
+                {musicSource === "youtube" && (
+                  <button
+                    onClick={fetchBrowseVideos}
+                    disabled={isBrowseLoading}
+                    className={`p-1 ${colors.hoverBg} rounded-lg`}
+                  >
+                    <RefreshCw className={`w-4 h-4 ${colors.textMuted} ${isBrowseLoading ? "animate-spin" : ""}`} />
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowBrowse(false);
+                    setBrowseSpotifyTracks([]);
+                    setBrowseSpotifyPlaylistName(null);
+                  }}
+                  className={`p-1 ${colors.hoverBg} rounded-lg`}
+                >
+                  <X className={`w-4 h-4 ${colors.textMuted}`} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {musicSource === "youtube" ? (
+                <>
+                  {isBrowseLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                    </div>
+                  ) : browseVideos.length === 0 ? (
+                    <p className={`text-center text-sm ${colors.textMuted} py-8`}>
+                      No suggestions available
+                    </p>
+                  ) : (
+                    browseVideos.map((video, idx) => (
+                      <div
+                        key={`${video.id}-${idx}`}
+                        className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors`}
+                      >
+                        <button
+                          onClick={() => handlePlayBrowseVideo(video)}
+                          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                        >
+                          {video.thumbnail ? (
+                            <img
+                              src={video.thumbnail}
+                              alt={video.title}
+                              className="w-12 h-12 rounded object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                              <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm ${colors.textPrimary} truncate`}>
+                              {video.title}
+                            </p>
+                            <p className={`text-xs ${colors.textMuted} truncate`}>
+                              {video.channel}
+                            </p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => handleAddBrowseVideoToPlaylist(video)}
+                          className={`p-1.5 ${colors.hoverBg} rounded flex-shrink-0`}
+                          title="Add to playlist"
+                        >
+                          <Plus className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Spotify Browse: playlist list or track list */}
+                  {browseSpotifyPlaylistName ? (
+                    // Showing tracks from a Spotify playlist
+                    <>
+                      {isBrowseSpotifyTracksLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                        </div>
+                      ) : browseSpotifyTracks.length === 0 ? (
+                        <p className={`text-center text-sm ${colors.textMuted} py-8`}>
+                          No tracks found
+                        </p>
+                      ) : (
+                        browseSpotifyTracks.map((track, idx) => (
+                          <div
+                            key={`${track.id}-${idx}`}
+                            className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors`}
+                          >
+                            <button
+                              onClick={() => handlePlaySpotifyBrowseTrack(track)}
+                              className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                            >
+                              {track.albumArt ? (
+                                <img
+                                  src={track.albumArt}
+                                  alt={track.name}
+                                  className="w-12 h-12 rounded object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                                  <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${colors.textPrimary} truncate`}>
+                                  {track.name}
+                                </p>
+                                <p className={`text-xs ${colors.textMuted} truncate`}>
+                                  {track.artist}
+                                </p>
+                              </div>
+                            </button>
+                            <span className={`text-xs ${colors.textMuted} flex-shrink-0`}>
+                              {formatTime(track.duration_ms / 1000)}
+                            </span>
+                            <button
+                              onClick={() => handleAddSpotifyBrowseTrackToPlaylist(track)}
+                              className={`p-1.5 ${colors.hoverBg} rounded flex-shrink-0`}
+                              title="Add to playlist"
+                            >
+                              <Plus className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </>
+                  ) : (
+                    // Showing user's Spotify playlists
+                    <>
+                      {!spotifyAuth.isConnected ? (
+                        <p className={`text-center text-sm ${colors.textMuted} py-8`}>
+                          Connect Spotify to browse your playlists
+                        </p>
+                      ) : isSpotifyBrowseLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                        </div>
+                      ) : spotifyUserPlaylists.length === 0 ? (
+                        <p className={`text-center text-sm ${colors.textMuted} py-8`}>
+                          No playlists found
+                        </p>
+                      ) : (
+                        spotifyUserPlaylists.map((playlist) => (
+                          <button
+                            key={playlist.id}
+                            onClick={() => fetchSpotifyPlaylistTracks(playlist.id, playlist.name)}
+                            className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                          >
+                            {playlist.images?.[0]?.url ? (
+                              <img
+                                src={playlist.images[0].url}
+                                alt={playlist.name}
+                                className="w-12 h-12 rounded object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                                <ListMusic className={`w-5 h-5 ${colors.textMuted}`} />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${colors.textPrimary} truncate`}>
+                                {playlist.name}
+                              </p>
+                              <p className={`text-xs ${colors.textMuted}`}>
+                                {playlist.tracks.total} tracks
+                              </p>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 ${colors.textMuted} -rotate-90 flex-shrink-0`} />
+                          </button>
+                        ))
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <TooltipProvider delayDuration={300}>
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={`p-1.5 rounded-lg ${colors.accentBg}`}>
+                  <div className={`p-1.5 rounded-lg ${colors.accentBg} flex-shrink-0`}>
                     <Music2 className={`w-4 h-4 ${colors.iconColor}`} />
                   </div>
                 </TooltipTrigger>
@@ -810,17 +1573,161 @@ export default function MusicPlayerSimple() {
                   <p>Music Player</p>
                 </TooltipContent>
               </Tooltip>
-              <div>
-                <h2 className={`text-sm font-bold ${colors.textPrimary}`}>
-                  {musicSource === "spotify"
-                    ? "Spotify"
-                    : theme === "lofi"
-                      ? "Lofi"
-                      : theme === "coffeeshop"
-                        ? "Coffee Shop"
-                        : "Ghibli"}{" "}
-                  {musicSource === "spotify" ? "Connect" : "Beats"}
-                </h2>
+              <div className="min-w-0 flex-1">
+                {/* Playlist Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowPlaylistDropdown(!showPlaylistDropdown)}
+                    className={`flex items-center gap-1 max-w-full`}
+                  >
+                    <h2 className={`text-sm font-bold ${colors.textPrimary} truncate`}>
+                      {activePlaylist
+                        ? activePlaylist.name
+                        : musicSource === "spotify"
+                          ? "Spotify"
+                          : theme === "lofi"
+                            ? "Lofi"
+                            : theme === "coffeeshop"
+                              ? "Coffee Shop"
+                              : "Ghibli"}{" "}
+                      {!activePlaylist && (musicSource === "spotify" ? "Connect" : "Beats")}
+                    </h2>
+                    <ChevronDown className={`w-3 h-3 ${colors.textMuted} flex-shrink-0 transition-transform ${showPlaylistDropdown ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {showPlaylistDropdown && (
+                    <div
+                      className={`absolute left-0 top-full mt-2 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-[9999] min-w-[200px] max-w-[260px]`}
+                    >
+                      <div className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}>
+                        Playlists
+                      </div>
+
+                      {/* Presets option */}
+                      <button
+                        onClick={() => switchPlaylist(null)}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors text-left ${
+                          !activePlaylistId
+                            ? `bg-gradient-to-r ${colors.primary} text-white`
+                            : `${colors.hoverBg} ${colors.textSecondary}`
+                        }`}
+                      >
+                        <Music2 className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="text-xs truncate">
+                          {musicSource === "spotify" ? "Spotify Connect" : "Presets"}
+                        </span>
+                      </button>
+
+                      {/* Custom playlists */}
+                      {sourcePlaylists.map((pl) => (
+                        <div key={pl.id} className="flex items-center gap-1 mt-0.5">
+                          {editingPlaylistId === pl.id ? (
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                if (editingName.trim()) {
+                                  renamePlaylist(pl.id, editingName.trim());
+                                }
+                                setEditingPlaylistId(null);
+                              }}
+                              className="flex-1 flex items-center gap-1"
+                            >
+                              <input
+                                type="text"
+                                value={editingName}
+                                onChange={(e) => setEditingName(e.target.value)}
+                                className={`flex-1 ${colors.accentBg} border ${colors.border} rounded px-2 py-1 text-xs ${colors.textPrimary} focus:outline-none`}
+                                autoFocus
+                              />
+                              <button type="submit" className={`p-1 ${colors.hoverBg} rounded`}>
+                                <Check className={`w-3 h-3 ${colors.accent}`} />
+                              </button>
+                            </form>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => switchPlaylist(pl.id)}
+                                className={`flex-1 flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors text-left ${
+                                  activePlaylistId === pl.id
+                                    ? `bg-gradient-to-r ${colors.primary} text-white`
+                                    : `${colors.hoverBg} ${colors.textSecondary}`
+                                }`}
+                              >
+                                <ListMusic className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span className="text-xs truncate">{pl.name}</span>
+                                <span className={`text-[10px] ml-auto flex-shrink-0 ${activePlaylistId === pl.id ? "text-white/70" : colors.textMuted}`}>
+                                  {pl.tracks.length}
+                                </span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingPlaylistId(pl.id);
+                                  setEditingName(pl.name);
+                                }}
+                                className={`p-1 ${colors.hoverBg} rounded flex-shrink-0`}
+                              >
+                                <Pencil className={`w-3 h-3 ${colors.textMuted}`} />
+                              </button>
+                              <button
+                                onClick={() => deletePlaylist(pl.id)}
+                                className="p-1 hover:bg-red-500/10 rounded flex-shrink-0"
+                              >
+                                <Trash2 className="w-3 h-3 text-red-400" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Create new playlist */}
+                      {isCreatingPlaylist ? (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (newPlaylistName.trim()) {
+                              createPlaylist(newPlaylistName.trim(), musicSource);
+                              setNewPlaylistName("");
+                              setIsCreatingPlaylist(false);
+                            }
+                          }}
+                          className="flex items-center gap-1 mt-1 pt-1 border-t border-dashed"
+                          style={{ borderColor: "currentColor" }}
+                        >
+                          <input
+                            type="text"
+                            value={newPlaylistName}
+                            onChange={(e) => setNewPlaylistName(e.target.value)}
+                            placeholder="Playlist name..."
+                            className={`flex-1 ${colors.accentBg} border ${colors.border} rounded px-2 py-1 text-xs ${colors.textPrimary} placeholder:${colors.textMuted} focus:outline-none`}
+                            autoFocus
+                          />
+                          <button type="submit" className={`p-1 ${colors.hoverBg} rounded`}>
+                            <Check className={`w-3 h-3 ${colors.accent}`} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setIsCreatingPlaylist(false); setNewPlaylistName(""); }}
+                            className={`p-1 ${colors.hoverBg} rounded`}
+                          >
+                            <X className={`w-3 h-3 ${colors.textMuted}`} />
+                          </button>
+                        </form>
+                      ) : (
+                        playlistsState.playlists.length < 10 && (
+                          <button
+                            onClick={() => setIsCreatingPlaylist(true)}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors mt-1 pt-1 border-t border-dashed ${colors.hoverBg} ${colors.textMuted}`}
+                            style={{ borderColor: "currentColor" }}
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span className="text-xs">New Playlist</span>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <p className={`text-[10px] ${colors.textMuted}`}>
                   {musicSource === "spotify" &&
                   spotifyAuth.isConnected &&
@@ -846,6 +1753,8 @@ export default function MusicPlayerSimple() {
                         No device
                       </span>
                     )
+                  ) : activePlaylist ? (
+                    <>{activePlaylist.tracks.length} tracks · {effectiveIsPlaying ? "Playing" : "Paused"}</>
                   ) : (
                     <>{effectiveIsPlaying ? "Now Playing" : "Paused"}</>
                   )}
@@ -854,7 +1763,55 @@ export default function MusicPlayerSimple() {
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {/* Dashboard Toggle */}
+              {!showDashboard && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        setShowDashboard(true);
+                        if (musicSource === "youtube" && dashboardVideos.length === 0) {
+                          fetchDashboardVideos();
+                        } else if (musicSource === "spotify" && dashboardSpotifyPlaylists.length === 0) {
+                          fetchDashboardSpotify();
+                        }
+                      }}
+                      className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                      aria-label="Dashboard"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Dashboard</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Browse */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      setShowBrowse(true);
+                      if (musicSource === "youtube") {
+                        fetchBrowseVideos();
+                      } else {
+                        fetchSpotifyBrowse();
+                      }
+                    }}
+                    className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
+                    aria-label="Browse"
+                  >
+                    <Compass className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Browse</p>
+                </TooltipContent>
+              </Tooltip>
+
               {/* Search */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1005,88 +1962,305 @@ export default function MusicPlayerSimple() {
             </div>
           </div>
         </TooltipProvider>
-        {/* Album Art */}
-        <div className="relative mb-4 flex items-center justify-center flex-shrink-0">
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28">
-            <div
-              className={`absolute inset-0 rounded-full bg-gradient-to-br ${colors.primary} opacity-20 ${
-                effectiveIsPlaying && !effectiveIsLoading ? "animate-pulse" : ""
-              }`}
-              style={{ animationDuration: "2s" }}
-            />
 
-            <div
-              className={`absolute inset-2 rounded-full ${isLightMode ? "bg-white/80" : "bg-gradient-to-br from-slate-800 to-slate-900"} border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
-                effectiveIsPlaying && !effectiveIsLoading ? "animate-spin" : ""
-              }`}
-              style={{ animationDuration: "4s" }}
-            >
-              {/* Spotify album art */}
-              {musicSource === "spotify" &&
-              spotifyPlayback.currentTrack?.albumArt ? (
-                <img
-                  src={spotifyPlayback.currentTrack.albumArt}
-                  alt="Album art"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : /* YouTube album art - check if currentTrackInfo exists and has thumbnail */
-              musicSource === "youtube" &&
-                currentTrackInfo &&
-                (currentTrackInfo as any)?.thumbnail ? (
-                <img
-                  src={(currentTrackInfo as any).thumbnail}
-                  alt="Album art"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : (
-                <>
-                  <div className="absolute inset-4 rounded-full border border-white/5" />
-                  <div className="absolute inset-6 rounded-full border border-white/5" />
-                  <div className="absolute inset-8 rounded-full border border-white/5" />
-                  <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${colors.primary} flex items-center justify-center shadow-lg ${colors.glow}`}
-                  >
-                    {effectiveIsLoading ? (
-                      <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-spin" />
-                    ) : (
-                      <Music2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    )}
-                  </div>
-                </>
-              )}
+        {/* Dashboard / Player Body */}
+        {showDashboard ? (
+          /* Dashboard Grid */
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className={`text-xs font-semibold ${colors.textMuted} uppercase tracking-wider`}>
+                {musicSource === "spotify" ? "Your Playlists" : "Suggested for You"}
+              </h3>
+              <button
+                onClick={() => {
+                  if (musicSource === "youtube") {
+                    fetchDashboardVideos();
+                  } else {
+                    fetchDashboardSpotify();
+                  }
+                }}
+                disabled={isDashboardLoading || isDashboardSpotifyLoading}
+                className={`p-1 ${colors.hoverBg} rounded-lg`}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${colors.textMuted} ${(isDashboardLoading || isDashboardSpotifyLoading) ? "animate-spin" : ""}`} />
+              </button>
             </div>
 
-            {effectiveIsPlaying && !effectiveIsLoading && (
-              <>
-                <div
-                  className={`absolute inset-0 rounded-full border-2 ${colors.border} animate-ping`}
-                  style={{ animationDuration: "2s" }}
-                />
-              </>
+            {musicSource === "youtube" ? (
+              isDashboardLoading && dashboardVideos.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                </div>
+              ) : dashboardVideos.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-2">
+                  <Music2 className={`w-8 h-8 ${colors.textMuted}`} />
+                  <p className={`text-sm ${colors.textMuted}`}>No suggestions yet</p>
+                  <button
+                    onClick={fetchDashboardVideos}
+                    className={`text-xs px-3 py-1.5 bg-gradient-to-r ${colors.primary} text-white rounded-lg`}
+                  >
+                    Load Suggestions
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {dashboardVideos.map((video, idx) => (
+                    <button
+                      key={`dash-${video.id}-${idx}`}
+                      onClick={() => handleDashboardPlayVideo(video)}
+                      className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
+                    >
+                      {video.thumbnail ? (
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full aspect-video object-cover"
+                        />
+                      ) : (
+                        <div className={`w-full aspect-video ${colors.accentBg} flex items-center justify-center`}>
+                          <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
+                        </div>
+                      )}
+                      <div className="p-2 flex-1 min-w-0">
+                        <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
+                          {video.title}
+                        </p>
+                        <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>
+                          {video.channel}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
+            ) : (
+              /* Spotify Dashboard */
+              !spotifyAuth.isConnected ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-2">
+                  <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
+                  <p className={`text-sm ${colors.textMuted}`}>Connect Spotify to browse</p>
+                  <button
+                    onClick={() => handleSourceChange("spotify")}
+                    className="text-xs px-3 py-1.5 bg-green-500 text-white rounded-lg"
+                  >
+                    Connect
+                  </button>
+                </div>
+              ) : isDashboardSpotifyLoading && dashboardSpotifyPlaylists.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                </div>
+              ) : dashboardSpotifyPlaylists.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-2">
+                  <ListMusic className={`w-8 h-8 ${colors.textMuted}`} />
+                  <p className={`text-sm ${colors.textMuted}`}>No playlists found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {dashboardSpotifyPlaylists.map((playlist, idx) => (
+                    <button
+                      key={`dash-sp-${playlist.id}-${idx}`}
+                      onClick={() => handleDashboardPlaySpotifyPlaylist(playlist)}
+                      className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
+                    >
+                      {playlist.images?.[0]?.url ? (
+                        <img
+                          src={playlist.images[0].url}
+                          alt={playlist.name}
+                          className="w-full aspect-square object-cover"
+                        />
+                      ) : (
+                        <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
+                          <ListMusic className={`w-6 h-6 ${colors.textMuted}`} />
+                        </div>
+                      )}
+                      <div className="p-2 flex-1 min-w-0">
+                        <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
+                          {playlist.name}
+                        </p>
+                        <p className={`text-[10px] ${colors.textMuted} mt-0.5`}>
+                          {playlist.tracks.total} tracks
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
+
+            {/* Presets quick-play section */}
+            {musicSource === "youtube" && (
+              <div className="mt-4">
+                <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                  Presets
+                </h4>
+                <div className="space-y-1">
+                  {VIDEO_LIST.map((video, idx) => (
+                    <button
+                      key={`preset-${video.id}`}
+                      onClick={() => {
+                        setYoutubeSearchQueue(null);
+                        setCurrentTrack(idx);
+                        youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+                        setShowDashboard(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colors.primary} flex items-center justify-center flex-shrink-0`}>
+                        <Play className="w-3.5 h-3.5 text-white ml-0.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{video.name}</p>
+                        <p className={`text-[10px] ${colors.textMuted} truncate`}>{video.artist}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-        </div>
-        {/* Track Info */}
-        <div className="text-center mb-2 flex-shrink-0 px-2">
-          <h3
-            className={`text-base sm:text-lg font-bold ${colors.textPrimary} truncate`}
-          >
-            {musicSource === "spotify"
-              ? spotifyPlayback.currentTrack?.name ||
-                (spotifyPlayback.isSDKReady ? "Ready to Play" : "Connecting...")
-              : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
-                VIDEO_LIST[currentTrack]?.name ||
-                "Loading..."}
-          </h3>
-          <p className={`text-xs sm:text-sm ${colors.accent} truncate`}>
-            {musicSource === "spotify"
-              ? spotifyPlayback.currentTrack?.artist ||
-                (spotifyPlayback.isSDKReady ? "Spotify" : "")
-              : (currentTrackInfo && (currentTrackInfo as any)?.artist) ||
-                VIDEO_LIST[currentTrack]?.artist ||
-                "YouTube"}
-          </p>
-        </div>
+        ) : (
+          /* Normal Player Body */
+          <>
+            {/* Album Art */}
+            <div className="relative mb-4 flex items-center justify-center flex-shrink-0">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28">
+                <div
+                  className={`absolute inset-0 rounded-full bg-gradient-to-br ${colors.primary} opacity-20 ${
+                    effectiveIsPlaying && !effectiveIsLoading ? "animate-pulse" : ""
+                  }`}
+                  style={{ animationDuration: "2s" }}
+                />
+
+                <div
+                  className={`absolute inset-2 rounded-full ${isLightMode ? "bg-white/80" : "bg-gradient-to-br from-slate-800 to-slate-900"} border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
+                    effectiveIsPlaying && !effectiveIsLoading ? "animate-spin" : ""
+                  }`}
+                  style={{ animationDuration: "4s" }}
+                >
+                  {/* Spotify album art */}
+                  {musicSource === "spotify" &&
+                  spotifyPlayback.currentTrack?.albumArt ? (
+                    <img
+                      src={spotifyPlayback.currentTrack.albumArt}
+                      alt="Album art"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : /* YouTube album art - check if currentTrackInfo exists and has thumbnail */
+                  musicSource === "youtube" &&
+                    currentTrackInfo &&
+                    (currentTrackInfo as any)?.thumbnail ? (
+                    <img
+                      src={(currentTrackInfo as any).thumbnail}
+                      alt="Album art"
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <>
+                      <div className="absolute inset-4 rounded-full border border-white/5" />
+                      <div className="absolute inset-6 rounded-full border border-white/5" />
+                      <div className="absolute inset-8 rounded-full border border-white/5" />
+                      <div
+                        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${colors.primary} flex items-center justify-center shadow-lg ${colors.glow}`}
+                      >
+                        {effectiveIsLoading ? (
+                          <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-spin" />
+                        ) : (
+                          <Music2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {effectiveIsPlaying && !effectiveIsLoading && (
+                  <>
+                    <div
+                      className={`absolute inset-0 rounded-full border-2 ${colors.border} animate-ping`}
+                      style={{ animationDuration: "2s" }}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Track Info + Heart */}
+            <div className="text-center mb-2 flex-shrink-0 px-2 relative">
+              <div className="flex items-center justify-center gap-2">
+                <h3
+                  className={`text-base sm:text-lg font-bold ${colors.textPrimary} truncate`}
+                >
+                  {musicSource === "spotify"
+                    ? spotifyPlayback.currentTrack?.name ||
+                      (spotifyPlayback.isSDKReady ? "Ready to Play" : "Connecting...")
+                    : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
+                      VIDEO_LIST[currentTrack]?.name ||
+                      "Loading..."}
+                </h3>
+                {/* Heart/Save Icon */}
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={handleHeartClick}
+                    className={`p-1 rounded transition-colors ${
+                      isCurrentTrackInPlaylist()
+                        ? colors.heartActive
+                        : `${colors.textMuted} ${colors.hoverBg}`
+                    }`}
+                    title={isCurrentTrackInPlaylist() ? "In playlist" : "Save to playlist"}
+                  >
+                    <Heart
+                      className={`w-4 h-4 ${isCurrentTrackInPlaylist() ? "fill-current" : ""}`}
+                    />
+                  </button>
+
+                  {/* Playlist Picker Popup */}
+                  {showPlaylistPicker && (
+                    <div
+                      className={`absolute right-0 top-full mt-1 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-[9999] min-w-[160px]`}
+                    >
+                      <div className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}>
+                        Save to...
+                      </div>
+                      {sourcePlaylists.map((pl) => {
+                        const inPl = isCurrentTrackInPlaylist(pl.id);
+                        return (
+                          <button
+                            key={pl.id}
+                            onClick={() => {
+                              const track = getCurrentMusicTrack();
+                              if (!track) return;
+                              if (inPl) {
+                                removeTrackFromPlaylist(track.id, pl.id);
+                              } else {
+                                addTrackToPlaylist(track, pl.id);
+                              }
+                              setShowPlaylistPicker(false);
+                            }}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors text-left ${colors.hoverBg}`}
+                          >
+                            <Heart
+                              className={`w-3 h-3 flex-shrink-0 ${inPl ? `fill-current ${colors.heartActive}` : colors.textMuted}`}
+                            />
+                            <span className={`text-xs truncate ${colors.textSecondary}`}>
+                              {pl.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p className={`text-xs sm:text-sm ${colors.accent} truncate`}>
+                {musicSource === "spotify"
+                  ? spotifyPlayback.currentTrack?.artist ||
+                    (spotifyPlayback.isSDKReady ? "Spotify" : "")
+                  : (currentTrackInfo && (currentTrackInfo as any)?.artist) ||
+                    VIDEO_LIST[currentTrack]?.artist ||
+                    "YouTube"}
+              </p>
+            </div>
+
         {/* Progress Bar */}
         {totalDuration > 0 && (
           <div className=" px-2">
@@ -1111,6 +2285,7 @@ export default function MusicPlayerSimple() {
             </div>
           </div>
         )}
+
         {/* Main Controls */}
         <TooltipProvider delayDuration={300}>
           <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
@@ -1223,26 +2398,53 @@ export default function MusicPlayerSimple() {
         {/* Footer */}
         <div className="flex items-center justify-center gap-1 mt-3 flex-shrink-0">
           {musicSource === "youtube" ? (
-            VIDEO_LIST.map((_, idx) => (
-              <button
-                key={idx}
-                disabled={effectiveIsLoading}
-                onClick={() => {
-                  setYoutubeSearchQueue(null); // Clear search queue, back to preset list
-                  setCurrentTrack(idx);
-                  const video = VIDEO_LIST[idx];
-                  youtubePlayer.loadVideo(video.id, {
-                    title: video.name,
-                    artist: video.artist,
-                  });
-                }}
-                className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
-                  currentTrack === idx
-                    ? `bg-gradient-to-r ${colors.primary} w-4`
-                    : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
-                }`}
-              />
-            ))
+            activePlaylist && activePlaylist.tracks.length > 0 ? (
+              // Custom playlist dots
+              activePlaylist.tracks.slice(0, 10).map((_, idx) => (
+                <button
+                  key={idx}
+                  disabled={effectiveIsLoading}
+                  onClick={() => {
+                    const queue = activePlaylist.tracks.map((t) => ({
+                      id: t.id,
+                      name: t.name,
+                      artist: t.artist,
+                    }));
+                    setYoutubeSearchQueue(queue);
+                    setYoutubeQueueIndex(idx);
+                    const video = queue[idx];
+                    youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+                  }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
+                    youtubeQueueIndex === idx && youtubeSearchQueue
+                      ? `bg-gradient-to-r ${colors.primary} w-4`
+                      : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
+                  }`}
+                />
+              ))
+            ) : (
+              // Preset dots
+              VIDEO_LIST.map((_, idx) => (
+                <button
+                  key={idx}
+                  disabled={effectiveIsLoading}
+                  onClick={() => {
+                    setYoutubeSearchQueue(null); // Clear search queue, back to preset list
+                    setCurrentTrack(idx);
+                    const video = VIDEO_LIST[idx];
+                    youtubePlayer.loadVideo(video.id, {
+                      title: video.name,
+                      artist: video.artist,
+                    });
+                  }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
+                    currentTrack === idx && !youtubeSearchQueue
+                      ? `bg-gradient-to-r ${colors.primary} w-4`
+                      : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
+                  }`}
+                />
+              ))
+            )
           ) : (
             <div
               className={`flex items-center gap-2 text-[10px] ${colors.textMuted}`}
@@ -1256,6 +2458,9 @@ export default function MusicPlayerSimple() {
             </div>
           )}
         </div>
+          </>
+        )}
+
         {/* Waveform */}
         {totalDuration > 0 && (
           <div className="mt-2 absolute flex items-end justify-center gap-[3px] h-1/2 sm:h-16 flex-shrink-0 w-full -z-1 -bottom-1 opacity-30 pointer-events-none left-0 right-0">
@@ -1301,10 +2506,23 @@ export default function MusicPlayerSimple() {
         )}
       </div>
 
+      {/* Click-away overlays */}
       {showSourceMenu && (
         <div
           className="fixed inset-0 -z-1"
           onClick={() => setShowSourceMenu(false)}
+        />
+      )}
+      {showPlaylistDropdown && (
+        <div
+          className="fixed inset-0 -z-1"
+          onClick={() => { setShowPlaylistDropdown(false); setIsCreatingPlaylist(false); setEditingPlaylistId(null); }}
+        />
+      )}
+      {showPlaylistPicker && (
+        <div
+          className="fixed inset-0 -z-1"
+          onClick={() => setShowPlaylistPicker(false)}
         />
       )}
     </div>
