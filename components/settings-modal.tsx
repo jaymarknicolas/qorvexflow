@@ -24,6 +24,7 @@ import {
   type ColorScheme,
 } from "@/lib/contexts/app-settings-context";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useOnboarding } from "@/lib/contexts/onboarding-context";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -47,6 +48,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     effectiveColorScheme,
   } = useAppSettings();
   const { theme, setTheme } = useTheme();
+  const { startTour } = useOnboarding();
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -571,6 +573,34 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Onboarding Tour */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Guide
+                    </h3>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        setTimeout(() => startTour(), 300);
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 w-full p-3 rounded-xl border transition-all",
+                        "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10",
+                      )}
+                    >
+                      <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", `bg-gradient-to-br ${getGradientButton().split(" ")[0]} ${getGradientButton().split(" ")[1]}`)}>
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium text-white">Restart Tour</div>
+                        <div className="text-xs text-white/50">
+                          Replay the onboarding walkthrough
+                        </div>
+                      </div>
+                    </button>
                   </div>
 
                   {/* Current Configuration */}

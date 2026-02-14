@@ -124,6 +124,7 @@ const DraggableWidgetContent = memo(function DraggableWidgetContent({
   return (
     <div
       ref={setNodeRef}
+      data-onboarding="widget-actions"
       className={`relative group w-full h-full overflow-hidden hover:ring-2 hover:ring-cyan-400/30 rounded-2xl transition-all duration-300 ${
         isDragging ? "opacity-50 ring-2 ring-cyan-400/50" : ""
       }`}
@@ -543,6 +544,7 @@ export default function Home() {
 
       <div
         ref={scrollContainerRef}
+        data-onboarding="workspace"
         className={`relative z-[10] flex-1 flex justify-center ${
           useCarouselMode
             ? "items-stretch overflow-hidden"

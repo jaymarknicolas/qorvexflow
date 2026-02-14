@@ -596,6 +596,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
+                    data-onboarding="layout-selector"
                     className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuText} ${colors.surfaceHover} transition-all`}
                   >
                     <Layout className={`w-4 h-4`} />
@@ -641,6 +642,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
+                    data-onboarding="theme-selector"
                     className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg ${colors.surfaceBg} border ${colors.surfaceBorder} ${colors.menuText} ${colors.surfaceHover} transition-all`}
                   >
                     <span className="text-sm font-medium hidden md:inline">
@@ -728,6 +730,7 @@ export default function Header({ onLayoutClick }: HeaderProps = {}) {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
+                    data-onboarding="settings"
                     className="relative w-10 h-10 rounded-full p-0 overflow-hidden group"
                   >
                     <div

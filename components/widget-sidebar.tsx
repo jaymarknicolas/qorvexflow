@@ -374,6 +374,7 @@ export default function WidgetSidebar({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             data-widget-sidebar-fab
+            data-onboarding="widget-sidebar"
             className={`fixed left-4 bottom-4 z-[60] h-14 w-14 rounded-2xl bg-gradient-to-br ${themeAccent.primary} text-white shadow-lg ${themeAccent.glow} hover:shadow-xl transition-all duration-300 flex items-center justify-center overflow-hidden`}
             aria-label="Toggle widget menu"
           >
