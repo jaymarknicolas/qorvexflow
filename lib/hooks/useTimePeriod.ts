@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 export type TimePeriod = "dawn" | "day" | "dusk" | "night";
 
 function getTimePeriod(hour: number): TimePeriod {
-  if (hour >= 5 && hour < 8) return "dawn";
-  if (hour >= 8 && hour < 17) return "day";
-  if (hour >= 17 && hour < 20) return "dusk";
-  return "night";
+  if (hour >= 5 && hour < 6) return "dawn"; // 5am-6am sunrise
+  if (hour >= 6 && hour < 17) return "day"; // 6am-5pm daytime
+  if (hour >= 17 && hour < 18) return "dusk"; // 5pm-6pm sunset
+  return "night"; // 6pm-5am nighttime
 }
 
 export function useTimePeriod(): TimePeriod {

@@ -18,12 +18,6 @@ import {
   Settings,
   Download,
   ExternalLink,
-  Clock,
-  CloudRain,
-  Cloud,
-  Snowflake,
-  SunMedium,
-  CloudSun,
   RefreshCw,
 } from "lucide-react";
 import {
@@ -33,6 +27,7 @@ import {
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useOnboarding } from "@/lib/contexts/onboarding-context";
 import { useAmbient } from "@/lib/contexts/ambient-context";
+import LocationPicker from "@/components/location-picker";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -65,6 +60,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     weatherLoading,
     weatherError,
     refreshWeather,
+    isTimeThemeActive,
+    isWeatherThemeActive,
   } = useAmbient();
 
   // Prevent body scroll when modal is open
@@ -136,24 +133,44 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       description: "Warm & cozy",
       gradient: "from-amber-500 to-amber-800",
     },
+    {
+      id: "timebased" as const,
+      label: "Time-Based",
+      emoji: "🌅",
+      description: "Shifts with time of day",
+      gradient: "from-orange-500 via-sky-500 to-indigo-600",
+    },
+    {
+      id: "weather" as const,
+      label: "Weather",
+      emoji: "🌦️",
+      description: "Reacts to real weather",
+      gradient: "from-blue-500 via-slate-400 to-amber-500",
+    },
   ];
 
   // Get theme-aware colors
   const getAccentColor = () => {
     if (theme === "ghibli") return "bg-green-500";
     if (theme === "coffeeshop") return "bg-amber-500";
+    if (theme === "timebased") return "bg-sky-500";
+    if (theme === "weather") return "bg-slate-500";
     return "bg-violet-500";
   };
 
   const getAccentRing = () => {
     if (theme === "ghibli") return "ring-green-500/50";
     if (theme === "coffeeshop") return "ring-amber-500/50";
+    if (theme === "timebased") return "ring-sky-500/50";
+    if (theme === "weather") return "ring-slate-500/50";
     return "ring-violet-500/50";
   };
 
   const getAccentText = () => {
     if (theme === "ghibli") return "text-green-400";
     if (theme === "coffeeshop") return "text-amber-400";
+    if (theme === "timebased") return "text-sky-400";
+    if (theme === "weather") return "text-slate-400";
     return "text-violet-400";
   };
 
@@ -162,6 +179,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       return "from-green-500 to-amber-500 hover:from-green-400 hover:to-amber-400 shadow-green-500/20";
     if (theme === "coffeeshop")
       return "from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 shadow-amber-500/20";
+    if (theme === "timebased")
+      return "from-sky-500 to-violet-500 hover:from-sky-400 hover:to-violet-400 shadow-sky-500/20";
+    if (theme === "weather")
+      return "from-blue-500 to-slate-500 hover:from-blue-400 hover:to-slate-400 shadow-blue-500/20";
     return "from-violet-500 to-pink-500 hover:from-violet-400 hover:to-pink-400 shadow-violet-500/20";
   };
 
@@ -354,227 +375,121 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             )}
                           </button>
                         ))}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Ambient Mode Section */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider flex items-center gap-2">
-                      <Cloud className="w-4 h-4" />
-                      Ambient Mode
-                    </h3>
-
-                    {settings.performanceMode === "lightweight" && (
-                      <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
-                        <p className="text-xs text-yellow-400">
-                          Ambient modes are disabled in Lightweight performance mode.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Time-Based Ambient Toggle */}
-                    <label className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-white/60" />
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Time-Based Ambient
-                          </p>
-                          <p className="text-xs text-white/50">
-                            Colors shift with time of day
-                            {ambientSettings.timeAmbientEnabled && (
-                              <span className={`ml-1 ${getAccentText()}`}>
-                                ({currentTimePeriod})
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() =>
-                          updateAmbientSettings({
-                            timeAmbientEnabled: !ambientSettings.timeAmbientEnabled,
-                          })
-                        }
-                        className={cn(
-                          "relative w-12 h-7 rounded-full transition-all duration-200",
-                          ambientSettings.timeAmbientEnabled
-                            ? getAccentColor()
-                            : "bg-white/20",
+                        {/* Time-Based theme info */}
+                        {isTimeThemeActive && (
+                          <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                            <p className="text-xs text-sky-400">
+                              Background shifts automatically based on time of day ({currentTimePeriod}).
+                            </p>
+                          </div>
                         )}
-                      >
-                        <span
-                          className={cn(
-                            "absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-200",
-                            ambientSettings.timeAmbientEnabled
-                              ? "left-6"
-                              : "left-1",
-                          )}
-                        />
-                      </button>
-                    </label>
 
-                    {/* Weather-Synced Ambient Toggle */}
-                    <label className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <CloudRain className="w-5 h-5 text-white/60" />
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Weather-Synced Ambient
-                          </p>
-                          <p className="text-xs text-white/50">
-                            Visual effects based on real weather
-                            {ambientSettings.weatherAmbientEnabled && currentWeather && (
-                              <span className={`ml-1 ${getAccentText()}`}>
-                                ({currentWeather})
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() =>
-                          updateAmbientSettings({
-                            weatherAmbientEnabled: !ambientSettings.weatherAmbientEnabled,
-                          })
-                        }
-                        className={cn(
-                          "relative w-12 h-7 rounded-full transition-all duration-200",
-                          ambientSettings.weatherAmbientEnabled
-                            ? getAccentColor()
-                            : "bg-white/20",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-200",
-                            ambientSettings.weatherAmbientEnabled
-                              ? "left-6"
-                              : "left-1",
-                          )}
-                        />
-                      </button>
-                    </label>
+                        {/* Weather theme config */}
+                        {isWeatherThemeActive && (
+                          <div className="space-y-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                            <p className="text-xs text-sky-400">
+                              Background reacts to real weather conditions{currentWeather ? ` (${currentWeather})` : ""}.
+                            </p>
 
-                    {/* Weather Settings (shown when weather enabled) */}
-                    {ambientSettings.weatherAmbientEnabled && (
-                      <div className="space-y-3 pl-3 border-l-2 border-white/10 ml-4">
-                        {/* City Name */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-white/50">City Name</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Tokyo"
-                            value={ambientSettings.weatherCity}
-                            onChange={(e) =>
-                              updateAmbientSettings({ weatherCity: e.target.value })
-                            }
-                            className="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-white/40 focus:outline-none transition-colors"
-                          />
-                        </div>
+                            {/* Location Picker */}
+                            <LocationPicker
+                              value={ambientSettings.weatherCity}
+                              lat={ambientSettings.weatherLat}
+                              lon={ambientSettings.weatherLon}
+                              accentText={getAccentText()}
+                              onSelect={(city, lat, lon) =>
+                                updateAmbientSettings({
+                                  weatherCity: city,
+                                  weatherLat: lat,
+                                  weatherLon: lon,
+                                })
+                              }
+                              onClear={() =>
+                                updateAmbientSettings({
+                                  weatherCity: "",
+                                  weatherLat: null,
+                                  weatherLon: null,
+                                })
+                              }
+                            />
 
-                        {/* API Key */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-white/50">
-                            OpenWeatherMap API Key
-                          </label>
-                          <input
-                            type="password"
-                            placeholder="Enter your API key"
-                            value={ambientSettings.weatherApiKey}
-                            onChange={(e) =>
-                              updateAmbientSettings({ weatherApiKey: e.target.value })
-                            }
-                            className="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:border-white/40 focus:outline-none transition-colors"
-                          />
-                          <p className="text-xs text-white/30">
-                            Get a free key at{" "}
-                            <a
-                              href="https://openweathermap.org/api"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`${getAccentText()} hover:underline`}
-                            >
-                              openweathermap.org
-                            </a>
-                          </p>
-                        </div>
-
-                        {/* Weather Override */}
-                        <div className="space-y-1">
-                          <label className="text-xs text-white/50">
-                            Weather Override
-                          </label>
-                          <select
-                            value={ambientSettings.weatherManualOverride}
-                            onChange={(e) =>
-                              updateAmbientSettings({
-                                weatherManualOverride: e.target.value as
-                                  | "auto"
-                                  | "rain"
-                                  | "sunny"
-                                  | "cloudy"
-                                  | "snow",
-                              })
-                            }
-                            className="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg text-white focus:border-white/40 focus:outline-none transition-colors"
-                          >
-                            <option value="auto" className="bg-gray-800">
-                              Auto (from API)
-                            </option>
-                            <option value="rain" className="bg-gray-800">
-                              🌧️ Rain
-                            </option>
-                            <option value="sunny" className="bg-gray-800">
-                              ☀️ Sunny
-                            </option>
-                            <option value="cloudy" className="bg-gray-800">
-                              ☁️ Cloudy
-                            </option>
-                            <option value="snow" className="bg-gray-800">
-                              ❄️ Snow
-                            </option>
-                          </select>
-                        </div>
-
-                        {/* Weather Status */}
-                        {ambientSettings.weatherManualOverride === "auto" && (
-                          <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
-                            <div className="text-xs text-white/50">
-                              {weatherLoading && "Fetching weather..."}
-                              {weatherError && (
-                                <span className="text-red-400">{weatherError}</span>
-                              )}
-                              {!weatherLoading && !weatherError && currentWeather && (
-                                <span>
-                                  Current:{" "}
-                                  <span className={getAccentText()}>
-                                    {currentWeather}
-                                  </span>
-                                </span>
-                              )}
-                              {!weatherLoading &&
-                                !weatherError &&
-                                !currentWeather &&
-                                "Enter city & API key to start"}
+                            {/* Weather Override */}
+                            <div className="space-y-1">
+                              <label className="text-xs text-white/50">
+                                Weather Override
+                              </label>
+                              <select
+                                value={ambientSettings.weatherManualOverride}
+                                onChange={(e) =>
+                                  updateAmbientSettings({
+                                    weatherManualOverride: e.target.value as
+                                      | "auto"
+                                      | "rain"
+                                      | "sunny"
+                                      | "cloudy"
+                                      | "snow",
+                                  })
+                                }
+                                className="w-full px-3 py-2 text-sm bg-white/10 border border-white/20 rounded-lg text-white focus:border-white/40 focus:outline-none transition-colors"
+                              >
+                                <option value="auto" className="bg-gray-800">
+                                  Auto (from API)
+                                </option>
+                                <option value="rain" className="bg-gray-800">
+                                  Rain
+                                </option>
+                                <option value="sunny" className="bg-gray-800">
+                                  Sunny
+                                </option>
+                                <option value="cloudy" className="bg-gray-800">
+                                  Cloudy
+                                </option>
+                                <option value="snow" className="bg-gray-800">
+                                  Snow
+                                </option>
+                              </select>
                             </div>
-                            <button
-                              onClick={refreshWeather}
-                              disabled={weatherLoading}
-                              className="p-1 hover:bg-white/10 rounded transition-colors"
-                            >
-                              <RefreshCw
-                                className={cn(
-                                  "w-3.5 h-3.5 text-white/50",
-                                  weatherLoading && "animate-spin",
-                                )}
-                              />
-                            </button>
+
+                            {/* Weather Status */}
+                            {ambientSettings.weatherManualOverride === "auto" && (
+                              <div className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
+                                <div className="text-xs text-white/50">
+                                  {weatherLoading && "Fetching weather..."}
+                                  {weatherError && (
+                                    <span className="text-red-400">{weatherError}</span>
+                                  )}
+                                  {!weatherLoading && !weatherError && currentWeather && (
+                                    <span>
+                                      Current:{" "}
+                                      <span className={getAccentText()}>
+                                        {currentWeather}
+                                      </span>
+                                    </span>
+                                  )}
+                                  {!weatherLoading &&
+                                    !weatherError &&
+                                    !currentWeather &&
+                                    "Set a location to start"}
+                                </div>
+                                <button
+                                  onClick={refreshWeather}
+                                  disabled={weatherLoading}
+                                  className="p-1 hover:bg-white/10 rounded transition-colors"
+                                >
+                                  <RefreshCw
+                                    className={cn(
+                                      "w-3.5 h-3.5 text-white/50",
+                                      weatherLoading && "animate-spin",
+                                    )}
+                                  />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {/* Performance Section */}

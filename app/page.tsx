@@ -47,6 +47,7 @@ import StopwatchWidgetCanvas from "@/components/stopwatch-widget-canvas";
 import CountdownWidgetCanvas from "@/components/countdown-widget-canvas";
 import CanvasVideoBackground from "@/components/canvas-video-background";
 import WeatherParticles from "@/components/weather-particles";
+import AmbientSceneBackground from "@/components/ambient-scene-background";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useResponsive } from "@/lib/hooks/useResponsive";
@@ -526,6 +527,9 @@ export default function Home() {
     <div
       className={`min-h-screen h-screen flex flex-col themed-bg relative overflow-hidden`}
     >
+      {/* Ambient nature scene background (for time-based & weather themes) */}
+      <AmbientSceneBackground />
+
       {/* Animated background effects */}
       <div className="fixed inset-0 opacity-30 pointer-events-none z-[1]">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
@@ -615,7 +619,9 @@ export default function Home() {
       />
 
       {/* Theme Video Backgrounds - Only render when enabled */}
-      {settings.videoBackgroundEnabled ? (
+      {settings.videoBackgroundEnabled &&
+      theme !== "timebased" &&
+      theme !== "weather" ? (
         <>
           {theme === "ghibli" && (
             <CanvasVideoBackground videoSrc="/videos/ghibli.mp4" />
@@ -628,7 +634,7 @@ export default function Home() {
           )}
         </>
       ) : (
-        /* Static gradient background when video is disabled */
+        /* Static gradient background when video is disabled or dynamic theme */
         <div className={`absolute inset-0 z-0 static-bg-${theme}`} />
       )}
     </div>

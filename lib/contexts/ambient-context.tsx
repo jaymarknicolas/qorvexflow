@@ -11,6 +11,7 @@ import {
 import { useTimePeriod, type TimePeriod } from "@/lib/hooks/useTimePeriod";
 import { useWeather, type WeatherMode } from "@/lib/hooks/useWeather";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
+import { useTheme } from "@/lib/contexts/theme-context";
 
 export type { TimePeriod } from "@/lib/hooks/useTimePeriod";
 export type { WeatherMode } from "@/lib/hooks/useWeather";
@@ -19,7 +20,8 @@ export interface AmbientSettings {
   timeAmbientEnabled: boolean;
   weatherAmbientEnabled: boolean;
   weatherCity: string;
-  weatherApiKey: string;
+  weatherLat: number | null;
+  weatherLon: number | null;
   weatherManualOverride: WeatherMode | "auto";
 }
 
@@ -32,6 +34,8 @@ export interface AmbientContextType {
   ambientSettings: AmbientSettings;
   updateAmbientSettings: (updates: Partial<AmbientSettings>) => void;
   refreshWeather: () => void;
+  isTimeThemeActive: boolean;
+  isWeatherThemeActive: boolean;
 }
 
 const STORAGE_KEY = "qorvexflow_ambient_settings";
@@ -40,7 +44,8 @@ const defaultAmbientSettings: AmbientSettings = {
   timeAmbientEnabled: false,
   weatherAmbientEnabled: false,
   weatherCity: "",
-  weatherApiKey: "",
+  weatherLat: null,
+  weatherLon: null,
   weatherManualOverride: "auto",
 };
 
@@ -51,13 +56,22 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
     useState<AmbientSettings>(defaultAmbientSettings);
   const [isMounted, setIsMounted] = useState(false);
   const { settings } = useAppSettings();
+  const { theme } = useTheme();
 
   const isLightweight = settings.performanceMode === "lightweight";
+
+  // Check if using dedicated time/weather themes
+  const isTimeThemeActive = theme === "timebased";
+  const isWeatherThemeActive = theme === "weather";
 
   // Time period detection
   const currentTimePeriod = useTimePeriod();
 
-  // Weather fetching
+  // Weather fetching - auto-enable when weather theme is selected
+  const weatherEnabled =
+    (ambientSettings.weatherAmbientEnabled || isWeatherThemeActive) &&
+    !isLightweight;
+
   const {
     weather: currentWeather,
     loading: weatherLoading,
@@ -66,9 +80,10 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
     refresh: refreshWeather,
   } = useWeather(
     ambientSettings.weatherCity,
-    ambientSettings.weatherApiKey,
-    ambientSettings.weatherAmbientEnabled && !isLightweight,
-    ambientSettings.weatherManualOverride
+    weatherEnabled,
+    ambientSettings.weatherManualOverride,
+    ambientSettings.weatherLat,
+    ambientSettings.weatherLon
   );
 
   // Load settings from localStorage
@@ -91,8 +106,12 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isMounted || typeof document === "undefined") return;
 
-    // Time period attribute
-    if (ambientSettings.timeAmbientEnabled && !isLightweight) {
+    // Time period attribute - active when toggle is on OR timebased theme is selected
+    const timeActive =
+      (ambientSettings.timeAmbientEnabled || isTimeThemeActive) &&
+      !isLightweight;
+
+    if (timeActive) {
       document.documentElement.setAttribute(
         "data-time-period",
         currentTimePeriod
@@ -101,13 +120,14 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
       document.documentElement.removeAttribute("data-time-period");
     }
 
-    // Weather attribute
-    if (
-      ambientSettings.weatherAmbientEnabled &&
+    // Weather attribute - active when toggle is on OR weather theme is selected
+    const weatherActive =
+      (ambientSettings.weatherAmbientEnabled || isWeatherThemeActive) &&
       !isLightweight &&
-      currentWeather
-    ) {
-      document.documentElement.setAttribute("data-weather", currentWeather);
+      currentWeather;
+
+    if (weatherActive) {
+      document.documentElement.setAttribute("data-weather", currentWeather!);
     } else {
       document.documentElement.removeAttribute("data-weather");
     }
@@ -118,6 +138,8 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
     currentTimePeriod,
     currentWeather,
     isLightweight,
+    isTimeThemeActive,
+    isWeatherThemeActive,
   ]);
 
   // Save settings
@@ -153,6 +175,8 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
         ambientSettings,
         updateAmbientSettings,
         refreshWeather,
+        isTimeThemeActive,
+        isWeatherThemeActive,
       }}
     >
       {children}

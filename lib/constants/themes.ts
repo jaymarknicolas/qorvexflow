@@ -4,7 +4,7 @@
  */
 
 export interface ThemeConfig {
-  id: "neon" | "lofi" | "ghibli" | "coffeeshop";
+  id: "neon" | "lofi" | "ghibli" | "coffeeshop" | "timebased" | "weather";
   name: string;
   description: string;
   colors: {
@@ -161,6 +161,70 @@ export const THEMES: Record<string, ThemeConfig> = {
       glassmorphism: true,
       particles: false,
       animations: "slow",
+    },
+  },
+
+  timebased: {
+    id: "timebased",
+    name: "Time-Based",
+    description: "Dynamic theme that shifts colors based on time of day",
+    colors: {
+      primary: "#7dd3fc",
+      secondary: "#fb923c",
+      accent: "#c084fc",
+      background: {
+        from: "#0f172a",
+        via: "#1e1b4b",
+        to: "#0f172a",
+      },
+      card: {
+        from: "rgba(30, 27, 75, 0.4)",
+        to: "rgba(15, 23, 42, 0.4)",
+      },
+      text: {
+        primary: "#f0f9ff",
+        secondary: "rgba(240, 249, 255, 0.8)",
+        muted: "rgba(186, 230, 253, 0.6)",
+      },
+      border: "rgba(125, 211, 252, 0.2)",
+      glow: ["#3b82f6", "#8b5cf6", "#6366f1"],
+    },
+    effects: {
+      glassmorphism: true,
+      particles: false,
+      animations: "normal",
+    },
+  },
+
+  weather: {
+    id: "weather",
+    name: "Weather",
+    description: "Dynamic theme that reacts to real weather conditions",
+    colors: {
+      primary: "#94a3b8",
+      secondary: "#a8a29e",
+      accent: "#7dd3fc",
+      background: {
+        from: "#1e293b",
+        via: "#334155",
+        to: "#1e293b",
+      },
+      card: {
+        from: "rgba(51, 65, 85, 0.4)",
+        to: "rgba(30, 41, 59, 0.4)",
+      },
+      text: {
+        primary: "#f1f5f9",
+        secondary: "rgba(241, 245, 249, 0.8)",
+        muted: "rgba(203, 213, 225, 0.6)",
+      },
+      border: "rgba(148, 163, 184, 0.2)",
+      glow: ["#64748b", "#94a3b8", "#cbd5e1"],
+    },
+    effects: {
+      glassmorphism: true,
+      particles: true,
+      animations: "normal",
     },
   },
 };
