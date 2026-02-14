@@ -10,6 +10,7 @@ import { Toaster } from "sonner";
 import { FloatingWidgetProvider } from "@/components/floating-widget/floating-widget-context";
 import FloatingWidgetWindow from "@/components/floating-widget/floating-widget-window";
 import { OnboardingProvider } from "@/lib/contexts/onboarding-context";
+import { AmbientProvider } from "@/lib/contexts/ambient-context";
 import OnboardingOverlay from "@/components/onboarding-overlay";
 
 const geistSans = Geist({
@@ -41,7 +42,8 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AppSettingsProvider>
-            <LayoutProvider>
+            <AmbientProvider>
+              <LayoutProvider>
               <WidgetSettingsProvider>
                 <FocusTrackerProvider>
                   <FloatingWidgetProvider>
@@ -54,7 +56,8 @@ export default function RootLayout({
                   </FloatingWidgetProvider>
                 </FocusTrackerProvider>
               </WidgetSettingsProvider>
-            </LayoutProvider>
+              </LayoutProvider>
+            </AmbientProvider>
           </AppSettingsProvider>
         </ThemeProvider>
       </body>

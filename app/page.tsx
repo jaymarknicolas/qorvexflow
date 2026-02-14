@@ -46,6 +46,7 @@ import CoffeeCounterWidget from "@/components/coffee-counter-widget";
 import StopwatchWidgetCanvas from "@/components/stopwatch-widget-canvas";
 import CountdownWidgetCanvas from "@/components/countdown-widget-canvas";
 import CanvasVideoBackground from "@/components/canvas-video-background";
+import WeatherParticles from "@/components/weather-particles";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useResponsive } from "@/lib/hooks/useResponsive";
@@ -537,6 +538,9 @@ export default function Home() {
           style={{ animationDelay: "1s" }}
         ></div>
       </div>
+
+      {/* Weather particle overlay */}
+      <WeatherParticles />
 
       <div className="relative z-[100] shrink-0">
         <Header />

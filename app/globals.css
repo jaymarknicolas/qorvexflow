@@ -766,6 +766,341 @@
 }
 
 /* ============================================
+   TIME-BASED AMBIENT MODE
+   Subtle color shifts per time period per theme
+   ============================================ */
+
+/* Smooth transitions when time period changes */
+:root[data-time-period] {
+  transition:
+    --theme-bg-from 2s ease,
+    --theme-bg-via 2s ease,
+    --theme-bg-to 2s ease,
+    --theme-glow-1 2s ease,
+    --theme-glow-2 2s ease,
+    --theme-glow-3 2s ease;
+}
+
+/* --- LOFI THEME TIME PERIODS --- */
+:root[data-theme="lofi"][data-time-period="dawn"] {
+  --theme-bg-from: #2d1b4b;
+  --theme-bg-via: #3d2e6b;
+  --theme-bg-to: #2d1b4b;
+  --theme-glow-1: #b07cf6;
+  --theme-glow-2: #f4a261;
+  --theme-glow-3: #e76f51;
+}
+
+:root[data-theme="lofi"][data-time-period="day"] {
+  --theme-bg-from: #252270;
+  --theme-bg-via: #3a35a0;
+  --theme-bg-to: #252270;
+  --theme-glow-1: #a78bfa;
+  --theme-glow-2: #f472b6;
+  --theme-glow-3: #fbbf24;
+}
+
+:root[data-theme="lofi"][data-time-period="dusk"] {
+  --theme-bg-from: #1e1545;
+  --theme-bg-via: #2e1f5e;
+  --theme-bg-to: #1e1545;
+  --theme-glow-1: #9f6cf6;
+  --theme-glow-2: #f9769a;
+  --theme-glow-3: #e87b35;
+}
+
+/* Night = default lofi, no override needed */
+
+/* --- GHIBLI THEME TIME PERIODS --- */
+:root[data-theme="ghibli"][data-time-period="dawn"] {
+  --theme-bg-from: #1a4a2e;
+  --theme-bg-via: #1e5a3a;
+  --theme-bg-to: #1a4a2e;
+  --theme-glow-1: #4ade80;
+  --theme-glow-2: #f4a261;
+  --theme-glow-3: #fb923c;
+}
+
+:root[data-theme="ghibli"][data-time-period="day"] {
+  --theme-bg-from: #165a35;
+  --theme-bg-via: #1a7040;
+  --theme-bg-to: #165a35;
+  --theme-glow-1: #34d399;
+  --theme-glow-2: #fcd34d;
+  --theme-glow-3: #a3e635;
+}
+
+:root[data-theme="ghibli"][data-time-period="dusk"] {
+  --theme-bg-from: #14452a;
+  --theme-bg-via: #184e30;
+  --theme-bg-to: #14452a;
+  --theme-glow-1: #22c55e;
+  --theme-glow-2: #f97316;
+  --theme-glow-3: #ef4444;
+}
+
+/* --- COFFEESHOP THEME TIME PERIODS --- */
+:root[data-theme="coffeeshop"][data-time-period="dawn"] {
+  --theme-bg-from: #302520;
+  --theme-bg-via: #4a3f38;
+  --theme-bg-to: #302520;
+  --theme-glow-1: #f59e0b;
+  --theme-glow-2: #f97316;
+  --theme-glow-3: #ef4444;
+}
+
+:root[data-theme="coffeeshop"][data-time-period="day"] {
+  --theme-bg-from: #302824;
+  --theme-bg-via: #4d453e;
+  --theme-bg-to: #302824;
+  --theme-glow-1: #fbbf24;
+  --theme-glow-2: #f59e0b;
+  --theme-glow-3: #d97706;
+}
+
+:root[data-theme="coffeeshop"][data-time-period="dusk"] {
+  --theme-bg-from: #251f1c;
+  --theme-bg-via: #3a322c;
+  --theme-bg-to: #251f1c;
+  --theme-glow-1: #b45309;
+  --theme-glow-2: #7c2d12;
+  --theme-glow-3: #dc2626;
+}
+
+/* --- LIGHT MODE TIME PERIODS --- */
+:root[data-theme="lofi"][data-color-scheme="light"][data-time-period="dawn"] {
+  --theme-bg-from: #fef3e2;
+  --theme-bg-via: #fde8d0;
+  --theme-bg-to: #fef3e2;
+  --theme-glow-1: rgba(176, 124, 246, 0.25);
+  --theme-glow-2: rgba(244, 162, 97, 0.2);
+  --theme-glow-3: rgba(231, 111, 81, 0.2);
+}
+
+:root[data-theme="lofi"][data-color-scheme="light"][data-time-period="day"] {
+  --theme-bg-from: #f0ecff;
+  --theme-bg-via: #e4deff;
+  --theme-bg-to: #f0ecff;
+  --theme-glow-1: rgba(167, 139, 250, 0.25);
+  --theme-glow-2: rgba(244, 114, 182, 0.2);
+  --theme-glow-3: rgba(251, 191, 36, 0.2);
+}
+
+:root[data-theme="lofi"][data-color-scheme="light"][data-time-period="dusk"] {
+  --theme-bg-from: #f5eeff;
+  --theme-bg-via: #ece3ff;
+  --theme-bg-to: #f5eeff;
+  --theme-glow-1: rgba(159, 108, 246, 0.25);
+  --theme-glow-2: rgba(249, 118, 154, 0.2);
+  --theme-glow-3: rgba(232, 123, 53, 0.2);
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"][data-time-period="dawn"] {
+  --theme-bg-from: #fef9e7;
+  --theme-bg-via: #fef3c7;
+  --theme-bg-to: #fef9e7;
+  --theme-glow-1: rgba(74, 222, 128, 0.25);
+  --theme-glow-2: rgba(244, 162, 97, 0.2);
+  --theme-glow-3: rgba(251, 146, 60, 0.2);
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"][data-time-period="day"] {
+  --theme-bg-from: #ecfdf5;
+  --theme-bg-via: #d1fae5;
+  --theme-bg-to: #ecfdf5;
+  --theme-glow-1: rgba(52, 211, 153, 0.25);
+  --theme-glow-2: rgba(252, 211, 77, 0.2);
+  --theme-glow-3: rgba(163, 230, 53, 0.2);
+}
+
+:root[data-theme="ghibli"][data-color-scheme="light"][data-time-period="dusk"] {
+  --theme-bg-from: #f0fdf4;
+  --theme-bg-via: #e2f9e8;
+  --theme-bg-to: #f0fdf4;
+  --theme-glow-1: rgba(34, 197, 94, 0.25);
+  --theme-glow-2: rgba(249, 115, 22, 0.2);
+  --theme-glow-3: rgba(239, 68, 68, 0.2);
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"][data-time-period="dawn"] {
+  --theme-bg-from: #fef7ed;
+  --theme-bg-via: #feecd0;
+  --theme-bg-to: #fef7ed;
+  --theme-glow-1: rgba(245, 158, 11, 0.25);
+  --theme-glow-2: rgba(249, 115, 22, 0.2);
+  --theme-glow-3: rgba(239, 68, 68, 0.2);
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"][data-time-period="day"] {
+  --theme-bg-from: #fffbeb;
+  --theme-bg-via: #fef3c7;
+  --theme-bg-to: #fffbeb;
+  --theme-glow-1: rgba(251, 191, 36, 0.25);
+  --theme-glow-2: rgba(245, 158, 11, 0.2);
+  --theme-glow-3: rgba(217, 119, 6, 0.2);
+}
+
+:root[data-theme="coffeeshop"][data-color-scheme="light"][data-time-period="dusk"] {
+  --theme-bg-from: #fef5ee;
+  --theme-bg-via: #fde8d0;
+  --theme-bg-to: #fef5ee;
+  --theme-glow-1: rgba(180, 83, 9, 0.25);
+  --theme-glow-2: rgba(124, 45, 18, 0.2);
+  --theme-glow-3: rgba(220, 38, 38, 0.2);
+}
+
+/* ============================================
+   WEATHER-SYNCED AMBIENT MODE
+   Glow color shifts based on weather condition
+   ============================================ */
+
+:root[data-weather="rain"] {
+  --theme-glow-1: #64748b;
+  --theme-glow-2: #6b7280;
+  --theme-glow-3: #94a3b8;
+}
+
+:root[data-weather="snow"] {
+  --theme-glow-1: #bfdbfe;
+  --theme-glow-2: #dbeafe;
+  --theme-glow-3: #e0f2fe;
+}
+
+:root[data-weather="sunny"] {
+  --theme-glow-3: #fbbf24;
+}
+
+:root[data-weather="cloudy"] {
+  --theme-glow-1: #78716c;
+  --theme-glow-2: #a8a29e;
+  --theme-glow-3: #d6d3d1;
+}
+
+/* Light mode weather overrides */
+:root[data-color-scheme="light"][data-weather="rain"] {
+  --theme-glow-1: rgba(100, 116, 139, 0.2);
+  --theme-glow-2: rgba(107, 114, 128, 0.15);
+  --theme-glow-3: rgba(148, 163, 184, 0.15);
+}
+
+:root[data-color-scheme="light"][data-weather="snow"] {
+  --theme-glow-1: rgba(191, 219, 254, 0.3);
+  --theme-glow-2: rgba(219, 234, 254, 0.25);
+  --theme-glow-3: rgba(224, 242, 254, 0.25);
+}
+
+:root[data-color-scheme="light"][data-weather="cloudy"] {
+  --theme-glow-1: rgba(120, 113, 108, 0.15);
+  --theme-glow-2: rgba(168, 162, 158, 0.12);
+  --theme-glow-3: rgba(214, 211, 209, 0.12);
+}
+
+/* ============================================
+   WEATHER PARTICLE ANIMATIONS
+   ============================================ */
+
+@keyframes weather-rain-fall {
+  0% {
+    transform: translateY(-100vh) translateX(0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(100vh) translateX(-20px);
+    opacity: 0;
+  }
+}
+
+@keyframes weather-snow-fall {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(50vh) translateX(30px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(100vh) translateX(-10px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes weather-sun-pulse {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes weather-cloud-drift {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100vw);
+  }
+}
+
+.weather-rain-drop {
+  position: absolute;
+  top: -10px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(174, 194, 224, 0.6)
+  );
+  border-radius: 0 0 2px 2px;
+  animation: weather-rain-fall linear infinite;
+}
+
+.weather-snowflake {
+  position: absolute;
+  top: -10px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+  animation: weather-snow-fall linear infinite;
+}
+
+.weather-sun-ray {
+  position: absolute;
+  background: radial-gradient(
+    circle,
+    rgba(255, 223, 100, 0.3) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: weather-sun-pulse 4s ease-in-out infinite;
+}
+
+.weather-cloud {
+  position: absolute;
+  background: radial-gradient(
+    ellipse,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: weather-cloud-drift linear infinite;
+}
+
+/* Disable weather particles in lightweight/reduced-motion mode */
+.lightweight-mode .weather-rain-drop,
+.lightweight-mode .weather-snowflake,
+.lightweight-mode .weather-sun-ray,
+.lightweight-mode .weather-cloud,
+.reduce-motion .weather-rain-drop,
+.reduce-motion .weather-snowflake,
+.reduce-motion .weather-sun-ray,
+.reduce-motion .weather-cloud {
+  animation: none !important;
+  display: none !important;
+}
+
+/* ============================================
    SHARED THEME UTILITIES
    ============================================ */
 
