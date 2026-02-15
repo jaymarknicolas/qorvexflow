@@ -36,6 +36,7 @@ export interface AmbientContextType {
   refreshWeather: () => void;
   isTimeThemeActive: boolean;
   isWeatherThemeActive: boolean;
+  isHorizonThemeActive: boolean;
 }
 
 const STORAGE_KEY = "qorvexflow_ambient_settings";
@@ -60,9 +61,10 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
 
   const isLightweight = settings.performanceMode === "lightweight";
 
-  // Check if using dedicated time/weather themes
-  const isTimeThemeActive = theme === "timebased";
-  const isWeatherThemeActive = theme === "weather";
+  // Check if using dedicated time/weather/horizon themes
+  const isHorizonThemeActive = theme === "horizon";
+  const isTimeThemeActive = theme === "horizon";
+  const isWeatherThemeActive = theme === "horizon";
 
   // Time period detection
   const currentTimePeriod = useTimePeriod();
@@ -177,6 +179,7 @@ export function AmbientProvider({ children }: { children: ReactNode }) {
         refreshWeather,
         isTimeThemeActive,
         isWeatherThemeActive,
+        isHorizonThemeActive,
       }}
     >
       {children}

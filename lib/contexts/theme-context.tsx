@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-export type ThemeType = "lofi" | "ghibli" | "coffeeshop" | "timebased" | "weather";
+export type ThemeType = "lofi" | "ghibli" | "coffeeshop" | "horizon";
 
 interface ThemeContextType {
   theme: ThemeType;
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setIsMounted(true);
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("qorvexflow_theme") as ThemeType;
-      if (savedTheme && ["lofi", "ghibli", "coffeeshop", "timebased", "weather"].includes(savedTheme)) {
+      if (savedTheme && ["lofi", "ghibli", "coffeeshop", "horizon"].includes(savedTheme)) {
         setThemeState(savedTheme);
       } else {
         // Default to lofi if invalid or no theme saved

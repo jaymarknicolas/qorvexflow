@@ -483,68 +483,51 @@
 }
 
 /* ============================================
-   TIME-BASED THEME
-   A dynamic theme that shifts colors based on
-   time of day - dawn, day, dusk, night
+   HORIZON THEME
+   A unified dynamic theme driven by both time
+   of day and real weather conditions.
+   Time period sets the base palette;
+   weather condition adds a tint layer on top.
    ============================================ */
-:root[data-theme="timebased"] {
-  /* Default (night) background colors - Deep blue-purple */
+
+/* Default: Night + Cloudy (fallback) */
+:root[data-theme="horizon"] {
   --theme-bg-from: #0f172a;
   --theme-bg-via: #1e1b4b;
   --theme-bg-to: #0f172a;
-
-  /* Primary colors - Sky blue */
   --theme-primary: #7dd3fc;
   --theme-primary-hover: #bae6fd;
   --theme-primary-dark: #0ea5e9;
-
-  /* Secondary colors - Warm orange */
   --theme-secondary: #fb923c;
   --theme-secondary-hover: #fdba74;
   --theme-secondary-dark: #ea580c;
-
-  /* Accent colors */
   --theme-accent: #c084fc;
   --theme-accent-hover: #d8b4fe;
-
-  /* Text colors */
   --theme-text: #f0f9ff;
   --theme-text-secondary: #bae6fd;
   --theme-text-muted: rgba(186, 230, 253, 0.6);
-
-  /* Surface colors */
   --theme-surface: rgba(30, 27, 75, 0.4);
   --theme-surface-hover: rgba(30, 27, 75, 0.6);
   --theme-surface-border: rgba(125, 211, 252, 0.2);
-
-  /* Glow effects */
   --theme-glow-1: #3b82f6;
   --theme-glow-2: #8b5cf6;
   --theme-glow-3: #6366f1;
-
-  /* Gradient */
   --theme-gradient-from: #0ea5e9;
   --theme-gradient-to: #8b5cf6;
-
-  /* Header/Navigation */
   --theme-header-bg: rgba(15, 23, 42, 0.85);
   --theme-header-border: rgba(125, 211, 252, 0.1);
-
-  /* Widget specific */
   --theme-widget-bg: rgba(30, 27, 75, 0.3);
   --theme-widget-border: rgba(125, 211, 252, 0.15);
-
-  /* Button styles */
   --theme-btn-primary-from: #0ea5e9;
   --theme-btn-primary-to: #8b5cf6;
-
-  /* Font */
   --theme-font-family: "Geist", system-ui, -apple-system, sans-serif;
   --theme-font-heading: "Geist", system-ui, -apple-system, sans-serif;
 }
 
-/* Time-Based: Dawn (5-8am) - Warm sunrise */
-:root[data-theme="timebased"][data-time-period="dawn"] {
+/* ---- TIME BASE LAYERS ---- */
+
+/* Dawn base (5–8am) — warm orange-red */
+:root[data-theme="horizon"][data-time-period="dawn"] {
   --theme-bg-from: #1c1917;
   --theme-bg-via: #431407;
   --theme-bg-to: #1c1917;
@@ -572,8 +555,8 @@
   --theme-btn-primary-to: #ef4444;
 }
 
-/* Time-Based: Day (8am-5pm) - Bright sky blue */
-:root[data-theme="timebased"][data-time-period="day"] {
+/* Day base (8am–5pm) — bright sky blue */
+:root[data-theme="horizon"][data-time-period="day"] {
   --theme-bg-from: #0c4a6e;
   --theme-bg-via: #075985;
   --theme-bg-to: #0c4a6e;
@@ -601,8 +584,8 @@
   --theme-btn-primary-to: #0891b2;
 }
 
-/* Time-Based: Dusk (5-8pm) - Warm sunset */
-:root[data-theme="timebased"][data-time-period="dusk"] {
+/* Dusk base (5–8pm) — purple-magenta sunset */
+:root[data-theme="horizon"][data-time-period="dusk"] {
   --theme-bg-from: #1c1917;
   --theme-bg-via: #4c1d95;
   --theme-bg-to: #1c1917;
@@ -630,247 +613,249 @@
   --theme-btn-primary-to: #e11d48;
 }
 
-/* Time-Based Theme Specific Styles */
-:root[data-theme="timebased"] body {
+/* ---- WEATHER TINT LAYERS (applied on top of time base) ---- */
+/* Only key variables are overridden — time period sets the foundation */
+
+/* Dawn + Sunny: enhance warmth, golden glow */
+:root[data-theme="horizon"][data-time-period="dawn"][data-weather="sunny"] {
+  --theme-bg-via: #7c2d12;
+  --theme-primary: #fcd34d;
+  --theme-glow-1: #f59e0b;
+  --theme-glow-2: #fbbf24;
+  --theme-gradient-from: #f59e0b;
+  --theme-gradient-to: #dc2626;
+}
+
+/* Dawn + Cloudy: muted rose-gray */
+:root[data-theme="horizon"][data-time-period="dawn"][data-weather="cloudy"] {
+  --theme-bg-via: #2d1c1c;
+  --theme-primary: #fca5a5;
+  --theme-glow-1: #b45309;
+  --theme-glow-2: #9f1239;
+  --theme-gradient-from: #b45309;
+  --theme-gradient-to: #9f1239;
+}
+
+/* Dawn + Rain: cool gray-orange (rain dampens the warmth) */
+:root[data-theme="horizon"][data-time-period="dawn"][data-weather="rain"] {
+  --theme-bg-from: #1a1a2e;
+  --theme-bg-via: #2d2219;
+  --theme-primary: #fdba74;
+  --theme-glow-1: #6b7280;
+  --theme-glow-2: #d97706;
+  --theme-gradient-from: #6b7280;
+  --theme-gradient-to: #d97706;
+  --theme-surface: rgba(45, 34, 25, 0.5);
+}
+
+/* Dawn + Snow: icy pink-orange frost */
+:root[data-theme="horizon"][data-time-period="dawn"][data-weather="snow"] {
+  --theme-bg-via: #3d2020;
+  --theme-primary: #fed7aa;
+  --theme-accent: #bae6fd;
+  --theme-glow-1: #f97316;
+  --theme-glow-2: #bae6fd;
+  --theme-gradient-from: #f97316;
+  --theme-gradient-to: #bae6fd;
+}
+
+/* Day + Sunny: bright warm sky, golden haze */
+:root[data-theme="horizon"][data-time-period="day"][data-weather="sunny"] {
+  --theme-bg-via: #1d6fa5;
+  --theme-primary: #38bdf8;
+  --theme-glow-1: #0284c7;
+  --theme-glow-2: #fbbf24;
+  --theme-gradient-from: #0284c7;
+  --theme-gradient-to: #fbbf24;
+}
+
+/* Day + Cloudy: pale gray-blue, muted sky */
+:root[data-theme="horizon"][data-time-period="day"][data-weather="cloudy"] {
+  --theme-bg-from: #1e2d3d;
+  --theme-bg-via: #2d4059;
+  --theme-bg-to: #1e2d3d;
+  --theme-primary: #7dd3fc;
+  --theme-glow-1: #475569;
+  --theme-glow-2: #7dd3fc;
+  --theme-gradient-from: #475569;
+  --theme-gradient-to: #7dd3fc;
+}
+
+/* Day + Rain: deep steel blue */
+:root[data-theme="horizon"][data-time-period="day"][data-weather="rain"] {
+  --theme-bg-from: #0c2840;
+  --theme-bg-via: #0f3d5c;
+  --theme-bg-to: #0c2840;
+  --theme-primary: #60a5fa;
+  --theme-glow-1: #1d4ed8;
+  --theme-glow-2: #3b82f6;
+  --theme-gradient-from: #1d4ed8;
+  --theme-gradient-to: #0891b2;
+  --theme-surface: rgba(15, 61, 92, 0.5);
+}
+
+/* Day + Snow: white-blue icy sky */
+:root[data-theme="horizon"][data-time-period="day"][data-weather="snow"] {
+  --theme-bg-from: #0c2f4e;
+  --theme-bg-via: #1a5276;
+  --theme-bg-to: #0c2f4e;
+  --theme-primary: #bae6fd;
+  --theme-accent: #c7d2fe;
+  --theme-glow-1: #7dd3fc;
+  --theme-glow-2: #e0f2fe;
+  --theme-gradient-from: #38bdf8;
+  --theme-gradient-to: #818cf8;
+}
+
+/* Dusk + Sunny: vivid magenta-orange, saturated */
+:root[data-theme="horizon"][data-time-period="dusk"][data-weather="sunny"] {
+  --theme-bg-via: #6d1d8a;
+  --theme-primary: #f0abfc;
+  --theme-glow-1: #c026d3;
+  --theme-glow-2: #fb923c;
+  --theme-gradient-from: #c026d3;
+  --theme-gradient-to: #f97316;
+}
+
+/* Dusk + Cloudy: muted purple-gray */
+:root[data-theme="horizon"][data-time-period="dusk"][data-weather="cloudy"] {
+  --theme-bg-via: #2e1f4a;
+  --theme-primary: #c4b5fd;
+  --theme-glow-1: #7c3aed;
+  --theme-glow-2: #6b7280;
+  --theme-gradient-from: #7c3aed;
+  --theme-gradient-to: #6b7280;
+}
+
+/* Dusk + Rain: indigo-gray, rain cools the sunset */
+:root[data-theme="horizon"][data-time-period="dusk"][data-weather="rain"] {
+  --theme-bg-from: #1a1030;
+  --theme-bg-via: #2d1f5a;
+  --theme-bg-to: #1a1030;
+  --theme-primary: #a78bfa;
+  --theme-glow-1: #4f46e5;
+  --theme-glow-2: #64748b;
+  --theme-gradient-from: #4f46e5;
+  --theme-gradient-to: #64748b;
+  --theme-surface: rgba(45, 31, 90, 0.5);
+}
+
+/* Dusk + Snow: cool violet frost */
+:root[data-theme="horizon"][data-time-period="dusk"][data-weather="snow"] {
+  --theme-bg-via: #3b1f6e;
+  --theme-primary: #e9d5ff;
+  --theme-accent: #bae6fd;
+  --theme-glow-1: #8b5cf6;
+  --theme-glow-2: #c7d2fe;
+  --theme-gradient-from: #8b5cf6;
+  --theme-gradient-to: #c7d2fe;
+}
+
+/* Night + Sunny: golden touch on deep night */
+:root[data-theme="horizon"][data-time-period="night"][data-weather="sunny"] {
+  --theme-bg-via: #2d2318;
+  --theme-glow-1: #d97706;
+  --theme-glow-2: #6366f1;
+  --theme-gradient-from: #d97706;
+  --theme-gradient-to: #6366f1;
+}
+
+/* Night + Cloudy: deep charcoal slate */
+:root[data-theme="horizon"][data-time-period="night"][data-weather="cloudy"] {
+  --theme-bg-from: #0a0f1e;
+  --theme-bg-via: #111827;
+  --theme-bg-to: #0a0f1e;
+  --theme-primary: #94a3b8;
+  --theme-glow-1: #374151;
+  --theme-glow-2: #6b7280;
+  --theme-gradient-from: #374151;
+  --theme-gradient-to: #6b7280;
+}
+
+/* Night + Rain: deep navy */
+:root[data-theme="horizon"][data-time-period="night"][data-weather="rain"] {
+  --theme-bg-from: #050d1a;
+  --theme-bg-via: #0f1f3d;
+  --theme-bg-to: #050d1a;
+  --theme-primary: #60a5fa;
+  --theme-glow-1: #1e3a5f;
+  --theme-glow-2: #3b82f6;
+  --theme-gradient-from: #1e3a5f;
+  --theme-gradient-to: #3b82f6;
+  --theme-surface: rgba(15, 31, 61, 0.5);
+}
+
+/* Night + Snow: frosty indigo */
+:root[data-theme="horizon"][data-time-period="night"][data-weather="snow"] {
+  --theme-bg-via: #1e1b4b;
+  --theme-primary: #bae6fd;
+  --theme-accent: #c7d2fe;
+  --theme-glow-1: #6366f1;
+  --theme-glow-2: #bae6fd;
+  --theme-gradient-from: #6366f1;
+  --theme-gradient-to: #bae6fd;
+}
+
+/* ---- HORIZON THEME SPECIFIC STYLES ---- */
+:root[data-theme="horizon"] body {
   font-family: var(--theme-font-family);
 }
 
-:root[data-theme="timebased"] .themed-bg {
+:root[data-theme="horizon"] .themed-bg {
   background: transparent;
   transition: background 3s ease;
 }
 
-:root[data-theme="timebased"] .theme-gradient-text {
+/* Default gradient text (night) */
+:root[data-theme="horizon"] .theme-gradient-text {
   @apply bg-gradient-to-r from-sky-400 via-blue-400 to-purple-400 bg-clip-text text-transparent;
 }
 
-:root[data-theme="timebased"][data-time-period="dawn"] .theme-gradient-text {
+:root[data-theme="horizon"][data-time-period="dawn"] .theme-gradient-text {
   @apply bg-gradient-to-r from-orange-400 via-amber-400 to-red-400 bg-clip-text text-transparent;
 }
 
-:root[data-theme="timebased"][data-time-period="day"] .theme-gradient-text {
+:root[data-theme="horizon"][data-time-period="day"] .theme-gradient-text {
   @apply bg-gradient-to-r from-sky-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent;
 }
 
-:root[data-theme="timebased"][data-time-period="dusk"] .theme-gradient-text {
+:root[data-theme="horizon"][data-time-period="dusk"] .theme-gradient-text {
   @apply bg-gradient-to-r from-fuchsia-400 via-pink-400 to-orange-400 bg-clip-text text-transparent;
 }
 
-:root[data-theme="timebased"] .theme-primary-button {
+:root[data-theme="horizon"] .theme-primary-button {
   @apply bg-gradient-to-r from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500;
 }
 
-:root[data-theme="timebased"] .theme-glow {
+:root[data-theme="horizon"][data-time-period="dawn"] .theme-primary-button {
+  @apply bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500;
+}
+
+:root[data-theme="horizon"][data-time-period="day"] .theme-primary-button {
+  @apply bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500;
+}
+
+:root[data-theme="horizon"][data-time-period="dusk"] .theme-primary-button {
+  @apply bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500;
+}
+
+:root[data-theme="horizon"] .theme-glow {
   box-shadow: 0 0 40px rgba(59, 130, 246, 0.3), 0 0 80px rgba(139, 92, 246, 0.2);
 }
 
-:root[data-theme="timebased"] .theme-card {
+:root[data-theme="horizon"] .theme-card {
   @apply bg-slate-900/40 border-sky-500/20;
 }
 
-:root[data-theme="timebased"] .theme-accent-text {
-  color: var(--theme-primary);
+:root[data-theme="horizon"][data-time-period="dawn"] .theme-card {
+  @apply bg-stone-900/40 border-orange-500/20;
 }
 
-/* ============================================
-   WEATHER THEME
-   A dynamic theme that changes based on
-   current weather conditions
-   ============================================ */
-:root[data-theme="weather"] {
-  /* Default (cloudy) background */
-  --theme-bg-from: #1e293b;
-  --theme-bg-via: #334155;
-  --theme-bg-to: #1e293b;
-
-  /* Primary colors - Silver/Gray-blue */
-  --theme-primary: #94a3b8;
-  --theme-primary-hover: #cbd5e1;
-  --theme-primary-dark: #64748b;
-
-  /* Secondary colors */
-  --theme-secondary: #a8a29e;
-  --theme-secondary-hover: #d6d3d1;
-  --theme-secondary-dark: #78716c;
-
-  /* Accent colors */
-  --theme-accent: #7dd3fc;
-  --theme-accent-hover: #bae6fd;
-
-  /* Text colors */
-  --theme-text: #f1f5f9;
-  --theme-text-secondary: #cbd5e1;
-  --theme-text-muted: rgba(203, 213, 225, 0.6);
-
-  /* Surface colors */
-  --theme-surface: rgba(51, 65, 85, 0.4);
-  --theme-surface-hover: rgba(51, 65, 85, 0.6);
-  --theme-surface-border: rgba(148, 163, 184, 0.2);
-
-  /* Glow effects */
-  --theme-glow-1: #64748b;
-  --theme-glow-2: #94a3b8;
-  --theme-glow-3: #cbd5e1;
-
-  /* Gradient */
-  --theme-gradient-from: #64748b;
-  --theme-gradient-to: #94a3b8;
-
-  /* Header/Navigation */
-  --theme-header-bg: rgba(30, 41, 59, 0.85);
-  --theme-header-border: rgba(148, 163, 184, 0.1);
-
-  /* Widget specific */
-  --theme-widget-bg: rgba(51, 65, 85, 0.3);
-  --theme-widget-border: rgba(148, 163, 184, 0.15);
-
-  /* Button styles */
-  --theme-btn-primary-from: #64748b;
-  --theme-btn-primary-to: #475569;
-
-  /* Font */
-  --theme-font-family: "Geist", system-ui, -apple-system, sans-serif;
-  --theme-font-heading: "Geist", system-ui, -apple-system, sans-serif;
+:root[data-theme="horizon"][data-time-period="dusk"] .theme-card {
+  @apply bg-slate-900/40 border-fuchsia-500/20;
 }
 
-/* Weather: Rain - Cool blue-gray */
-:root[data-theme="weather"][data-weather="rain"] {
-  --theme-bg-from: #0f172a;
-  --theme-bg-via: #1e3a5f;
-  --theme-bg-to: #0f172a;
-  --theme-primary: #60a5fa;
-  --theme-primary-hover: #93c5fd;
-  --theme-primary-dark: #2563eb;
-  --theme-secondary: #64748b;
-  --theme-accent: #7dd3fc;
-  --theme-text: #e0f2fe;
-  --theme-text-secondary: #bae6fd;
-  --theme-text-muted: rgba(186, 230, 253, 0.6);
-  --theme-surface: rgba(30, 58, 95, 0.5);
-  --theme-surface-hover: rgba(30, 58, 95, 0.7);
-  --theme-surface-border: rgba(96, 165, 250, 0.2);
-  --theme-glow-1: #2563eb;
-  --theme-glow-2: #3b82f6;
-  --theme-glow-3: #64748b;
-  --theme-gradient-from: #2563eb;
-  --theme-gradient-to: #3b82f6;
-  --theme-header-bg: rgba(15, 23, 42, 0.9);
-  --theme-header-border: rgba(96, 165, 250, 0.1);
-  --theme-widget-bg: rgba(30, 58, 95, 0.3);
-  --theme-widget-border: rgba(96, 165, 250, 0.15);
-  --theme-btn-primary-from: #2563eb;
-  --theme-btn-primary-to: #1d4ed8;
-}
-
-/* Weather: Sunny - Warm golden */
-:root[data-theme="weather"][data-weather="sunny"] {
-  --theme-bg-from: #1c1917;
-  --theme-bg-via: #422006;
-  --theme-bg-to: #1c1917;
-  --theme-primary: #fbbf24;
-  --theme-primary-hover: #fcd34d;
-  --theme-primary-dark: #d97706;
-  --theme-secondary: #fb923c;
-  --theme-accent: #fcd34d;
-  --theme-text: #fffbeb;
-  --theme-text-secondary: #fef3c7;
-  --theme-text-muted: rgba(254, 243, 199, 0.6);
-  --theme-surface: rgba(66, 32, 6, 0.4);
-  --theme-surface-hover: rgba(66, 32, 6, 0.6);
-  --theme-surface-border: rgba(251, 191, 36, 0.2);
-  --theme-glow-1: #f59e0b;
-  --theme-glow-2: #fbbf24;
-  --theme-glow-3: #f97316;
-  --theme-gradient-from: #f59e0b;
-  --theme-gradient-to: #d97706;
-  --theme-header-bg: rgba(28, 25, 23, 0.85);
-  --theme-header-border: rgba(251, 191, 36, 0.1);
-  --theme-widget-bg: rgba(66, 32, 6, 0.3);
-  --theme-widget-border: rgba(251, 191, 36, 0.15);
-  --theme-btn-primary-from: #d97706;
-  --theme-btn-primary-to: #b45309;
-}
-
-/* Weather: Snow - Icy cool white-blue */
-:root[data-theme="weather"][data-weather="snow"] {
-  --theme-bg-from: #0f172a;
-  --theme-bg-via: #1e3a5f;
-  --theme-bg-to: #0f172a;
-  --theme-primary: #bae6fd;
-  --theme-primary-hover: #e0f2fe;
-  --theme-primary-dark: #38bdf8;
-  --theme-secondary: #a5f3fc;
-  --theme-accent: #c7d2fe;
-  --theme-text: #f0f9ff;
-  --theme-text-secondary: #e0f2fe;
-  --theme-text-muted: rgba(224, 242, 254, 0.6);
-  --theme-surface: rgba(30, 58, 95, 0.35);
-  --theme-surface-hover: rgba(30, 58, 95, 0.55);
-  --theme-surface-border: rgba(186, 230, 253, 0.2);
-  --theme-glow-1: #bae6fd;
-  --theme-glow-2: #e0f2fe;
-  --theme-glow-3: #c7d2fe;
-  --theme-gradient-from: #38bdf8;
-  --theme-gradient-to: #818cf8;
-  --theme-header-bg: rgba(15, 23, 42, 0.85);
-  --theme-header-border: rgba(186, 230, 253, 0.1);
-  --theme-widget-bg: rgba(30, 58, 95, 0.3);
-  --theme-widget-border: rgba(186, 230, 253, 0.15);
-  --theme-btn-primary-from: #38bdf8;
-  --theme-btn-primary-to: #818cf8;
-}
-
-/* Weather Theme Specific Styles */
-:root[data-theme="weather"] body {
-  font-family: var(--theme-font-family);
-}
-
-:root[data-theme="weather"] .themed-bg {
-  background: transparent;
-  transition: background 3s ease;
-}
-
-:root[data-theme="weather"] .theme-gradient-text {
-  @apply bg-gradient-to-r from-slate-400 via-gray-400 to-slate-500 bg-clip-text text-transparent;
-}
-
-:root[data-theme="weather"][data-weather="rain"] .theme-gradient-text {
-  @apply bg-gradient-to-r from-blue-400 via-sky-400 to-slate-400 bg-clip-text text-transparent;
-}
-
-:root[data-theme="weather"][data-weather="sunny"] .theme-gradient-text {
-  @apply bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent;
-}
-
-:root[data-theme="weather"][data-weather="snow"] .theme-gradient-text {
-  @apply bg-gradient-to-r from-sky-300 via-blue-200 to-indigo-300 bg-clip-text text-transparent;
-}
-
-:root[data-theme="weather"] .theme-primary-button {
-  @apply bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600;
-}
-
-:root[data-theme="weather"][data-weather="rain"] .theme-primary-button {
-  @apply bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700;
-}
-
-:root[data-theme="weather"][data-weather="sunny"] .theme-primary-button {
-  @apply bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-500 hover:to-orange-600;
-}
-
-:root[data-theme="weather"][data-weather="snow"] .theme-primary-button {
-  @apply bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500;
-}
-
-:root[data-theme="weather"] .theme-glow {
-  box-shadow: 0 0 40px rgba(100, 116, 139, 0.3), 0 0 80px rgba(148, 163, 184, 0.2);
-}
-
-:root[data-theme="weather"] .theme-card {
-  @apply bg-slate-800/40 border-slate-500/20;
-}
-
-:root[data-theme="weather"] .theme-accent-text {
+:root[data-theme="horizon"] .theme-accent-text {
   color: var(--theme-primary);
 }
 
