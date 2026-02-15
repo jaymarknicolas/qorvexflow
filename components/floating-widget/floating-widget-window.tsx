@@ -14,6 +14,7 @@ import {
   Youtube,
   Quote,
   Coffee,
+  Cloud,
   Pin,
   Hourglass,
   Watch,
@@ -44,6 +45,7 @@ import MiniCalendar from "./mini-calendar";
 import MiniYouTube from "./mini-youtube";
 import MiniQuotes from "./mini-quotes";
 import MiniCoffee from "./mini-coffee";
+import MiniWeather from "./mini-weather";
 
 // ─── Icon map for all widget types ─────────────────────────
 const WIDGET_ICON: Record<string, typeof Timer> = {
@@ -58,6 +60,7 @@ const WIDGET_ICON: Record<string, typeof Timer> = {
   youtube: Youtube,
   quotes: Quote,
   coffee: Coffee,
+  weather: Cloud,
 };
 
 const WIDGET_LABEL: Record<string, string> = {
@@ -72,6 +75,7 @@ const WIDGET_LABEL: Record<string, string> = {
   youtube: "YouTube",
   quotes: "Quotes",
   coffee: "Coffee",
+  weather: "Weather",
 };
 
 // Memoized mini widgets
@@ -86,6 +90,7 @@ const MemoizedMiniCalendar = memo(MiniCalendar);
 const MemoizedMiniYouTube = memo(MiniYouTube);
 const MemoizedMiniQuotes = memo(MiniQuotes);
 const MemoizedMiniCoffee = memo(MiniCoffee);
+const MemoizedMiniWeather = memo(MiniWeather);
 
 // ─── Theme color map ───────────────────────────────────────
 function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
@@ -129,6 +134,42 @@ function getThemeColors(theme: string, colorScheme: "light" | "dark" = "dark") {
             closeHover: "hover:bg-red-500/20 hover:text-red-400",
             emptyText: "text-green-300/30",
             pinAccent: "text-green-400",
+          };
+    case "horizon":
+      return isLight
+        ? {
+            bg: "bg-slate-50",
+            surface: "bg-sky-100/60",
+            border: "border-sky-200",
+            accent: "text-sky-600",
+            accentBg: "bg-sky-500/10",
+            tabActive: "bg-sky-500/15 text-sky-700",
+            tabInactive: "text-sky-500/50 hover:text-sky-600 hover:bg-sky-100",
+            scrollThumb: "#0ea5e9",
+            scrollTrack: "#f0f9ff",
+            bodyBg: "#f0f9ff",
+            textPrimary: "text-slate-900",
+            textSecondary: "text-slate-600/60",
+            closeHover: "hover:bg-red-100 hover:text-red-500",
+            emptyText: "text-sky-400/50",
+            pinAccent: "text-sky-600",
+          }
+        : {
+            bg: "bg-slate-950",
+            surface: "bg-sky-900/30",
+            border: "border-sky-800/50",
+            accent: "text-sky-400",
+            accentBg: "bg-sky-500/15",
+            tabActive: "bg-sky-500/20 text-sky-300",
+            tabInactive: "text-sky-200/40 hover:text-sky-200/60 hover:bg-sky-500/10",
+            scrollThumb: "#0ea5e9",
+            scrollTrack: "#020617",
+            bodyBg: "#020617",
+            textPrimary: "text-white",
+            textSecondary: "text-white/50",
+            closeHover: "hover:bg-red-500/20 hover:text-red-400",
+            emptyText: "text-white/20",
+            pinAccent: "text-sky-400",
           };
     case "coffeeshop":
       return isLight
@@ -247,6 +288,8 @@ function MiniWidget({ type }: { type: string }) {
       return <MemoizedMiniQuotes />;
     case "coffee":
       return <MemoizedMiniCoffee />;
+    case "weather":
+      return <MemoizedMiniWeather />;
     default:
       return (
         <div className="flex items-center justify-center h-full text-white/30 text-xs">

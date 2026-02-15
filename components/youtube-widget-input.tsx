@@ -222,6 +222,20 @@ export default function YouTubeWidgetInput() {
           inputFocus: "focus:ring-amber-500/30 focus:border-amber-400/50",
           cardHover: "hover:bg-amber-500/15",
         };
+      case "horizon":
+        return {
+          gradient: "from-slate-900/95 via-sky-950/90 to-violet-950/95",
+          accent: "text-sky-400",
+          accentBg: "bg-sky-500/20",
+          accentBgHover: "hover:bg-sky-500/30",
+          border: "border-sky-500/20",
+          button:
+            "from-sky-500 to-violet-500 hover:from-sky-400 hover:to-violet-400",
+          buttonShadow: "shadow-sky-500/25",
+          inputBg: "bg-black/30",
+          inputFocus: "focus:ring-sky-500/30 focus:border-sky-400/50",
+          cardHover: "hover:bg-sky-500/15",
+        };
       default:
         return {
           gradient: "from-indigo-900/95 via-purple-900/90 to-violet-900/95",

@@ -105,6 +105,25 @@ export default function PomodoroWidget({
           textSecondary: isLightMode ? "text-green-800" : "text-white/80",
           textMuted: isLightMode ? "text-green-700/70" : "text-white/50",
         };
+      case "horizon":
+        return {
+          gradient: isLightMode
+            ? "from-sky-50/95 via-orange-50/90 to-violet-50/95"
+            : "from-slate-900/95 via-sky-950/90 to-violet-950/95",
+          glowFrom: "from-sky-500/20",
+          glowTo: "to-violet-500/20",
+          accent: isLightMode ? "text-sky-700" : "text-sky-400",
+          accentBg: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          border: isLightMode ? "border-sky-300/50" : "border-sky-500/20",
+          iconColor: isLightMode ? "text-sky-700" : "text-sky-400",
+          buttonBg: isLightMode
+            ? "bg-sky-200/50 hover:bg-sky-300/50"
+            : "bg-sky-500/15 hover:bg-sky-500/25",
+          buttonHoverText: isLightMode ? "hover:text-sky-900" : "hover:text-sky-300",
+          textPrimary: isLightMode ? "text-slate-900" : "text-white",
+          textSecondary: isLightMode ? "text-slate-800" : "text-white/80",
+          textMuted: isLightMode ? "text-slate-600/70" : "text-white/50",
+        };
       case "coffeeshop":
         return {
           gradient: isLightMode

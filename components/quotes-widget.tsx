@@ -165,6 +165,25 @@ export default function QuotesWidget() {
           bgOverlay: isLightMode ? "bg-green-100/50" : "bg-black/20",
           hoverBg: isLightMode ? "bg-green-200/50 hover:bg-green-300/50" : "bg-white/10 hover:bg-white/20",
         };
+      case "horizon":
+        return {
+          gradient: isLightMode
+            ? "from-sky-50/90 to-violet-50/90"
+            : "from-slate-900/90 to-sky-950/90",
+          accent: isLightMode ? "text-sky-700" : "text-sky-400",
+          accentBg: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          button:
+            "from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500",
+          buttonShadow: "shadow-sky-500/20",
+          border: isLightMode ? "border-sky-300/50" : "border-sky-500/20",
+          tagBg: isLightMode ? "bg-sky-200/50 text-sky-700" : "bg-sky-500/20 text-sky-300",
+          skeleton: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          textPrimary: isLightMode ? "text-slate-900" : "text-white",
+          textSecondary: isLightMode ? "text-slate-800" : "text-white/80",
+          textMuted: isLightMode ? "text-slate-600/70" : "text-white/50",
+          bgOverlay: isLightMode ? "bg-sky-100/60" : "bg-black/20",
+          hoverBg: isLightMode ? "bg-sky-200/50 hover:bg-sky-300/50" : "bg-white/10 hover:bg-white/20",
+        };
       case "coffeeshop":
         return {
           gradient: isLightMode

@@ -62,6 +62,28 @@ export default function FocusStats() {
           bgOverlay: isLightMode ? "bg-green-100/50" : "bg-white/10",
           surfaceBg: isLightMode ? "bg-green-50/80" : "bg-black/20",
         };
+      case "horizon":
+        return {
+          gradient: isLightMode
+            ? "from-sky-50/95 via-orange-50/90 to-violet-50/95"
+            : "from-slate-900/95 via-sky-950/90 to-violet-950/95",
+          glowFrom: "from-sky-500/20",
+          glowTo: "to-violet-500/20",
+          accent: isLightMode ? "text-sky-700" : "text-sky-400",
+          accentBg: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          border: isLightMode ? "border-sky-300/50" : "border-sky-500/20",
+          lineStart: "rgb(14, 165, 233)",
+          lineEnd: "rgb(139, 92, 246)",
+          dotColor: "#0ea5e9",
+          barColor: "#0ea5e9",
+          areaFill: "rgba(14, 165, 233, 0.3)",
+          textPrimary: isLightMode ? "text-slate-900" : "text-white",
+          textSecondary: isLightMode ? "text-slate-800" : "text-white/80",
+          textMuted: isLightMode ? "text-slate-600/70" : "text-white/50",
+          hoverBg: isLightMode ? "hover:bg-sky-200/50" : "hover:bg-white/10",
+          bgOverlay: isLightMode ? "bg-sky-100/60" : "bg-white/10",
+          surfaceBg: isLightMode ? "bg-sky-50/80" : "bg-black/20",
+        };
       case "coffeeshop":
         return {
           gradient: isLightMode

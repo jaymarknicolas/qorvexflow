@@ -503,6 +503,37 @@ export default function TaskList() {
             : "text-white/50 hover:text-white hover:bg-white/10",
           menuBg: isLightMode ? "bg-white/95" : "bg-slate-900/95",
         };
+      case "horizon":
+        return {
+          gradient: isLightMode
+            ? "from-sky-50/95 via-orange-50/90 to-violet-50/95"
+            : "from-slate-900/95 via-sky-950/90 to-violet-950/95",
+          accent: isLightMode ? "text-sky-700" : "text-sky-400",
+          accentBg: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          border: isLightMode ? "border-sky-300/50" : "border-sky-500/20",
+          button: isLightMode
+            ? "from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500"
+            : "from-sky-500 to-violet-500 hover:from-sky-400 hover:to-violet-400",
+          buttonShadow: "shadow-sky-500/25",
+          inputBg: isLightMode ? "bg-white/70" : "bg-black/30",
+          inputFocus: "focus:ring-sky-500/30 focus:border-sky-400/50",
+          progress: "bg-sky-500",
+          textPrimary: isLightMode ? "text-slate-900" : "text-white",
+          textMuted: isLightMode ? "text-slate-600/70" : "text-white/50",
+          cardBg: isLightMode ? "bg-sky-100/60" : "bg-black/20",
+          cardHover: isLightMode
+            ? "hover:bg-sky-200/60"
+            : "hover:bg-white/10",
+          columnBg: isLightMode ? "bg-sky-100/40" : "bg-black/10",
+          columnHeader: isLightMode ? "bg-sky-200/50" : "bg-black/30",
+          tabActive: isLightMode
+            ? "bg-sky-200/70 text-sky-800"
+            : "bg-sky-500/25 text-sky-300",
+          tabInactive: isLightMode
+            ? "text-sky-700/60 hover:text-sky-900 hover:bg-sky-200/40"
+            : "text-white/50 hover:text-white hover:bg-white/10",
+          menuBg: isLightMode ? "bg-white/95" : "bg-slate-900/95",
+        };
       case "coffeeshop":
         return {
           gradient: isLightMode

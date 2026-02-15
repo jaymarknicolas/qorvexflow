@@ -79,6 +79,10 @@ export interface CountdownWidgetSettings {
   // No specific settings needed
 }
 
+export interface WeatherWidgetSettings {
+  // Location is managed globally via AmbientContext
+}
+
 export type WidgetSettings = {
   pomodoro: PomodoroWidgetSettings;
   tasks: TasksWidgetSettings;
@@ -91,6 +95,7 @@ export type WidgetSettings = {
   coffee: CoffeeWidgetSettings;
   stopwatch: StopwatchWidgetSettings;
   countdown: CountdownWidgetSettings;
+  weather: WeatherWidgetSettings;
 };
 
 export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {
@@ -156,4 +161,5 @@ export const DEFAULT_WIDGET_SETTINGS: WidgetSettings = {
   },
   stopwatch: {},
   countdown: {},
+  weather: {},
 };

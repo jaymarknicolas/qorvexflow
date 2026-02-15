@@ -19,7 +19,8 @@ export type WidgetType =
   | "quotes"
   | "coffee"
   | "stopwatch"
-  | "countdown";
+  | "countdown"
+  | "weather";
 
 export interface WidgetDefinition {
   id: WidgetType;

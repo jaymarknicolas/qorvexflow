@@ -56,6 +56,27 @@ export default function NotesWidgetWYSIWYG() {
           toolbarBorder: isLightMode ? "border-green-300/30" : "border-white/10",
           divider: isLightMode ? "bg-green-300/30" : "bg-white/10",
         };
+      case "horizon":
+        return {
+          gradient: isLightMode
+            ? "from-sky-50/95 via-orange-50/90 to-violet-50/95"
+            : "from-slate-900/95 via-sky-950/90 to-violet-950/95",
+          accent: isLightMode ? "text-sky-700" : "text-sky-400",
+          accentBg: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          border: isLightMode ? "border-sky-300/50" : "border-sky-500/20",
+          activeBtn: isLightMode
+            ? "bg-sky-200/70 text-sky-800"
+            : "bg-sky-500/20 text-sky-400",
+          iconColor: isLightMode ? "text-sky-700" : "text-sky-400",
+          textPrimary: isLightMode ? "text-slate-900" : "text-white",
+          textMuted: isLightMode ? "text-slate-600/70" : "text-white/60",
+          inactiveBtn: isLightMode
+            ? "text-sky-700/60 hover:text-sky-900 hover:bg-sky-200/50"
+            : "text-white/60 hover:text-white hover:bg-white/10",
+          toolbarBg: isLightMode ? "bg-sky-100/60" : "bg-black/20",
+          toolbarBorder: isLightMode ? "border-sky-300/30" : "border-white/10",
+          divider: isLightMode ? "bg-sky-300/30" : "bg-white/10",
+        };
       case "coffeeshop":
         return {
           gradient: isLightMode

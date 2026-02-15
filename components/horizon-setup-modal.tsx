@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, CloudSun, RefreshCw, X, Check } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
@@ -19,16 +19,26 @@ export default function HorizonSetupModal() {
     weatherLoading,
     weatherError,
     refreshWeather,
+    currentTimePeriod,
   } = useAmbient();
 
   const [isVisible, setIsVisible] = useState(false);
+  const prevThemeRef = useRef(theme);
+  const ambientSettingsRef = useRef(ambientSettings);
+  ambientSettingsRef.current = ambientSettings;
 
-  // Show modal when user switches to Horizon theme and has no location set
+  // Only show modal when theme TRANSITIONS to "horizon" with no location set.
+  // Does NOT re-trigger when location is cleared/changed in settings.
   useEffect(() => {
-    if (theme !== "horizon") return;
+    const didJustSwitchToHorizon =
+      prevThemeRef.current !== "horizon" && theme === "horizon";
+    prevThemeRef.current = theme;
 
+    if (!didJustSwitchToHorizon) return;
+
+    const settings = ambientSettingsRef.current;
     const hasLocation =
-      !!ambientSettings.weatherCity || ambientSettings.weatherLat !== null;
+      !!settings.weatherCity || settings.weatherLat !== null;
     const wasDismissed =
       typeof window !== "undefined" &&
       localStorage.getItem(DISMISSED_KEY) === "true";
@@ -38,7 +48,7 @@ export default function HorizonSetupModal() {
       const t = setTimeout(() => setIsVisible(true), 600);
       return () => clearTimeout(t);
     }
-  }, [theme, ambientSettings.weatherCity, ambientSettings.weatherLat]);
+  }, [theme]);
 
   // Auto-close once location is confirmed and weather is loaded
   const hasLocation =
@@ -183,7 +193,9 @@ export default function HorizonSetupModal() {
                       className="w-full px-3 py-2 text-sm bg-white/10 border border-white/15 rounded-lg text-white focus:border-sky-500/50 focus:outline-none transition-colors"
                     >
                       <option value="auto" className="bg-gray-800">Auto (from API)</option>
-                      <option value="sunny" className="bg-gray-800">Sunny</option>
+                      {(currentTimePeriod === "day" || currentTimePeriod === "dawn") && (
+                        <option value="sunny" className="bg-gray-800">Sunny</option>
+                      )}
                       <option value="cloudy" className="bg-gray-800">Cloudy</option>
                       <option value="rain" className="bg-gray-800">Rain</option>
                       <option value="snow" className="bg-gray-800">Snow</option>

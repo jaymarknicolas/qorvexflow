@@ -427,9 +427,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 <option value="rain" className="bg-gray-800">
                                   Rain
                                 </option>
-                                <option value="sunny" className="bg-gray-800">
-                                  Sunny
-                                </option>
+                                {(currentTimePeriod === "day" || currentTimePeriod === "dawn") && (
+                                  <option value="sunny" className="bg-gray-800">
+                                    Sunny
+                                  </option>
+                                )}
                                 <option value="cloudy" className="bg-gray-800">
                                   Cloudy
                                 </option>

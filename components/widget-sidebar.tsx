@@ -12,6 +12,7 @@ import {
   Youtube,
   Quote,
   Coffee,
+  Cloud,
   Sparkles,
   GripVertical,
   Hourglass,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 
 // Mark widgets as new (will show NEW badge)
-const newWidgets = new Set(["coffee"]);
+const newWidgets = new Set(["weather"]);
 
 // Mark widgets as updated (will show UPDATED badge)
 const updatedWidgets = new Set([
@@ -81,6 +82,7 @@ const widgets: WidgetDefinition[] = [
   { id: "youtube", icon: Youtube, label: "YouTube" },
   { id: "quotes", icon: Quote, label: "Quotes" },
   { id: "coffee", icon: Coffee, label: "Coffee" },
+  { id: "weather", icon: Cloud, label: "Weather" },
 ];
 
 // Widget color scheme
@@ -142,6 +144,11 @@ const widgetColors: Record<
     gradient: "from-fuchsia-500 to-pink-500",
     glow: "group-hover:shadow-fuchsia-500/30",
     icon: "text-fuchsia-400",
+  },
+  weather: {
+    gradient: "from-sky-500 to-blue-500",
+    glow: "group-hover:shadow-sky-500/30",
+    icon: "text-sky-400",
   },
 };
 

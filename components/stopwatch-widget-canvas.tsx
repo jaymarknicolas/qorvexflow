@@ -53,6 +53,25 @@ export default function StopwatchWidgetCanvas() {
           textMuted: isLightMode ? "text-green-700/70" : "text-white/60",
           lapBg: isLightMode ? "bg-green-100/60" : "bg-white/5",
         };
+      case "horizon":
+        return {
+          gradient: isLightMode
+            ? "from-sky-50/95 via-orange-50/90 to-violet-50/95"
+            : "from-slate-900/95 via-sky-950/90 to-violet-950/95",
+          glowFrom: "from-sky-500/30",
+          glowTo: "to-violet-500/20",
+          accent: isLightMode ? "text-sky-700" : "text-sky-400",
+          accentBg: isLightMode ? "bg-sky-200/50" : "bg-sky-500/20",
+          border: isLightMode ? "border-sky-300/50" : "border-sky-500/20",
+          iconColor: isLightMode ? "text-sky-700" : "text-sky-400",
+          buttonBg: isLightMode
+            ? "bg-sky-200/50 hover:bg-sky-300/50"
+            : "bg-sky-500/20 hover:bg-sky-500/30",
+          textPrimary: isLightMode ? "text-slate-900" : "text-white",
+          textSecondary: isLightMode ? "text-slate-800" : "text-white/80",
+          textMuted: isLightMode ? "text-slate-600/70" : "text-white/50",
+          lapBg: isLightMode ? "bg-sky-100/60" : "bg-white/5",
+        };
       case "coffeeshop":
         return {
           gradient: isLightMode

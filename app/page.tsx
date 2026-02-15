@@ -36,6 +36,7 @@ import {
   Youtube,
   Quote,
   Coffee,
+  Cloud,
   Hourglass,
   Watch,
 } from "lucide-react";
@@ -45,6 +46,7 @@ import QuotesWidget from "@/components/quotes-widget";
 import CoffeeCounterWidget from "@/components/coffee-counter-widget";
 import StopwatchWidgetCanvas from "@/components/stopwatch-widget-canvas";
 import CountdownWidgetCanvas from "@/components/countdown-widget-canvas";
+import WeatherForecastWidget from "@/components/weather-forecast-widget";
 import CanvasVideoBackground from "@/components/canvas-video-background";
 import WeatherParticles from "@/components/weather-particles";
 import AmbientSceneBackground from "@/components/ambient-scene-background";
@@ -66,6 +68,7 @@ const MemoizedQuotesWidget = memo(QuotesWidget);
 const MemoizedCoffeeCounterWidget = memo(CoffeeCounterWidget);
 const MemoizedStopwatchWidgetCanvas = memo(StopwatchWidgetCanvas);
 const MemoizedCountdownWidgetCanvas = memo(CountdownWidgetCanvas);
+const MemoizedWeatherForecastWidget = memo(WeatherForecastWidget);
 
 // Widget icon mapping
 const getWidgetIcon = (widgetType: WidgetType | string | null) => {
@@ -92,6 +95,8 @@ const getWidgetIcon = (widgetType: WidgetType | string | null) => {
       return Watch;
     case "countdown":
       return Hourglass;
+    case "weather":
+      return Cloud;
     default:
       return Timer;
   }
@@ -665,6 +670,8 @@ function renderWidget(type: WidgetType | null) {
       return <MemoizedStopwatchWidgetCanvas />;
     case "countdown":
       return <MemoizedCountdownWidgetCanvas />;
+    case "weather":
+      return <MemoizedWeatherForecastWidget />;
     default:
       return null;
   }
