@@ -134,18 +134,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       gradient: "from-amber-500 to-amber-800",
     },
     {
-      id: "timebased" as const,
-      label: "Time-Based",
+      id: "horizon" as const,
+      label: "Horizon",
       emoji: "🌅",
-      description: "Shifts with time of day",
+      description: "Time of day + real weather",
       gradient: "from-orange-500 via-sky-500 to-indigo-600",
-    },
-    {
-      id: "weather" as const,
-      label: "Weather",
-      emoji: "🌦️",
-      description: "Reacts to real weather",
-      gradient: "from-blue-500 via-slate-400 to-amber-500",
     },
   ];
 
@@ -153,24 +146,21 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const getAccentColor = () => {
     if (theme === "ghibli") return "bg-green-500";
     if (theme === "coffeeshop") return "bg-amber-500";
-    if (theme === "timebased") return "bg-sky-500";
-    if (theme === "weather") return "bg-slate-500";
+    if (theme === "horizon") return "bg-sky-500";
     return "bg-violet-500";
   };
 
   const getAccentRing = () => {
     if (theme === "ghibli") return "ring-green-500/50";
     if (theme === "coffeeshop") return "ring-amber-500/50";
-    if (theme === "timebased") return "ring-sky-500/50";
-    if (theme === "weather") return "ring-slate-500/50";
+    if (theme === "horizon") return "ring-sky-500/50";
     return "ring-violet-500/50";
   };
 
   const getAccentText = () => {
     if (theme === "ghibli") return "text-green-400";
     if (theme === "coffeeshop") return "text-amber-400";
-    if (theme === "timebased") return "text-sky-400";
-    if (theme === "weather") return "text-slate-400";
+    if (theme === "horizon") return "text-sky-400";
     return "text-violet-400";
   };
 
@@ -179,10 +169,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       return "from-green-500 to-amber-500 hover:from-green-400 hover:to-amber-400 shadow-green-500/20";
     if (theme === "coffeeshop")
       return "from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 shadow-amber-500/20";
-    if (theme === "timebased")
+    if (theme === "horizon")
       return "from-sky-500 to-violet-500 hover:from-sky-400 hover:to-violet-400 shadow-sky-500/20";
-    if (theme === "weather")
-      return "from-blue-500 to-slate-500 hover:from-blue-400 hover:to-slate-400 shadow-blue-500/20";
     return "from-violet-500 to-pink-500 hover:from-violet-400 hover:to-pink-400 shadow-violet-500/20";
   };
 
@@ -376,20 +364,20 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                           </button>
                         ))}
 
-                        {/* Time-Based theme info */}
+                        {/* Horizon / time info */}
                         {isTimeThemeActive && (
                           <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
                             <p className="text-xs text-sky-400">
-                              Background shifts automatically based on time of day ({currentTimePeriod}).
+                              Time of day: <span className="font-medium capitalize">{currentTimePeriod}</span>. Colors shift automatically every hour.
                             </p>
                           </div>
                         )}
 
-                        {/* Weather theme config */}
+                        {/* Horizon / weather config */}
                         {isWeatherThemeActive && (
                           <div className="space-y-3 p-3 rounded-xl bg-white/5 border border-white/10">
                             <p className="text-xs text-sky-400">
-                              Background reacts to real weather conditions{currentWeather ? ` (${currentWeather})` : ""}.
+                              Real weather tint{currentWeather ? `: ${currentWeather}` : " — set a location below"}.
                             </p>
 
                             {/* Location Picker */}

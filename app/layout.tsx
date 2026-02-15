@@ -12,6 +12,7 @@ import FloatingWidgetWindow from "@/components/floating-widget/floating-widget-w
 import { OnboardingProvider } from "@/lib/contexts/onboarding-context";
 import { AmbientProvider } from "@/lib/contexts/ambient-context";
 import OnboardingOverlay from "@/components/onboarding-overlay";
+import HorizonSetupModal from "@/components/horizon-setup-modal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +51,7 @@ export default function RootLayout({
                     <OnboardingProvider>
                       {children}
                       <OnboardingOverlay />
+                      <HorizonSetupModal />
                     </OnboardingProvider>
                     <FloatingWidgetWindow />
                     <Toaster position="bottom-right" richColors />

@@ -802,16 +802,16 @@ export default function MusicPlayerSimple() {
         heartActive: isLightMode ? "text-amber-600" : "text-amber-400",
       };
     }
-    if (theme === "timebased") {
+    if (theme === "horizon") {
       return {
-        primary: "from-sky-400 to-violet-500",
-        secondary: "from-blue-400 to-cyan-500",
+        primary: "from-orange-400 via-sky-400 to-violet-500",
+        secondary: "from-sky-400 to-violet-500",
         accent: isLightMode ? "text-sky-700" : "text-sky-400",
         accentSecondary: isLightMode ? "text-violet-700" : "text-violet-400",
         glow: "shadow-sky-500/50",
-        waveColors: ["#38bdf8", "#0ea5e9", "#0284c7", "#8b5cf6", "#6366f1"],
+        waveColors: ["#fb923c", "#38bdf8", "#0ea5e9", "#8b5cf6", "#6366f1"],
         gradient: isLightMode
-          ? "from-sky-50/95 via-blue-50/90 to-violet-50/95"
+          ? "from-orange-50/95 via-sky-50/90 to-violet-50/95"
           : "from-slate-900/95 via-blue-950/90 to-indigo-950/95",
         glowFrom: "from-sky-500/20",
         glowTo: "to-violet-500/20",
@@ -825,31 +825,6 @@ export default function MusicPlayerSimple() {
         hoverBg: isLightMode ? "hover:bg-sky-200/50" : "hover:bg-white/10",
         surfaceBg: isLightMode ? "bg-sky-100/80" : "bg-slate-900/95",
         heartActive: isLightMode ? "text-sky-600" : "text-sky-400",
-      };
-    }
-    if (theme === "weather") {
-      return {
-        primary: "from-slate-400 to-blue-500",
-        secondary: "from-blue-400 to-slate-500",
-        accent: isLightMode ? "text-slate-700" : "text-slate-400",
-        accentSecondary: isLightMode ? "text-blue-700" : "text-blue-400",
-        glow: "shadow-slate-500/50",
-        waveColors: ["#94a3b8", "#64748b", "#475569", "#3b82f6", "#60a5fa"],
-        gradient: isLightMode
-          ? "from-slate-50/95 via-gray-50/90 to-blue-50/95"
-          : "from-slate-900/95 via-slate-800/90 to-gray-900/95",
-        glowFrom: "from-slate-500/20",
-        glowTo: "to-blue-500/20",
-        border: isLightMode ? "border-slate-300/50" : "border-slate-500/20",
-        progressBg: "#64748b",
-        accentBg: isLightMode ? "bg-slate-200/50" : "bg-slate-500/20",
-        iconColor: isLightMode ? "text-slate-700" : "text-slate-400",
-        textPrimary: isLightMode ? "text-slate-950" : "text-white",
-        textSecondary: isLightMode ? "text-slate-900" : "text-white/80",
-        textMuted: isLightMode ? "text-slate-800/70" : "text-white/50",
-        hoverBg: isLightMode ? "hover:bg-slate-200/50" : "hover:bg-white/10",
-        surfaceBg: isLightMode ? "bg-slate-100/80" : "bg-slate-900/95",
-        heartActive: isLightMode ? "text-slate-600" : "text-slate-400",
       };
     }
     // lofi theme

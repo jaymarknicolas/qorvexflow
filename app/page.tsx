@@ -620,8 +620,7 @@ export default function Home() {
 
       {/* Theme Video Backgrounds - Only render when enabled */}
       {settings.videoBackgroundEnabled &&
-      theme !== "timebased" &&
-      theme !== "weather" ? (
+      theme !== "horizon" ? (
         <>
           {theme === "ghibli" && (
             <CanvasVideoBackground videoSrc="/videos/ghibli.mp4" />

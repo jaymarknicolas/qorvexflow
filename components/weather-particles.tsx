@@ -143,12 +143,12 @@ function CloudyEffect() {
 }
 
 export default function WeatherParticles() {
-  const { currentWeather, ambientSettings, isWeatherThemeActive } = useAmbient();
+  const { currentWeather, ambientSettings, isWeatherThemeActive, isHorizonThemeActive } = useAmbient();
   const { settings } = useAppSettings();
 
   // Don't render if weather mode is disabled or lightweight mode
   if (
-    (!ambientSettings.weatherAmbientEnabled && !isWeatherThemeActive) ||
+    (!ambientSettings.weatherAmbientEnabled && !isWeatherThemeActive && !isHorizonThemeActive) ||
     !currentWeather ||
     settings.performanceMode === "lightweight" ||
     settings.reducedMotion

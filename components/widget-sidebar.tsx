@@ -313,24 +313,14 @@ export default function WidgetSidebar({
         text: "text-amber-400",
       };
     }
-    if (theme === "timebased") {
+    if (theme === "horizon") {
       return {
-        primary: "from-sky-500 to-violet-500",
-        secondary: "from-cyan-500 to-sky-500",
+        primary: "from-orange-500 via-sky-500 to-violet-500",
+        secondary: "from-sky-500 to-violet-500",
         glow: "shadow-sky-500/40",
         border: "border-sky-500/30",
         bg: "bg-slate-950/90",
         text: "text-sky-400",
-      };
-    }
-    if (theme === "weather") {
-      return {
-        primary: "from-slate-500 to-blue-500",
-        secondary: "from-blue-500 to-slate-500",
-        glow: "shadow-slate-500/40",
-        border: "border-slate-500/30",
-        bg: "bg-slate-950/90",
-        text: "text-slate-400",
       };
     }
     return {

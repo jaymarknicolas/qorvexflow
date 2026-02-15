@@ -1071,9 +1071,9 @@
 }
 
 /* ============================================
-   TIME-BASED LIGHT THEME
+   HORIZON LIGHT THEME
    ============================================ */
-:root[data-theme="timebased"][data-color-scheme="light"] {
+:root[data-theme="horizon"][data-color-scheme="light"] {
   --theme-bg-from: #f0f9ff;
   --theme-bg-via: #e0f2fe;
   --theme-bg-to: #f0f9ff;
@@ -1101,7 +1101,7 @@
   --theme-btn-primary-to: #7c3aed;
 }
 
-:root[data-theme="timebased"][data-color-scheme="light"][data-time-period="dawn"] {
+:root[data-theme="horizon"][data-color-scheme="light"][data-time-period="dawn"] {
   --theme-bg-from: #fff7ed;
   --theme-bg-via: #ffedd5;
   --theme-bg-to: #fff7ed;
@@ -1113,7 +1113,7 @@
   --theme-glow-3: rgba(251, 191, 36, 0.15);
 }
 
-:root[data-theme="timebased"][data-color-scheme="light"][data-time-period="day"] {
+:root[data-theme="horizon"][data-color-scheme="light"][data-time-period="day"] {
   --theme-bg-from: #ecfeff;
   --theme-bg-via: #cffafe;
   --theme-bg-to: #ecfeff;
@@ -1125,7 +1125,7 @@
   --theme-glow-3: rgba(52, 211, 153, 0.15);
 }
 
-:root[data-theme="timebased"][data-color-scheme="light"][data-time-period="dusk"] {
+:root[data-theme="horizon"][data-color-scheme="light"][data-time-period="dusk"] {
   --theme-bg-from: #fdf4ff;
   --theme-bg-via: #fae8ff;
   --theme-bg-to: #fdf4ff;
@@ -1137,85 +1137,45 @@
   --theme-glow-3: rgba(225, 29, 72, 0.15);
 }
 
-:root[data-theme="timebased"][data-color-scheme="light"] .themed-bg {
-  background: transparent;
-  transition: background 3s ease;
+/* Light mode weather tints for horizon */
+:root[data-theme="horizon"][data-color-scheme="light"][data-weather="rain"] {
+  --theme-bg-via: #dbeafe;
 }
 
-:root[data-theme="timebased"][data-color-scheme="light"] .theme-card {
-  @apply bg-white/80 border-sky-300/30;
+:root[data-theme="horizon"][data-color-scheme="light"][data-time-period="dawn"][data-weather="rain"] {
+  --theme-bg-via: #fed7aa;
+  --theme-glow-1: rgba(107, 114, 128, 0.2);
 }
 
-/* ============================================
-   WEATHER LIGHT THEME
-   ============================================ */
-:root[data-theme="weather"][data-color-scheme="light"] {
-  --theme-bg-from: #f1f5f9;
-  --theme-bg-via: #e2e8f0;
-  --theme-bg-to: #f1f5f9;
-  --theme-primary: #475569;
-  --theme-primary-hover: #334155;
-  --theme-primary-dark: #1e293b;
-  --theme-secondary: #78716c;
-  --theme-accent: #0284c7;
-  --theme-text: #1e293b;
-  --theme-text-secondary: #475569;
-  --theme-text-muted: rgba(71, 85, 105, 0.6);
-  --theme-surface: rgba(226, 232, 240, 0.6);
-  --theme-surface-hover: rgba(203, 213, 225, 0.6);
-  --theme-surface-border: rgba(71, 85, 105, 0.2);
-  --theme-glow-1: rgba(100, 116, 139, 0.15);
-  --theme-glow-2: rgba(148, 163, 184, 0.12);
-  --theme-glow-3: rgba(203, 213, 225, 0.12);
-  --theme-header-bg: rgba(241, 245, 249, 0.9);
-  --theme-header-border: rgba(71, 85, 105, 0.1);
-  --theme-widget-bg: rgba(226, 232, 240, 0.5);
-  --theme-widget-border: rgba(71, 85, 105, 0.15);
-}
-
-:root[data-theme="weather"][data-color-scheme="light"][data-weather="rain"] {
+:root[data-theme="horizon"][data-color-scheme="light"][data-time-period="day"][data-weather="rain"] {
   --theme-bg-from: #eff6ff;
   --theme-bg-via: #dbeafe;
   --theme-bg-to: #eff6ff;
   --theme-primary: #2563eb;
   --theme-text: #1e3a8a;
   --theme-text-secondary: #1d4ed8;
-  --theme-glow-1: rgba(37, 99, 235, 0.2);
-  --theme-glow-2: rgba(59, 130, 246, 0.15);
-  --theme-glow-3: rgba(100, 116, 139, 0.12);
 }
 
-:root[data-theme="weather"][data-color-scheme="light"][data-weather="sunny"] {
+:root[data-theme="horizon"][data-color-scheme="light"][data-weather="sunny"][data-time-period="day"] {
   --theme-bg-from: #fffbeb;
   --theme-bg-via: #fef3c7;
   --theme-bg-to: #fffbeb;
-  --theme-primary: #d97706;
-  --theme-text: #78350f;
-  --theme-text-secondary: #b45309;
-  --theme-glow-1: rgba(245, 158, 11, 0.2);
-  --theme-glow-2: rgba(251, 191, 36, 0.15);
-  --theme-glow-3: rgba(249, 115, 22, 0.15);
 }
 
-:root[data-theme="weather"][data-color-scheme="light"][data-weather="snow"] {
+:root[data-theme="horizon"][data-color-scheme="light"][data-weather="snow"][data-time-period="night"] {
   --theme-bg-from: #f0f9ff;
   --theme-bg-via: #e0f2fe;
   --theme-bg-to: #f0f9ff;
   --theme-primary: #0284c7;
-  --theme-text: #0c4a6e;
-  --theme-text-secondary: #0369a1;
-  --theme-glow-1: rgba(56, 189, 248, 0.2);
-  --theme-glow-2: rgba(186, 230, 253, 0.15);
-  --theme-glow-3: rgba(199, 210, 254, 0.15);
 }
 
-:root[data-theme="weather"][data-color-scheme="light"] .themed-bg {
+:root[data-theme="horizon"][data-color-scheme="light"] .themed-bg {
   background: transparent;
   transition: background 3s ease;
 }
 
-:root[data-theme="weather"][data-color-scheme="light"] .theme-card {
-  @apply bg-white/80 border-slate-300/30;
+:root[data-theme="horizon"][data-color-scheme="light"] .theme-card {
+  @apply bg-white/80 border-sky-300/30;
 }
 
 /* ============================================
@@ -1277,11 +1237,7 @@
   background: linear-gradient(135deg, #292524 0%, #44403c 50%, #292524 100%);
 }
 
-.static-bg-timebased {
-  background: transparent;
-}
-
-.static-bg-weather {
+.static-bg-horizon {
   background: transparent;
 }
 
@@ -1298,11 +1254,7 @@
   background: linear-gradient(135deg, #fef7ed 0%, #fef3c7 50%, #fef7ed 100%);
 }
 
-:root[data-color-scheme="light"] .static-bg-timebased {
-  background: transparent;
-}
-
-:root[data-color-scheme="light"] .static-bg-weather {
+:root[data-color-scheme="light"] .static-bg-horizon {
   background: transparent;
 }
 

@@ -682,6 +682,7 @@ export default function AmbientSceneBackground() {
     currentWeather,
     isTimeThemeActive,
     isWeatherThemeActive,
+    isHorizonThemeActive,
   } = useAmbient();
   const { settings } = useAppSettings();
 
@@ -698,10 +699,19 @@ export default function AmbientSceneBackground() {
       className="fixed inset-0 z-[0] pointer-events-none transition-opacity duration-[3000ms]"
       aria-hidden="true"
     >
+      {/* Time scene always renders as the base layer */}
       {isTimeThemeActive && <TimeBasedScene period={currentTimePeriod} />}
+
+      {/* Weather scene: for Horizon theme, layered at reduced opacity so time leads visually */}
       {isWeatherThemeActive && currentWeather && (
-        <WeatherBasedScene weather={currentWeather} />
+        <div
+          className="absolute inset-0"
+          style={{ opacity: isHorizonThemeActive ? 0.35 : 1 }}
+        >
+          <WeatherBasedScene weather={currentWeather} />
+        </div>
       )}
+
       {/* Subtle overlay to ensure text readability */}
       <div className="absolute inset-0 bg-black/20" />
     </div>

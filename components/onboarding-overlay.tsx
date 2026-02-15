@@ -48,25 +48,15 @@ export default function OnboardingOverlay() {
         dotActive: "bg-amber-400",
         dotInactive: "bg-amber-400/30",
       };
-    if (theme === "timebased")
+    if (theme === "horizon")
       return {
-        gradient: "from-sky-500 to-violet-500",
+        gradient: "from-orange-500 via-sky-500 to-violet-500",
         bg: "bg-sky-500",
         text: "text-sky-400",
         ring: "ring-sky-500/30",
         progressBg: "bg-sky-500",
         dotActive: "bg-sky-400",
         dotInactive: "bg-sky-400/30",
-      };
-    if (theme === "weather")
-      return {
-        gradient: "from-slate-500 to-blue-500",
-        bg: "bg-slate-500",
-        text: "text-slate-400",
-        ring: "ring-slate-500/30",
-        progressBg: "bg-slate-500",
-        dotActive: "bg-slate-400",
-        dotInactive: "bg-slate-400/30",
       };
     return {
       gradient: "from-violet-500 to-pink-500",

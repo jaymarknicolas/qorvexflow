@@ -156,81 +156,41 @@ export default function LocationPicker({
     return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
   };
 
-  const handleLocateMe = async () => {
-    // Check if geolocation is available
+  const handleLocateMe = () => {
     if (!navigator.geolocation) {
-      setLocateError(
-        "Geolocation is not supported by your browser"
-      );
-      return;
-    }
-
-    // Check secure context (geolocation requires HTTPS or localhost)
-    if (typeof window !== "undefined" && !window.isSecureContext) {
-      setLocateError(
-        "Location requires HTTPS. Please use a secure connection."
-      );
+      setLocateError("Geolocation is not supported by your browser.");
       return;
     }
 
     setLocating(true);
     setLocateError(null);
 
-    // Check permission state first (if Permissions API available)
-    try {
-      if (navigator.permissions) {
-        const permResult = await navigator.permissions.query({
-          name: "geolocation",
-        });
-
-        if (permResult.state === "denied") {
-          setLocating(false);
+    // Call getCurrentPosition directly — the browser will show its native
+    // permission prompt (like camera/microphone), without any pre-check.
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const displayName = await reverseGeocode(latitude, longitude);
+        setQuery(displayName);
+        onSelect(displayName, latitude, longitude);
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
           setLocateError(
-            "Location access is blocked. Please allow location in your browser settings, then try again."
+            "Location blocked. Click the lock icon in your browser's address bar and allow location for this site."
           );
-          return;
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setLocateError("Could not determine your location. Try again.");
+        } else if (err.code === err.TIMEOUT) {
+          setLocateError("Location request timed out. Try again.");
+        } else {
+          setLocateError("Failed to get location. Try searching instead.");
         }
-      }
-    } catch {
-      // Permissions API not available, proceed with geolocation directly
-    }
-
-    // Request geolocation
-    try {
-      const position = await new Promise<GeolocationPosition>(
-        (resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: false,
-            timeout: 15000,
-            maximumAge: 300000, // 5 min cache
-          });
-        }
-      );
-
-      const { latitude, longitude } = position.coords;
-      const displayName = await reverseGeocode(latitude, longitude);
-
-      setQuery(displayName);
-      onSelect(displayName, latitude, longitude);
-      setLocating(false);
-    } catch (err) {
-      setLocating(false);
-      const geoErr = err as GeolocationPositionError;
-
-      if (geoErr.code === GeolocationPositionError.PERMISSION_DENIED) {
-        setLocateError(
-          "Location access denied. Check your browser's site settings and allow location access."
-        );
-      } else if (
-        geoErr.code === GeolocationPositionError.POSITION_UNAVAILABLE
-      ) {
-        setLocateError("Could not determine your location. Try again later.");
-      } else if (geoErr.code === GeolocationPositionError.TIMEOUT) {
-        setLocateError("Location request timed out. Try again.");
-      } else {
-        setLocateError("Failed to get location. Try searching instead.");
-      }
-    }
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
+    );
   };
 
   const handleClear = () => {
