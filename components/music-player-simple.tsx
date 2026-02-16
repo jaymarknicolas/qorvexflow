@@ -232,6 +232,8 @@ export default function MusicPlayerSimple() {
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [dashboardSpotifyPlaylists, setDashboardSpotifyPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
   const [isDashboardSpotifyLoading, setIsDashboardSpotifyLoading] = useState(false);
+  const [dashboardSpotifyTracks, setDashboardSpotifyTracks] = useState<SpotifyTrack[]>([]);
+  const [isDashboardSpotifyTracksLoading, setIsDashboardSpotifyTracksLoading] = useState(false);
 
   // Browse state
   const [showBrowse, setShowBrowse] = useState(false);
@@ -593,6 +595,33 @@ export default function MusicPlayerSimple() {
     }
   }, [spotifyAuth.isConnected]);
 
+  // Dashboard: fetch Spotify suggested tracks based on theme
+  const SPOTIFY_THEME_QUERIES: Record<string, string[]> = useMemo(() => ({
+    ghibli: ["studio ghibli piano", "ghibli jazz", "anime relaxing music", "japanese ambient"],
+    coffeeshop: ["coffee shop jazz", "bossa nova cafe", "acoustic coffee morning", "rainy jazz cafe"],
+    lofi: ["lofi hip hop beats", "chill beats study", "lo-fi ambient", "chillhop essentials"],
+    horizon: ["synthwave retrowave", "vaporwave chill", "electronic ambient", "future bass chill"],
+  }), []);
+
+  const fetchDashboardSpotifyTracks = useCallback(async (force = false) => {
+    if (!spotifyAuth.isConnected) return;
+    setIsDashboardSpotifyTracksLoading(true);
+    try {
+      const themeKey = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : theme === "horizon" ? "horizon" : "lofi";
+      const queries = SPOTIFY_THEME_QUERIES[themeKey];
+      // Pick a random query for variety
+      const query = queries[Math.floor(Math.random() * queries.length)];
+      const tracks = await spotifyAPI.getSuggestedTracks(query, 12);
+      if (tracks.length > 0) {
+        setDashboardSpotifyTracks(tracks);
+      }
+    } catch (err) {
+      console.error("Failed to fetch Spotify suggested tracks:", err);
+    } finally {
+      setIsDashboardSpotifyTracksLoading(false);
+    }
+  }, [spotifyAuth.isConnected, theme, SPOTIFY_THEME_QUERIES]);
+
   // Auto-fetch dashboard on mount
   useEffect(() => {
     if (musicSource === "youtube") {
@@ -603,14 +632,18 @@ export default function MusicPlayerSimple() {
   // Fetch Spotify dashboard when connected
   useEffect(() => {
     if (musicSource === "spotify" && spotifyAuth.isConnected) {
-      fetchDashboardSpotify();
+      fetchDashboardSpotifyTracks();
     }
   }, [spotifyAuth.isConnected, musicSource]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refetch dashboard on theme change
   useEffect(() => {
-    if (musicSource === "youtube" && showDashboard) {
-      fetchDashboardVideos();
+    if (showDashboard) {
+      if (musicSource === "youtube") {
+        fetchDashboardVideos();
+      } else if (musicSource === "spotify" && spotifyAuth.isConnected) {
+        fetchDashboardSpotifyTracks();
+      }
     }
   }, [theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -638,6 +671,14 @@ export default function MusicPlayerSimple() {
     } catch (err) {
       console.error("Failed to play Spotify playlist:", err);
     }
+    setShowDashboard(false);
+  };
+
+  const handleDashboardPlaySpotifyTrack = async (track: SpotifyTrack) => {
+    // Play the selected track with all dashboard tracks as queue
+    const allUris = dashboardSpotifyTracks.map((t) => t.uri);
+    const trackIndex = dashboardSpotifyTracks.findIndex((t) => t.id === track.id);
+    await spotifyAPI.play(undefined, allUris, { position: trackIndex >= 0 ? trackIndex : 0 });
     setShowDashboard(false);
   };
 
@@ -1810,8 +1851,8 @@ export default function MusicPlayerSimple() {
                         setShowDashboard(true);
                         if (musicSource === "youtube" && dashboardVideos.length === 0) {
                           fetchDashboardVideos();
-                        } else if (musicSource === "spotify" && dashboardSpotifyPlaylists.length === 0) {
-                          fetchDashboardSpotify();
+                        } else if (musicSource === "spotify" && dashboardSpotifyTracks.length === 0) {
+                          fetchDashboardSpotifyTracks();
                         }
                       }
                     }}
@@ -2014,20 +2055,20 @@ export default function MusicPlayerSimple() {
           <div className="flex-1 overflow-y-auto scrollbar-hide min-h-0">
             <div className="flex items-center justify-between mb-3">
               <h3 className={`text-xs font-semibold ${colors.textMuted} uppercase tracking-wider`}>
-                {musicSource === "spotify" ? "Your Playlists" : "Suggested for You"}
+                Suggested for You
               </h3>
               <button
                 onClick={() => {
                   if (musicSource === "youtube") {
                     fetchDashboardVideos(true);
                   } else {
-                    fetchDashboardSpotify();
+                    fetchDashboardSpotifyTracks(true);
                   }
                 }}
-                disabled={isDashboardLoading || isDashboardSpotifyLoading}
+                disabled={isDashboardLoading || isDashboardSpotifyTracksLoading}
                 className={`p-1 ${colors.hoverBg} rounded-lg`}
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${colors.textMuted} ${(isDashboardLoading || isDashboardSpotifyLoading) ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${colors.textMuted} ${(isDashboardLoading || isDashboardSpotifyTracksLoading) ? "animate-spin" : ""}`} />
               </button>
             </div>
 
@@ -2079,7 +2120,7 @@ export default function MusicPlayerSimple() {
                 </div>
               )
             ) : (
-              /* Spotify Dashboard */
+              /* Spotify Dashboard — Suggested Tracks */
               !spotifyAuth.isConnected ? (
                 <div className="flex flex-col items-center justify-center py-8 gap-2">
                   <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
@@ -2091,40 +2132,47 @@ export default function MusicPlayerSimple() {
                     Connect
                   </button>
                 </div>
-              ) : isDashboardSpotifyLoading && dashboardSpotifyPlaylists.length === 0 ? (
+              ) : isDashboardSpotifyTracksLoading && dashboardSpotifyTracks.length === 0 ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
                 </div>
-              ) : dashboardSpotifyPlaylists.length === 0 ? (
+              ) : dashboardSpotifyTracks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 gap-2">
-                  <ListMusic className={`w-8 h-8 ${colors.textMuted}`} />
-                  <p className={`text-sm ${colors.textMuted}`}>No playlists found</p>
+                  <Music2 className={`w-8 h-8 ${colors.textMuted}`} />
+                  <p className={`text-sm ${colors.textMuted}`}>No suggestions yet</p>
+                  <button
+                    onClick={() => fetchDashboardSpotifyTracks(true)}
+                    className={`text-xs px-3 py-1.5 ${colors.accentBg} ${colors.accent} rounded-lg`}
+                  >
+                    Load Suggestions
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
-                  {dashboardSpotifyPlaylists.map((playlist, idx) => (
+                  {dashboardSpotifyTracks.map((track, idx) => (
                     <button
-                      key={`dash-sp-${playlist.id}-${idx}`}
-                      onClick={() => handleDashboardPlaySpotifyPlaylist(playlist)}
+                      key={`dash-sp-track-${track.id}-${idx}`}
+                      onClick={() => handleDashboardPlaySpotifyTrack(track)}
                       className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
                     >
-                      {playlist.images?.[0]?.url ? (
+                      {track.albumArt ? (
                         <img
-                          src={playlist.images[0].url}
-                          alt={playlist.name}
+                          src={track.albumArt}
+                          alt={track.name}
                           className="w-full aspect-square object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
-                          <ListMusic className={`w-6 h-6 ${colors.textMuted}`} />
+                          <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
                         </div>
                       )}
                       <div className="p-2 flex-1 min-w-0">
                         <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
-                          {playlist.name}
+                          {track.name}
                         </p>
-                        <p className={`text-[10px] ${colors.textMuted} mt-0.5`}>
-                          {playlist.tracks.total} tracks
+                        <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>
+                          {track.artist}
                         </p>
                       </div>
                     </button>

@@ -346,6 +346,40 @@ export class SpotifyAPIService {
   }
 
   /**
+   * Get suggested tracks based on a search query (theme-based)
+   */
+  async getSuggestedTracks(query: string, limit: number = 20): Promise<SpotifyTrack[]> {
+    if (!this.accessToken) return [];
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) return [];
+
+      const data = await response.json();
+
+      return data.tracks.items.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        artist: item.artists[0]?.name || "Unknown",
+        album: item.album.name,
+        albumArt: item.album.images[0]?.url || "",
+        uri: item.uri,
+        duration_ms: item.duration_ms,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Set shuffle mode
    */
   async setShuffle(state: boolean): Promise<boolean> {

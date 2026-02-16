@@ -31,8 +31,15 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const error = await response.json();
       console.error("YouTube API error:", error);
+      const reason =
+        error?.error?.errors?.[0]?.reason || error?.error?.message || "Unknown error";
       return NextResponse.json(
-        { error: "Failed to search YouTube" },
+        {
+          error:
+            response.status === 403
+              ? `YouTube API quota exceeded or key restricted: ${reason}`
+              : `YouTube API error: ${reason}`,
+        },
         { status: response.status },
       );
     }

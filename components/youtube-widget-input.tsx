@@ -314,7 +314,8 @@ export default function YouTubeWidgetInput() {
     "player" | "search" | "streams" | "playlist"
   >("player");
   const [showControls] = useState(true);
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(true);
+  const [showStreams, setShowStreams] = useState(false);
 
   // === Persist state ===
   useEffect(() => {
@@ -538,6 +539,7 @@ export default function YouTubeWidgetInput() {
     hasStartedRef.current = true;
     setShowEndedOverlay(false);
     setShowDashboard(false);
+    setShowStreams(false);
     setEndedSuggestions([]);
     setCurrentVideo({
       ...video,
@@ -1449,11 +1451,11 @@ export default function YouTubeWidgetInput() {
     return (
       <>
         {/* Video player area */}
-        <div className={`flex-1 bg-black relative min-h-0 ${showDashboard ? "flex flex-col" : ""}`}>
-          {/* YouTube player — hidden but kept in DOM when dashboard is open so audio continues */}
+        <div className={`flex-1 bg-black relative min-h-0 ${(showDashboard || showStreams) ? "flex flex-col" : ""}`}>
+          {/* YouTube player — hidden but kept in DOM when dashboard/streams is open so audio continues */}
           <div
             ref={playerWrapperRef}
-            className={showDashboard ? "absolute w-1 h-1 overflow-hidden opacity-0 pointer-events-none" : "absolute inset-0 w-full h-full"}
+            className={(showDashboard || showStreams) ? "absolute w-1 h-1 overflow-hidden opacity-0 pointer-events-none" : "absolute inset-0 w-full h-full"}
           />
 
           {/* Dashboard overlay — shown when user clicks dashboard while video plays */}
@@ -1591,8 +1593,142 @@ export default function YouTubeWidgetInput() {
             </div>
           )}
 
+          {/* Streams overlay — shown when user clicks streams while video plays */}
+          {showStreams && (
+            <div className="absolute inset-0 z-10 flex flex-col bg-gradient-to-br from-black/95 via-black/90 to-black/95 backdrop-blur-sm">
+              <div
+                className={`flex-1 overflow-y-auto scrollbar-hide ${isVeryCompact ? "p-2" : "p-3"}`}
+              >
+                <div className="space-y-4">
+                  {CURATED_STREAMS.map((category) => (
+                    <div key={category.category}>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div
+                          className={`flex items-center gap-2 ${colors.accent}`}
+                        >
+                          <category.icon
+                            className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                          />
+                          <span
+                            className={`font-medium ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                          >
+                            {category.category}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => addAllToPlaylist(category.videos)}
+                          className={`flex items-center gap-1 rounded transition-colors ${colors.accentBg} ${colors.accent} ${colors.accentBgHover} ${
+                            isVeryCompact
+                              ? "px-1.5 py-0.5 text-[9px]"
+                              : "px-2 py-0.5 text-[10px]"
+                          }`}
+                        >
+                          <Plus className="w-3 h-3" />
+                          Add All
+                        </button>
+                      </div>
+                      <div className="space-y-1">
+                        {category.videos.map((video) => (
+                          <div
+                            key={video.id}
+                            className={`flex gap-2 rounded-lg bg-white/5 ${colors.cardHover} transition-colors cursor-pointer overflow-hidden ${
+                              isVeryCompact ? "p-1.5" : "p-2"
+                            }`}
+                            onClick={() => playVideo(video)}
+                          >
+                            <div
+                              className={`relative flex-shrink-0 rounded overflow-hidden bg-black/50 ${
+                                isVeryCompact ? "w-14 h-9" : "w-20 h-12"
+                              }`}
+                            >
+                              <img
+                                src={getThumbnail(video.id)}
+                                alt={video.title}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
+                                <Play className="w-4 h-4 text-white" />
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0 flex items-center">
+                              <p
+                                className={`text-white truncate ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                              >
+                                {video.title}
+                              </p>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToPlaylist(video);
+                              }}
+                              className={`self-center p-1 rounded text-white/40 hover:text-white transition-colors ${
+                                isInPlaylist(video.id) ? colors.accent : ""
+                              }`}
+                            >
+                              <Plus
+                                className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                              />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mini preview bar — shows currently playing video */}
+              <div
+                className={`flex-shrink-0 border-t border-white/10 bg-black/60 backdrop-blur-sm cursor-pointer hover:bg-white/5 transition-colors ${
+                  isVeryCompact ? "p-1.5" : "p-2"
+                }`}
+                onClick={() => setShowStreams(false)}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`relative flex-shrink-0 rounded overflow-hidden bg-black/50 ${
+                      isVeryCompact ? "w-12 h-8" : "w-16 h-10"
+                    }`}
+                  >
+                    <img
+                      src={currentVideo.thumbnail || getThumbnail(currentVideo.id)}
+                      alt={currentVideo.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <Pause
+                        className={`text-white ${isVeryCompact ? "w-2.5 h-2.5" : "w-3 h-3"}`}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-white font-medium truncate ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                    >
+                      {currentVideo.title}
+                    </p>
+                    <p
+                      className={`${colors.accent} ${isVeryCompact ? "text-[8px]" : "text-[10px]"}`}
+                    >
+                      Now Playing
+                    </p>
+                  </div>
+                  <div
+                    className={`flex-shrink-0 p-1.5 rounded-lg ${colors.accentBg} ${colors.accent}`}
+                  >
+                    <Play
+                      className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Suggestions overlay — shown when video ends */}
-          {showEndedOverlay && !showDashboard && (
+          {showEndedOverlay && !showDashboard && !showStreams && (
             <div className="absolute inset-0 z-10 bg-black/90 backdrop-blur-sm overflow-y-auto scrollbar-hide">
               <div className={isVeryCompact ? "p-2" : "p-3"}>
                 <div className="flex items-center justify-between mb-2">
@@ -1695,8 +1831,8 @@ export default function YouTubeWidgetInput() {
           )}
         </div>
 
-        {/* Controls — hidden when dashboard overlay is active */}
-        {showControls && !showDashboard && (
+        {/* Controls — hidden when dashboard/streams overlay is active */}
+        {showControls && !showDashboard && !showStreams && (
           <TooltipProvider delayDuration={300}>
             <div
               className={`flex-shrink-0 border-t border-white/10 bg-black/40 ${
@@ -1900,6 +2036,7 @@ export default function YouTubeWidgetInput() {
                             setShowDashboard(false);
                           } else {
                             setShowDashboard(true);
+                            setShowStreams(false);
                             if (dashboardVideos.length === 0) {
                               fetchDashboard(true);
                             }
@@ -1930,18 +2067,38 @@ export default function YouTubeWidgetInput() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => setView("streams")}
-                      className={`rounded-lg bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors ${
-                        isVeryCompact ? "p-1.5" : "p-2"
-                      }`}
+                      onClick={() => {
+                        if (currentVideo) {
+                          // Overlay mode — keep video playing
+                          if (showStreams) {
+                            setShowStreams(false);
+                          } else {
+                            setShowStreams(true);
+                            setShowDashboard(false);
+                          }
+                        } else {
+                          setView("streams");
+                        }
+                      }}
+                      className={`rounded-lg transition-colors ${
+                        showStreams
+                          ? `${colors.accentBg} ${colors.accent}`
+                          : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                      } ${isVeryCompact ? "p-1.5" : "p-2"}`}
                     >
-                      <Radio
-                        className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
-                      />
+                      {showStreams ? (
+                        <ArrowLeft
+                          className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                        />
+                      ) : (
+                        <Radio
+                          className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                        />
+                      )}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Streams</p>
+                    <p>{showStreams ? "Back to player" : "Streams"}</p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
