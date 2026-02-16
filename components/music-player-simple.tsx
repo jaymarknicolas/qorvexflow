@@ -289,6 +289,14 @@ export default function MusicPlayerSimple() {
     musicSource === "spotify",
   );
 
+  // Ensure spotifyAPI singleton has the token for dashboard/browse calls
+  // (useSpotifyPlayback also sets it, but only when isActive=true i.e. musicSource==="spotify")
+  useEffect(() => {
+    if (spotifyAuth.accessToken) {
+      spotifyAPI.setAccessToken(spotifyAuth.accessToken);
+    }
+  }, [spotifyAuth.accessToken]);
+
   // YouTube hooks with onEnded callback
   const youtubePlayer = useYouTubePlayer("youtube-player-container", {
     onEnded: () => autoPlayNextRef.current(),
@@ -551,7 +559,9 @@ export default function MusicPlayerSimple() {
 
   // Browse: fetch all Spotify sections (recently played, top tracks, featured, new releases)
   const fetchSpotifyBrowseSections = useCallback(async () => {
-    if (!spotifyAuth.isConnected) return;
+    if (!spotifyAuth.isConnected || !spotifyAuth.accessToken) return;
+    // Ensure token is set on singleton before making API calls
+    spotifyAPI.setAccessToken(spotifyAuth.accessToken);
     setIsSpotifyBrowseSectionsLoading(true);
     try {
       const [recent, top, featured, releases, playlists] = await Promise.all([
@@ -571,7 +581,7 @@ export default function MusicPlayerSimple() {
     } finally {
       setIsSpotifyBrowseSectionsLoading(false);
     }
-  }, [spotifyAuth.isConnected]);
+  }, [spotifyAuth.isConnected, spotifyAuth.accessToken]);
 
   // Browse: fetch tracks from a Spotify playlist
   const fetchSpotifyPlaylistTracks = useCallback(async (playlistId: string, playlistName: string) => {
@@ -636,7 +646,9 @@ export default function MusicPlayerSimple() {
   }), []);
 
   const fetchDashboardSpotifyTracks = useCallback(async (force = false) => {
-    if (!spotifyAuth.isConnected) return;
+    if (!spotifyAuth.isConnected || !spotifyAuth.accessToken) return;
+    // Ensure token is set on singleton before making API calls
+    spotifyAPI.setAccessToken(spotifyAuth.accessToken);
     setIsDashboardSpotifyTracksLoading(true);
     try {
       const themeKey = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : theme === "horizon" ? "horizon" : "lofi";
@@ -652,7 +664,7 @@ export default function MusicPlayerSimple() {
     } finally {
       setIsDashboardSpotifyTracksLoading(false);
     }
-  }, [spotifyAuth.isConnected, theme, SPOTIFY_THEME_QUERIES]);
+  }, [spotifyAuth.isConnected, spotifyAuth.accessToken, theme, SPOTIFY_THEME_QUERIES]);
 
   // Auto-fetch dashboard on mount
   useEffect(() => {
@@ -661,12 +673,12 @@ export default function MusicPlayerSimple() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch Spotify dashboard when connected
+  // Fetch Spotify dashboard when connected (depends on accessToken to ensure token is available)
   useEffect(() => {
-    if (musicSource === "spotify" && spotifyAuth.isConnected) {
+    if (musicSource === "spotify" && spotifyAuth.isConnected && spotifyAuth.accessToken) {
       fetchDashboardSpotifyTracks();
     }
-  }, [spotifyAuth.isConnected, musicSource]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [spotifyAuth.isConnected, spotifyAuth.accessToken, musicSource]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Refetch dashboard on theme change
   useEffect(() => {

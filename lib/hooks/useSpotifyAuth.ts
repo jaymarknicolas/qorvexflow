@@ -165,6 +165,11 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
       "user-modify-playback-state",
       "user-read-currently-playing",
       "streaming",
+      "user-read-recently-played",
+      "user-top-read",
+      "user-library-read",
+      "playlist-read-private",
+      "playlist-read-collaborative",
     ];
 
     const authUrl = new URL("https://accounts.spotify.com/authorize");
