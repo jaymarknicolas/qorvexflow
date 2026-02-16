@@ -245,6 +245,14 @@ export default function MusicPlayerSimple() {
   const [browseSpotifyPlaylistName, setBrowseSpotifyPlaylistName] = useState<string | null>(null);
   const [isBrowseSpotifyTracksLoading, setIsBrowseSpotifyTracksLoading] = useState(false);
 
+  // Spotify browse sections
+  const [browseRecentlyPlayed, setBrowseRecentlyPlayed] = useState<SpotifyTrack[]>([]);
+  const [browseTopTracks, setBrowseTopTracks] = useState<SpotifyTrack[]>([]);
+  const [browseFeaturedPlaylists, setBrowseFeaturedPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
+  const [browseNewReleases, setBrowseNewReleases] = useState<{ id: string; name: string; artist: string; albumArt: string; uri: string }[]>([]);
+  const [isSpotifyBrowseSectionsLoading, setIsSpotifyBrowseSectionsLoading] = useState(false);
+  const [spotifyBrowseView, setSpotifyBrowseView] = useState<"sections" | "playlist-tracks">("sections");
+
   // Save playlists whenever state changes
   useEffect(() => {
     savePlaylists(playlistsState);
@@ -538,6 +546,30 @@ export default function MusicPlayerSimple() {
       console.error("Failed to fetch Spotify playlists:", err);
     } finally {
       setIsSpotifyBrowseLoading(false);
+    }
+  }, [spotifyAuth.isConnected]);
+
+  // Browse: fetch all Spotify sections (recently played, top tracks, featured, new releases)
+  const fetchSpotifyBrowseSections = useCallback(async () => {
+    if (!spotifyAuth.isConnected) return;
+    setIsSpotifyBrowseSectionsLoading(true);
+    try {
+      const [recent, top, featured, releases, playlists] = await Promise.all([
+        spotifyAPI.getRecentlyPlayed(10),
+        spotifyAPI.getTopTracks(10, "short_term"),
+        spotifyAPI.getFeaturedPlaylists(10),
+        spotifyAPI.getNewReleases(10),
+        spotifyAPI.getUserPlaylists(10),
+      ]);
+      setBrowseRecentlyPlayed(recent);
+      setBrowseTopTracks(top);
+      setBrowseFeaturedPlaylists(featured);
+      setBrowseNewReleases(releases);
+      setSpotifyUserPlaylists(playlists);
+    } catch (err) {
+      console.error("Failed to fetch Spotify browse sections:", err);
+    } finally {
+      setIsSpotifyBrowseSectionsLoading(false);
     }
   }, [spotifyAuth.isConnected]);
 
@@ -1216,6 +1248,49 @@ export default function MusicPlayerSimple() {
     setShowBrowse(false);
   };
 
+  // Play a track from a browse section (recently played, top tracks, etc.)
+  const handlePlayBrowseSectionTrack = async (track: SpotifyTrack, allTracks: SpotifyTrack[]) => {
+    const allUris = allTracks.map((t) => t.uri);
+    const trackIndex = allTracks.findIndex((t) => t.id === track.id);
+    await spotifyAPI.play(undefined, allUris, { position: trackIndex >= 0 ? trackIndex : 0 });
+    setShowBrowse(false);
+  };
+
+  // Play a featured playlist from browse
+  const handlePlayBrowseFeaturedPlaylist = async (playlist: SpotifyAPIPlaylist) => {
+    try {
+      const tracks = await spotifyAPI.getPlaylistTracks(playlist.id);
+      if (tracks.length > 0) {
+        const uris = tracks.map((t) => t.uri);
+        await spotifyAPI.play(undefined, uris, { position: 0 });
+      }
+    } catch (err) {
+      console.error("Failed to play featured playlist:", err);
+    }
+    setShowBrowse(false);
+  };
+
+  // Play a new release album
+  const handlePlayBrowseNewRelease = async (album: { id: string; uri: string }) => {
+    try {
+      await spotifyAPI.play(undefined, undefined, undefined);
+      // Play the album context
+      const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${spotifyAuth.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ context_uri: album.uri }),
+      });
+      if (response.ok) {
+        setShowBrowse(false);
+      }
+    } catch (err) {
+      console.error("Failed to play new release:", err);
+    }
+  };
+
   // Add Spotify browse track to local playlist
   const handleAddSpotifyBrowseTrackToPlaylist = (track: SpotifyTrack) => {
     const musicTrack: MusicTrack = {
@@ -1432,11 +1507,12 @@ export default function MusicPlayerSimple() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                {browseSpotifyPlaylistName && musicSource === "spotify" && (
+                {spotifyBrowseView === "playlist-tracks" && musicSource === "spotify" && (
                   <button
                     onClick={() => {
                       setBrowseSpotifyTracks([]);
                       setBrowseSpotifyPlaylistName(null);
+                      setSpotifyBrowseView("sections");
                     }}
                     className={`p-1 ${colors.hoverBg} rounded-lg`}
                   >
@@ -1445,25 +1521,32 @@ export default function MusicPlayerSimple() {
                 )}
                 <h3 className={`text-sm font-bold ${colors.textPrimary}`}>
                   {musicSource === "spotify"
-                    ? browseSpotifyPlaylistName || "Your Spotify Playlists"
+                    ? spotifyBrowseView === "playlist-tracks"
+                      ? browseSpotifyPlaylistName || "Playlist"
+                      : "Browse"
                     : "Suggested for You"}
                 </h3>
               </div>
               <div className="flex items-center gap-1">
-                {musicSource === "youtube" && (
-                  <button
-                    onClick={() => fetchBrowseVideos(true)}
-                    disabled={isBrowseLoading}
-                    className={`p-1 ${colors.hoverBg} rounded-lg`}
-                  >
-                    <RefreshCw className={`w-4 h-4 ${colors.textMuted} ${isBrowseLoading ? "animate-spin" : ""}`} />
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    if (musicSource === "youtube") {
+                      fetchBrowseVideos(true);
+                    } else {
+                      fetchSpotifyBrowseSections();
+                    }
+                  }}
+                  disabled={isBrowseLoading || isSpotifyBrowseSectionsLoading}
+                  className={`p-1 ${colors.hoverBg} rounded-lg`}
+                >
+                  <RefreshCw className={`w-4 h-4 ${colors.textMuted} ${(isBrowseLoading || isSpotifyBrowseSectionsLoading) ? "animate-spin" : ""}`} />
+                </button>
                 <button
                   onClick={() => {
                     setShowBrowse(false);
                     setBrowseSpotifyTracks([]);
                     setBrowseSpotifyPlaylistName(null);
+                    setSpotifyBrowseView("sections");
                   }}
                   className={`p-1 ${colors.hoverBg} rounded-lg`}
                 >
@@ -1526,9 +1609,9 @@ export default function MusicPlayerSimple() {
                 </>
               ) : (
                 <>
-                  {/* Spotify Browse: playlist list or track list */}
-                  {browseSpotifyPlaylistName ? (
-                    // Showing tracks from a Spotify playlist
+                  {/* Spotify Browse */}
+                  {spotifyBrowseView === "playlist-tracks" ? (
+                    // Showing tracks from a selected playlist
                     <>
                       {isBrowseSpotifyTracksLoading ? (
                         <div className="flex items-center justify-center py-8">
@@ -1582,52 +1665,178 @@ export default function MusicPlayerSimple() {
                         ))
                       )}
                     </>
+                  ) : !spotifyAuth.isConnected ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2">
+                      <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
+                      <p className={`text-sm ${colors.textMuted}`}>Connect Spotify to browse</p>
+                      <button
+                        onClick={() => handleSourceChange("spotify")}
+                        className="text-xs px-3 py-1.5 bg-green-500 text-white rounded-lg"
+                      >
+                        Connect
+                      </button>
+                    </div>
+                  ) : isSpotifyBrowseSectionsLoading && browseRecentlyPlayed.length === 0 ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                    </div>
                   ) : (
-                    // Showing user's Spotify playlists
-                    <>
-                      {!spotifyAuth.isConnected ? (
-                        <p className={`text-center text-sm ${colors.textMuted} py-8`}>
-                          Connect Spotify to browse your playlists
-                        </p>
-                      ) : isSpotifyBrowseLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                    // Browse sections
+                    <div className="space-y-5">
+                      {/* Recently Played */}
+                      {browseRecentlyPlayed.length > 0 && (
+                        <div>
+                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                            Recently Played
+                          </h4>
+                          <div className="space-y-1">
+                            {browseRecentlyPlayed.slice(0, 5).map((track, idx) => (
+                              <button
+                                key={`recent-${track.id}-${idx}`}
+                                onClick={() => handlePlayBrowseSectionTrack(track, browseRecentlyPlayed)}
+                                className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                              >
+                                {track.albumArt ? (
+                                  <img src={track.albumArt} alt={track.name} className="w-10 h-10 rounded object-cover flex-shrink-0" loading="lazy" />
+                                ) : (
+                                  <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                                    <Music2 className={`w-4 h-4 ${colors.textMuted}`} />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{track.name}</p>
+                                  <p className={`text-[10px] ${colors.textMuted} truncate`}>{track.artist}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      ) : spotifyUserPlaylists.length === 0 ? (
-                        <p className={`text-center text-sm ${colors.textMuted} py-8`}>
-                          No playlists found
-                        </p>
-                      ) : (
-                        spotifyUserPlaylists.map((playlist) => (
-                          <button
-                            key={playlist.id}
-                            onClick={() => fetchSpotifyPlaylistTracks(playlist.id, playlist.name)}
-                            className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
-                          >
-                            {playlist.images?.[0]?.url ? (
-                              <img
-                                src={playlist.images[0].url}
-                                alt={playlist.name}
-                                className="w-12 h-12 rounded object-cover flex-shrink-0"
-                              />
-                            ) : (
-                              <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                                <ListMusic className={`w-5 h-5 ${colors.textMuted}`} />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-sm ${colors.textPrimary} truncate`}>
-                                {playlist.name}
-                              </p>
-                              <p className={`text-xs ${colors.textMuted}`}>
-                                {playlist.tracks.total} tracks
-                              </p>
-                            </div>
-                            <ChevronDown className={`w-4 h-4 ${colors.textMuted} -rotate-90 flex-shrink-0`} />
-                          </button>
-                        ))
                       )}
-                    </>
+
+                      {/* Your Top Tracks */}
+                      {browseTopTracks.length > 0 && (
+                        <div>
+                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                            Your Top Tracks
+                          </h4>
+                          <div className="space-y-1">
+                            {browseTopTracks.slice(0, 5).map((track, idx) => (
+                              <button
+                                key={`top-${track.id}-${idx}`}
+                                onClick={() => handlePlayBrowseSectionTrack(track, browseTopTracks)}
+                                className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                              >
+                                {track.albumArt ? (
+                                  <img src={track.albumArt} alt={track.name} className="w-10 h-10 rounded object-cover flex-shrink-0" loading="lazy" />
+                                ) : (
+                                  <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                                    <Music2 className={`w-4 h-4 ${colors.textMuted}`} />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{track.name}</p>
+                                  <p className={`text-[10px] ${colors.textMuted} truncate`}>{track.artist}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Featured Playlists */}
+                      {browseFeaturedPlaylists.length > 0 && (
+                        <div>
+                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                            Featured Playlists
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {browseFeaturedPlaylists.slice(0, 6).map((playlist, idx) => (
+                              <button
+                                key={`feat-${playlist.id}-${idx}`}
+                                onClick={() => handlePlayBrowseFeaturedPlaylist(playlist)}
+                                className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
+                              >
+                                {playlist.images?.[0]?.url ? (
+                                  <img src={playlist.images[0].url} alt={playlist.name} className="w-full aspect-square object-cover" loading="lazy" />
+                                ) : (
+                                  <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
+                                    <ListMusic className={`w-6 h-6 ${colors.textMuted}`} />
+                                  </div>
+                                )}
+                                <div className="p-2 flex-1 min-w-0">
+                                  <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>{playlist.name}</p>
+                                  <p className={`text-[10px] ${colors.textMuted} mt-0.5`}>{playlist.tracks.total} tracks</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* New Releases */}
+                      {browseNewReleases.length > 0 && (
+                        <div>
+                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                            New Releases
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {browseNewReleases.slice(0, 6).map((album, idx) => (
+                              <button
+                                key={`release-${album.id}-${idx}`}
+                                onClick={() => handlePlayBrowseNewRelease(album)}
+                                className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
+                              >
+                                {album.albumArt ? (
+                                  <img src={album.albumArt} alt={album.name} className="w-full aspect-square object-cover" loading="lazy" />
+                                ) : (
+                                  <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
+                                    <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
+                                  </div>
+                                )}
+                                <div className="p-2 flex-1 min-w-0">
+                                  <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>{album.name}</p>
+                                  <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>{album.artist}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Your Playlists */}
+                      {spotifyUserPlaylists.length > 0 && (
+                        <div>
+                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                            Your Playlists
+                          </h4>
+                          <div className="space-y-1">
+                            {spotifyUserPlaylists.map((playlist) => (
+                              <button
+                                key={`pl-${playlist.id}`}
+                                onClick={() => {
+                                  fetchSpotifyPlaylistTracks(playlist.id, playlist.name);
+                                  setSpotifyBrowseView("playlist-tracks");
+                                }}
+                                className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                              >
+                                {playlist.images?.[0]?.url ? (
+                                  <img src={playlist.images[0].url} alt={playlist.name} className="w-10 h-10 rounded object-cover flex-shrink-0" loading="lazy" />
+                                ) : (
+                                  <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                                    <ListMusic className={`w-4 h-4 ${colors.textMuted}`} />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{playlist.name}</p>
+                                  <p className={`text-[10px] ${colors.textMuted}`}>{playlist.tracks.total} tracks</p>
+                                </div>
+                                <ChevronDown className={`w-4 h-4 ${colors.textMuted} -rotate-90 flex-shrink-0`} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </>
               )}
@@ -1881,10 +2090,13 @@ export default function MusicPlayerSimple() {
                   <button
                     onClick={() => {
                       setShowBrowse(true);
+                      setSpotifyBrowseView("sections");
+                      setBrowseSpotifyTracks([]);
+                      setBrowseSpotifyPlaylistName(null);
                       if (musicSource === "youtube") {
                         fetchBrowseVideos();
                       } else {
-                        fetchSpotifyBrowse();
+                        fetchSpotifyBrowseSections();
                       }
                     }}
                     className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}

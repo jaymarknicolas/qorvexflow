@@ -428,6 +428,146 @@ export class SpotifyAPIService {
   }
 
   /**
+   * Get recently played tracks
+   */
+  async getRecentlyPlayed(limit: number = 20): Promise<SpotifyTrack[]> {
+    if (!this.accessToken) return [];
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/me/player/recently-played?limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) return [];
+
+      const data = await response.json();
+
+      // Deduplicate by track id (same track may appear multiple times)
+      const seen = new Set<string>();
+      return data.items
+        .filter((item: any) => {
+          if (!item.track || seen.has(item.track.id)) return false;
+          seen.add(item.track.id);
+          return true;
+        })
+        .map((item: any) => ({
+          id: item.track.id,
+          name: item.track.name,
+          artist: item.track.artists[0]?.name || "Unknown",
+          album: item.track.album.name,
+          albumArt: item.track.album.images[0]?.url || "",
+          uri: item.track.uri,
+          duration_ms: item.track.duration_ms,
+        }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get user's top tracks
+   */
+  async getTopTracks(limit: number = 20, timeRange: "short_term" | "medium_term" | "long_term" = "short_term"): Promise<SpotifyTrack[]> {
+    if (!this.accessToken) return [];
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/me/top/tracks?limit=${limit}&time_range=${timeRange}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) return [];
+
+      const data = await response.json();
+
+      return data.items.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        artist: item.artists[0]?.name || "Unknown",
+        album: item.album.name,
+        albumArt: item.album.images[0]?.url || "",
+        uri: item.uri,
+        duration_ms: item.duration_ms,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get featured playlists
+   */
+  async getFeaturedPlaylists(limit: number = 10): Promise<SpotifyPlaylist[]> {
+    if (!this.accessToken) return [];
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/browse/featured-playlists?limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) return [];
+
+      const data = await response.json();
+
+      return (data.playlists?.items || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description || "",
+        images: item.images || [],
+        tracks: { total: item.tracks?.total || 0 },
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get new album releases
+   */
+  async getNewReleases(limit: number = 10): Promise<{ id: string; name: string; artist: string; albumArt: string; uri: string }[]> {
+    if (!this.accessToken) return [];
+
+    try {
+      const response = await fetch(
+        `${SPOTIFY_API_BASE}/browse/new-releases?limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) return [];
+
+      const data = await response.json();
+
+      return (data.albums?.items || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        artist: item.artists[0]?.name || "Unknown",
+        albumArt: item.images[0]?.url || "",
+        uri: item.uri,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Get available devices
    */
   async getDevices(): Promise<any[]> {
