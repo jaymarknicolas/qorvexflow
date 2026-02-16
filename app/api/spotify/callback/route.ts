@@ -36,10 +36,13 @@ export async function GET(request: NextRequest) {
   const data = await tokenResponse.json();
 
   if (data.access_token) {
-    // We send the token back to the frontend in the HASH (#)
-    // so your existing useSpotifyAuth hook can read it automatically.
+    // Send tokens back to the frontend in the HASH (#)
     const responseUrl = new URL("/", request.url);
-    responseUrl.hash = `access_token=${data.access_token}&expires_in=${data.expires_in}`;
+    const hashParts = [`access_token=${data.access_token}`, `expires_in=${data.expires_in}`];
+    if (data.refresh_token) {
+      hashParts.push(`refresh_token=${data.refresh_token}`);
+    }
+    responseUrl.hash = hashParts.join("&");
     return NextResponse.redirect(responseUrl);
   }
 

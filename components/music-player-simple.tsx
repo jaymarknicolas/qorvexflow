@@ -31,6 +31,7 @@ import {
   ListMusic,
   RefreshCw,
   LayoutGrid,
+  ArrowLeft,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
@@ -500,7 +501,7 @@ export default function MusicPlayerSimple() {
   }, [getCurrentMusicTrack, sourcePlaylists, activePlaylistId, addTrackToPlaylist, removeTrackFromPlaylist, isCurrentTrackInPlaylist, showPlaylistPicker]);
 
   // Browse: fetch YouTube suggestions
-  const fetchBrowseVideos = useCallback(async () => {
+  const fetchBrowseVideos = useCallback(async (force = false) => {
     setIsBrowseLoading(true);
     try {
       const history = getSearchHistory();
@@ -508,6 +509,9 @@ export default function MusicPlayerSimple() {
       const params = new URLSearchParams({ theme: themeParam });
       if (history.length > 0) {
         params.set("interests", history.slice(0, 10).join(","));
+      }
+      if (force) {
+        params.set("_t", Date.now().toString());
       }
       const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
       if (resp.ok) {
@@ -550,7 +554,7 @@ export default function MusicPlayerSimple() {
   }, []);
 
   // Dashboard: fetch YouTube suggestions on mount
-  const fetchDashboardVideos = useCallback(async () => {
+  const fetchDashboardVideos = useCallback(async (force = false) => {
     setIsDashboardLoading(true);
     try {
       const history = getSearchHistory();
@@ -558,6 +562,10 @@ export default function MusicPlayerSimple() {
       const params = new URLSearchParams({ theme: themeParam });
       if (history.length > 0) {
         params.set("interests", history.slice(0, 10).join(","));
+      }
+      // Cache-buster when explicitly refreshing to bypass browser HTTP cache
+      if (force) {
+        params.set("_t", Date.now().toString());
       }
       const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
       if (resp.ok) {
@@ -1017,6 +1025,7 @@ export default function MusicPlayerSimple() {
       await spotifyPlayback.setRepeat("track");
     }
     setShowSearch(false);
+    setShowDashboard(false);
     setSearchQuery("");
     setSpotifySearchResults([]);
   };
@@ -1038,6 +1047,7 @@ export default function MusicPlayerSimple() {
       duration: result.duration,
     });
     setShowSearch(false);
+    setShowDashboard(false);
     setSearchQuery("");
     youtubeSearch.clearResults();
   };
@@ -1249,7 +1259,7 @@ export default function MusicPlayerSimple() {
               </button>
             </form>
 
-            <div className="flex-1 overflow-y-auto space-y-2">
+            <div className="flex-1 overflow-y-auto scrollbar-hide space-y-2">
               {musicSource === "spotify" ? (
                 <>
                   {spotifySearchResults.map((track, idx) => (
@@ -1401,7 +1411,7 @@ export default function MusicPlayerSimple() {
               <div className="flex items-center gap-1">
                 {musicSource === "youtube" && (
                   <button
-                    onClick={fetchBrowseVideos}
+                    onClick={() => fetchBrowseVideos(true)}
                     disabled={isBrowseLoading}
                     className={`p-1 ${colors.hoverBg} rounded-lg`}
                   >
@@ -1421,7 +1431,7 @@ export default function MusicPlayerSimple() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2">
+            <div className="flex-1 overflow-y-auto scrollbar-hide space-y-2">
               {musicSource === "youtube" ? (
                 <>
                   {isBrowseLoading ? (
@@ -1790,29 +1800,39 @@ export default function MusicPlayerSimple() {
             {/* Controls */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {/* Dashboard Toggle */}
-              {!showDashboard && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => {
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (showDashboard) {
+                        setShowDashboard(false);
+                      } else {
                         setShowDashboard(true);
                         if (musicSource === "youtube" && dashboardVideos.length === 0) {
                           fetchDashboardVideos();
                         } else if (musicSource === "spotify" && dashboardSpotifyPlaylists.length === 0) {
                           fetchDashboardSpotify();
                         }
-                      }}
-                      className={`p-2 rounded-lg ${colors.hoverBg} transition-colors ${colors.accent}`}
-                      aria-label="Dashboard"
-                    >
+                      }
+                    }}
+                    className={`p-2 rounded-lg transition-colors ${
+                      showDashboard
+                        ? `${colors.accentBg} ${colors.accent}`
+                        : `${colors.hoverBg} ${colors.accent}`
+                    }`}
+                    aria-label={showDashboard ? "Back to player" : "Dashboard"}
+                  >
+                    {showDashboard ? (
+                      <ArrowLeft className="w-4 h-4" />
+                    ) : (
                       <LayoutGrid className="w-4 h-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Dashboard</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{showDashboard ? "Back to player" : "Dashboard"}</p>
+                </TooltipContent>
+              </Tooltip>
 
               {/* Browse */}
               <Tooltip>
@@ -1991,7 +2011,7 @@ export default function MusicPlayerSimple() {
         {/* Dashboard / Player Body */}
         {showDashboard ? (
           /* Dashboard Grid */
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto scrollbar-hide min-h-0">
             <div className="flex items-center justify-between mb-3">
               <h3 className={`text-xs font-semibold ${colors.textMuted} uppercase tracking-wider`}>
                 {musicSource === "spotify" ? "Your Playlists" : "Suggested for You"}
@@ -1999,7 +2019,7 @@ export default function MusicPlayerSimple() {
               <button
                 onClick={() => {
                   if (musicSource === "youtube") {
-                    fetchDashboardVideos();
+                    fetchDashboardVideos(true);
                   } else {
                     fetchDashboardSpotify();
                   }
@@ -2021,7 +2041,7 @@ export default function MusicPlayerSimple() {
                   <Music2 className={`w-8 h-8 ${colors.textMuted}`} />
                   <p className={`text-sm ${colors.textMuted}`}>No suggestions yet</p>
                   <button
-                    onClick={fetchDashboardVideos}
+                    onClick={() => fetchDashboardVideos(true)}
                     className={`text-xs px-3 py-1.5 bg-gradient-to-r ${colors.primary} text-white rounded-lg`}
                   >
                     Load Suggestions

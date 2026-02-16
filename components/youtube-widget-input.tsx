@@ -22,6 +22,8 @@ import {
   Check,
   FolderPlus,
   RefreshCw,
+  LayoutGrid,
+  Pause,
 } from "lucide-react";
 import { useTheme } from "@/lib/contexts/theme-context";
 import {
@@ -312,6 +314,7 @@ export default function YouTubeWidgetInput() {
     "player" | "search" | "streams" | "playlist"
   >("player");
   const [showControls] = useState(true);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   // === Persist state ===
   useEffect(() => {
@@ -360,6 +363,10 @@ export default function YouTubeWidgetInput() {
         const history = getSearchHistory();
         if (history.length > 0) {
           params.set("interests", history.slice(0, 10).join(","));
+        }
+        // Cache-buster when explicitly refreshing to bypass browser HTTP cache
+        if (force) {
+          params.set("_t", Date.now().toString());
         }
 
         const res = await fetch(`/api/youtube/suggested?${params.toString()}`);
@@ -502,9 +509,36 @@ export default function YouTubeWidgetInput() {
     }
   };
 
+  // Fetch related videos for the ended overlay
+  const fetchRelatedVideos = useCallback(async (videoTitle: string) => {
+    setIsLoadingSuggestions(true);
+    try {
+      // Use the video title as a search query to find related content
+      const query = videoTitle
+        .replace(/[\[\](){}|]/g, "")
+        .split(" ")
+        .slice(0, 6)
+        .join(" ");
+      const res = await fetch(
+        `/api/youtube/search?q=${encodeURIComponent(query)}`,
+      );
+      const data = await res.json();
+      if (data.videos?.length > 0) {
+        setEndedSuggestions(data.videos);
+      }
+    } catch {
+      // Fail silently
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, []);
+
   // Play a video
   const playVideo = (video: VideoItem) => {
     hasStartedRef.current = true;
+    setShowEndedOverlay(false);
+    setShowDashboard(false);
+    setEndedSuggestions([]);
     setCurrentVideo({
       ...video,
       thumbnail: video.thumbnail || getThumbnail(video.id),
@@ -639,6 +673,11 @@ export default function YouTubeWidgetInput() {
   const playerRef = useRef<any>(null);
   const playerWrapperRef = useRef<HTMLDivElement>(null);
 
+  // Suggested videos overlay (shown when a video ends)
+  const [endedSuggestions, setEndedSuggestions] = useState<SearchResult[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [showEndedOverlay, setShowEndedOverlay] = useState(false);
+
   // Load YouTube IFrame API script once
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -700,8 +739,23 @@ export default function YouTubeWidgetInput() {
             }
           },
           onStateChange: (event: any) => {
+            // Video ended
             if (event.data === 0) {
-              playNext();
+              const cv = currentVideoRef.current;
+              const pl = playlistRef.current;
+              // If there's a next video in playlist, auto-play it
+              if (cv && pl.length > 0) {
+                const idx = pl.findIndex((p) => p.id === cv.id);
+                if (idx >= 0 && idx < pl.length - 1) {
+                  playNext();
+                  return;
+                }
+              }
+              // Otherwise show our own suggestions overlay
+              setShowEndedOverlay(true);
+              if (cv?.title) {
+                fetchRelatedVideos(cv.title);
+              }
             }
             if (event.data === 1) {
               hasStartedRef.current = true;
@@ -721,7 +775,7 @@ export default function YouTubeWidgetInput() {
 
     const timer = setTimeout(waitForAPI, 50);
     return () => clearTimeout(timer);
-  }, [currentVideo?.id, playNext]);
+  }, [currentVideo?.id, playNext, fetchRelatedVideos]);
 
   // Cleanup player on unmount
   useEffect(() => {
@@ -760,7 +814,7 @@ export default function YouTubeWidgetInput() {
 
   // === Render: Search Results ===
   const renderSearchResults = () => (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto scrollbar-hide">
       {isSearching ? (
         <div className="flex items-center justify-center h-full">
           <Loader2
@@ -897,7 +951,7 @@ export default function YouTubeWidgetInput() {
   // === Render: Streams ===
   const renderStreams = () => (
     <div
-      className={`flex-1 overflow-y-auto ${isVeryCompact ? "p-2" : "p-3"}`}
+      className={`flex-1 overflow-y-auto scrollbar-hide ${isVeryCompact ? "p-2" : "p-3"}`}
     >
       <div className="space-y-4">
         {CURATED_STREAMS.map((category) => (
@@ -988,7 +1042,7 @@ export default function YouTubeWidgetInput() {
   const renderPlaylist = () => (
     <TooltipProvider delayDuration={300}>
     <div
-      className={`flex-1 overflow-y-auto ${isVeryCompact ? "p-2" : "p-3"}`}
+      className={`flex-1 overflow-y-auto scrollbar-hide ${isVeryCompact ? "p-2" : "p-3"}`}
     >
       {/* Playlist selector header */}
       <div className={`mb-3 ${isVeryCompact ? "space-y-1.5" : "space-y-2"}`}>
@@ -1272,7 +1326,7 @@ export default function YouTubeWidgetInput() {
     if (!currentVideo) {
       return (
         <div
-          className={`flex-1 overflow-y-auto ${isVeryCompact ? "p-2" : "p-3"}`}
+          className={`flex-1 overflow-y-auto scrollbar-hide ${isVeryCompact ? "p-2" : "p-3"}`}
         >
           {/* Dashboard grid */}
           {isDashboardLoading ? (
@@ -1394,16 +1448,255 @@ export default function YouTubeWidgetInput() {
 
     return (
       <>
-        {/* Video */}
-        <div className="flex-1 bg-black relative min-h-0">
+        {/* Video player area */}
+        <div className={`flex-1 bg-black relative min-h-0 ${showDashboard ? "flex flex-col" : ""}`}>
+          {/* YouTube player — hidden but kept in DOM when dashboard is open so audio continues */}
           <div
             ref={playerWrapperRef}
-            className="absolute inset-0 w-full h-full"
+            className={showDashboard ? "absolute w-1 h-1 overflow-hidden opacity-0 pointer-events-none" : "absolute inset-0 w-full h-full"}
           />
+
+          {/* Dashboard overlay — shown when user clicks dashboard while video plays */}
+          {showDashboard && (
+            <div className="absolute inset-0 z-10 flex flex-col bg-gradient-to-br from-black/95 via-black/90 to-black/95 backdrop-blur-sm">
+              {/* Dashboard scrollable content */}
+              <div
+                className={`flex-1 overflow-y-auto scrollbar-hide ${isVeryCompact ? "p-2" : "p-3"}`}
+              >
+                {isDashboardLoading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2
+                      className={`animate-spin ${colors.accent} w-6 h-6`}
+                    />
+                  </div>
+                ) : dashboardVideos.length > 0 ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p
+                        className={`text-white/50 font-medium ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                      >
+                        Suggested for you
+                      </p>
+                      <button
+                        onClick={() => fetchDashboard(true)}
+                        className="p-1 text-white/30 hover:text-white transition-colors rounded"
+                        title="Refresh suggestions"
+                      >
+                        <RefreshCw
+                          className={`${isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"} ${isDashboardLoading ? "animate-spin" : ""}`}
+                        />
+                      </button>
+                    </div>
+                    <div
+                      className={`grid gap-2 ${isVeryCompact ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"}`}
+                    >
+                      {dashboardVideos.map((video) => (
+                        <div
+                          key={video.id}
+                          onClick={() => {
+                            playVideo(video);
+                            setShowDashboard(false);
+                          }}
+                          className={`rounded-lg bg-white/5 ${colors.cardHover} cursor-pointer overflow-hidden transition-colors group`}
+                        >
+                          <div className="relative aspect-video">
+                            <img
+                              src={video.thumbnail}
+                              alt={video.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Play className="w-6 h-6 text-white" />
+                            </div>
+                          </div>
+                          <div className={isVeryCompact ? "p-1" : "p-1.5"}>
+                            <p
+                              className={`text-white line-clamp-2 leading-tight ${isVeryCompact ? "text-[9px]" : "text-[10px]"}`}
+                            >
+                              {video.title}
+                            </p>
+                            {!isVeryCompact && video.channel && (
+                              <p className="text-white/40 text-[9px] truncate mt-0.5">
+                                {video.channel}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Youtube
+                      className={`${colors.accent} ${isVeryCompact ? "w-6 h-6" : "w-8 h-8"} mb-3`}
+                    />
+                    <p className="text-white/40 text-sm mb-2">No suggestions yet</p>
+                    <button
+                      onClick={() => fetchDashboard(true)}
+                      className={`flex items-center gap-1.5 ${colors.accentBg} ${colors.accentBgHover} ${colors.accent} rounded-lg transition-colors px-3 py-1.5 text-xs`}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Load Suggestions
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Mini preview bar — shows currently playing video */}
+              <div
+                className={`flex-shrink-0 border-t border-white/10 bg-black/60 backdrop-blur-sm cursor-pointer hover:bg-white/5 transition-colors ${
+                  isVeryCompact ? "p-1.5" : "p-2"
+                }`}
+                onClick={() => setShowDashboard(false)}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`relative flex-shrink-0 rounded overflow-hidden bg-black/50 ${
+                      isVeryCompact ? "w-12 h-8" : "w-16 h-10"
+                    }`}
+                  >
+                    <img
+                      src={currentVideo.thumbnail || getThumbnail(currentVideo.id)}
+                      alt={currentVideo.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <Pause
+                        className={`text-white ${isVeryCompact ? "w-2.5 h-2.5" : "w-3 h-3"}`}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-white font-medium truncate ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                    >
+                      {currentVideo.title}
+                    </p>
+                    <p
+                      className={`${colors.accent} ${isVeryCompact ? "text-[8px]" : "text-[10px]"}`}
+                    >
+                      Now Playing
+                    </p>
+                  </div>
+                  <div
+                    className={`flex-shrink-0 p-1.5 rounded-lg ${colors.accentBg} ${colors.accent}`}
+                  >
+                    <Play
+                      className={isVeryCompact ? "w-3 h-3" : "w-3.5 h-3.5"}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Suggestions overlay — shown when video ends */}
+          {showEndedOverlay && !showDashboard && (
+            <div className="absolute inset-0 z-10 bg-black/90 backdrop-blur-sm overflow-y-auto scrollbar-hide">
+              <div className={isVeryCompact ? "p-2" : "p-3"}>
+                <div className="flex items-center justify-between mb-2">
+                  <p
+                    className={`text-white/60 font-medium ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                  >
+                    Up next
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowEndedOverlay(false);
+                      // Replay current video
+                      try {
+                        playerRef.current?.seekTo(0);
+                        playerRef.current?.playVideo();
+                      } catch {}
+                    }}
+                    className={`flex items-center gap-1 text-white/50 hover:text-white transition-colors ${
+                      isVeryCompact ? "text-[9px]" : "text-[11px]"
+                    }`}
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Replay
+                  </button>
+                </div>
+
+                {isLoadingSuggestions ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2
+                      className={`animate-spin ${colors.accent} w-6 h-6`}
+                    />
+                  </div>
+                ) : endedSuggestions.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {endedSuggestions.map((video) => (
+                      <div
+                        key={video.id}
+                        className={`flex gap-2 rounded-lg bg-white/5 ${colors.cardHover} transition-colors cursor-pointer overflow-hidden ${
+                          isVeryCompact ? "p-1.5" : "p-2"
+                        }`}
+                        onClick={() => playVideo(video)}
+                      >
+                        <div
+                          className={`relative flex-shrink-0 rounded overflow-hidden bg-black/50 ${
+                            isVeryCompact ? "w-16 h-10" : "w-24 h-14"
+                          }`}
+                        >
+                          <img
+                            src={video.thumbnail}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
+                            <Play className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <p
+                            className={`text-white font-medium line-clamp-2 ${isVeryCompact ? "text-[10px]" : "text-xs"}`}
+                          >
+                            {video.title}
+                          </p>
+                          {video.channel && (
+                            <p
+                              className={`text-white/40 truncate ${isVeryCompact ? "text-[9px]" : "text-[11px]"}`}
+                            >
+                              {video.channel}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToPlaylist(video);
+                          }}
+                          className={`self-center p-1.5 rounded-lg bg-white/10 text-white/50 hover:text-white hover:bg-white/20 transition-colors flex-shrink-0 ${
+                            isInPlaylist(video.id)
+                              ? `${colors.accent} ${colors.accentBg}`
+                              : ""
+                          }`}
+                          title="Add to playlist"
+                        >
+                          <Plus
+                            className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <p className="text-white/40 text-sm">
+                      No suggestions available
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Controls */}
-        {showControls && (
+        {/* Controls — hidden when dashboard overlay is active */}
+        {showControls && !showDashboard && (
           <TooltipProvider delayDuration={300}>
             <div
               className={`flex-shrink-0 border-t border-white/10 bg-black/40 ${
@@ -1597,6 +1890,43 @@ export default function YouTubeWidgetInput() {
             {/* Nav buttons */}
             {view === "player" && (
               <div className="flex items-center gap-1">
+                {/* Dashboard toggle */}
+                {currentVideo && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => {
+                          if (showDashboard) {
+                            setShowDashboard(false);
+                          } else {
+                            setShowDashboard(true);
+                            if (dashboardVideos.length === 0) {
+                              fetchDashboard(true);
+                            }
+                          }
+                        }}
+                        className={`rounded-lg transition-colors ${
+                          showDashboard
+                            ? `${colors.accentBg} ${colors.accent}`
+                            : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                        } ${isVeryCompact ? "p-1.5" : "p-2"}`}
+                      >
+                        {showDashboard ? (
+                          <ArrowLeft
+                            className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                          />
+                        ) : (
+                          <LayoutGrid
+                            className={isVeryCompact ? "w-3 h-3" : "w-4 h-4"}
+                          />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{showDashboard ? "Back to player" : "Dashboard"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
