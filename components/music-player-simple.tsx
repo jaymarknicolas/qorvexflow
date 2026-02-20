@@ -654,13 +654,7 @@ export default function MusicPlayerSimple() {
         setDashboardSpotifyTracks(tracks);
       }
     } catch (err) {
-      // Auth error (stale token missing required scopes) — disconnect so user re-authenticates
-      if (err instanceof Error && err.message.startsWith("spotify_auth_error:")) {
-        spotifyAuth.disconnect();
-        setMusicSource("youtube");
-      } else {
-        console.error("Failed to fetch Spotify suggested tracks:", err);
-      }
+      // Silently ignore — user can retry with the "Load Suggestions" button
     } finally {
       setIsDashboardSpotifyTracksLoading(false);
     }

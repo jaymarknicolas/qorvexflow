@@ -179,7 +179,7 @@ export function useSpotifyAuth(): UseSpotifyAuthReturn {
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("redirect_uri", redirectUri!);
     authUrl.searchParams.set("scope", scopes.join(" "));
-    authUrl.searchParams.set("show_dialog", "false");
+    authUrl.searchParams.set("show_dialog", "true");
 
     window.location.href = authUrl.toString();
   }, []);
