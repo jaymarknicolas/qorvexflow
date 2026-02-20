@@ -23,6 +23,7 @@ import {
 import type { WidgetDefinition } from "@/types";
 import { useResponsive } from "@/lib/hooks/useResponsive";
 import { useTheme } from "@/lib/contexts/theme-context";
+import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
@@ -171,6 +172,8 @@ function WidgetIcon({
     id,
     data: { from: "sidebar" },
   });
+  const { effectiveColorScheme } = useAppSettings();
+  const isLight = effectiveColorScheme === "light";
 
   const colors = widgetColors[id] || widgetColors.pomodoro;
 
@@ -218,8 +221,12 @@ function WidgetIcon({
             className={`absolute inset-0 rounded-xl bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-300`}
           />
 
-          {/* Glass morphism background */}
-          <div className="absolute inset-0 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-300" />
+          {/* Glass morphism background — adapts to light/dark */}
+          <div className={`absolute inset-0 rounded-xl backdrop-blur-sm border transition-all duration-300 ${
+            isLight
+              ? "bg-black/5 border-black/10 group-hover:bg-black/10 group-hover:border-black/20"
+              : "bg-white/5 border-white/10 group-hover:bg-white/10 group-hover:border-white/20"
+          }`} />
 
           {/* Glow effect */}
           <div
@@ -234,7 +241,9 @@ function WidgetIcon({
           </div>
 
           {/* Label */}
-          <span className="relative z-10 text-[10px] font-medium text-white/60 group-hover:text-white transition-colors duration-300 truncate max-w-full px-1">
+          <span className={`relative z-10 text-[10px] font-medium transition-colors duration-300 truncate max-w-full px-1 ${
+            isLight ? "text-black/50 group-hover:text-black/80" : "text-white/60 group-hover:text-white"
+          }`}>
             {label}
           </span>
         </motion.div>
@@ -298,46 +307,102 @@ export default function WidgetSidebar({
     [usedWidgets],
   );
 
-  // Get theme-based colors
+  const { effectiveColorScheme } = useAppSettings();
+  const isLight = effectiveColorScheme === "light";
+
+  // Get theme-based colors — light/dark mode aware
   const getThemeAccent = () => {
     if (theme === "ghibli") {
-      return {
-        primary: "from-green-500 to-emerald-500",
-        secondary: "from-amber-500 to-yellow-500",
-        glow: "shadow-green-500/40",
-        border: "border-green-500/30",
-        bg: "bg-green-950/90",
-        text: "text-green-400",
-      };
+      return isLight
+        ? {
+            primary: "from-green-500 to-emerald-500",
+            secondary: "from-amber-500 to-yellow-500",
+            glow: "shadow-green-500/30",
+            border: "border-green-300/40",
+            bg: "bg-green-50/95",
+            text: "text-green-700",
+            heading: "text-green-900",
+            subtext: "text-green-700/60",
+          }
+        : {
+            primary: "from-green-500 to-emerald-500",
+            secondary: "from-amber-500 to-yellow-500",
+            glow: "shadow-green-500/40",
+            border: "border-green-500/30",
+            bg: "bg-green-950/90",
+            text: "text-green-400",
+            heading: "text-white",
+            subtext: "text-white/40",
+          };
     }
     if (theme === "coffeeshop") {
-      return {
-        primary: "from-amber-500 to-orange-500",
-        secondary: "from-yellow-500 to-amber-500",
-        glow: "shadow-amber-500/40",
-        border: "border-amber-500/30",
-        bg: "bg-stone-950/90",
-        text: "text-amber-400",
-      };
+      return isLight
+        ? {
+            primary: "from-amber-500 to-orange-500",
+            secondary: "from-yellow-500 to-amber-500",
+            glow: "shadow-amber-500/30",
+            border: "border-amber-300/40",
+            bg: "bg-amber-50/95",
+            text: "text-amber-700",
+            heading: "text-amber-950",
+            subtext: "text-amber-700/60",
+          }
+        : {
+            primary: "from-amber-500 to-orange-500",
+            secondary: "from-yellow-500 to-amber-500",
+            glow: "shadow-amber-500/40",
+            border: "border-amber-500/30",
+            bg: "bg-stone-950/90",
+            text: "text-amber-400",
+            heading: "text-white",
+            subtext: "text-white/40",
+          };
     }
     if (theme === "horizon") {
-      return {
-        primary: "from-orange-500 via-sky-500 to-violet-500",
-        secondary: "from-sky-500 to-violet-500",
-        glow: "shadow-sky-500/40",
-        border: "border-sky-500/30",
-        bg: "bg-slate-950/90",
-        text: "text-sky-400",
-      };
+      return isLight
+        ? {
+            primary: "from-orange-500 via-sky-500 to-violet-500",
+            secondary: "from-sky-500 to-violet-500",
+            glow: "shadow-sky-500/30",
+            border: "border-sky-300/40",
+            bg: "bg-sky-50/95",
+            text: "text-sky-700",
+            heading: "text-slate-900",
+            subtext: "text-slate-600/60",
+          }
+        : {
+            primary: "from-orange-500 via-sky-500 to-violet-500",
+            secondary: "from-sky-500 to-violet-500",
+            glow: "shadow-sky-500/40",
+            border: "border-sky-500/30",
+            bg: "bg-slate-950/90",
+            text: "text-sky-400",
+            heading: "text-white",
+            subtext: "text-white/40",
+          };
     }
-    return {
-      primary: "from-violet-500 to-purple-500",
-      secondary: "from-cyan-500 to-blue-500",
-      glow: "shadow-violet-500/40",
-      border: "border-violet-500/30",
-      bg: "bg-slate-950/90",
-      text: "text-violet-400",
-    };
+    // lofi (default)
+    return isLight
+      ? {
+          primary: "from-violet-500 to-purple-500",
+          secondary: "from-cyan-500 to-blue-500",
+          glow: "shadow-violet-500/30",
+          border: "border-violet-300/40",
+          bg: "bg-violet-50/95",
+          text: "text-violet-700",
+          heading: "text-violet-950",
+          subtext: "text-violet-700/60",
+        }
+      : {
+          primary: "from-violet-500 to-purple-500",
+          secondary: "from-cyan-500 to-blue-500",
+          glow: "shadow-violet-500/40",
+          border: "border-violet-500/30",
+          bg: "bg-slate-950/90",
+          text: "text-violet-400",
+          heading: "text-white",
+          subtext: "text-white/40",
+        };
   };
 
   const themeAccent = getThemeAccent();
@@ -493,11 +558,11 @@ export default function WidgetSidebar({
                 <div className="flex items-center justify-between mb-4 px-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className={`h-5 w-5 ${themeAccent.text}`} />
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className={`text-lg font-semibold ${themeAccent.heading}`}>
                       Add Widgets
                     </h3>
                   </div>
-                  <span className="text-xs text-white/40">Drag to canvas</span>
+                  <span className={`text-xs ${themeAccent.subtext}`}>Drag to canvas</span>
                 </div>
 
                 {/* Widget Grid - 4 columns on mobile */}
@@ -551,11 +616,11 @@ export default function WidgetSidebar({
                 <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className={`h-4 w-4 ${themeAccent.text}`} />
-                    <h3 className="text-sm font-semibold text-white">
+                    <h3 className={`text-sm font-semibold ${themeAccent.heading}`}>
                       Widgets
                     </h3>
                   </div>
-                  <span className="text-[10px] text-white/40 font-medium">
+                  <span className={`text-[10px] font-medium ${themeAccent.subtext}`}>
                     Drag to canvas
                   </span>
                 </div>

@@ -163,7 +163,8 @@ export default function Home() {
     isOpen: boolean;
   }>({ type: null, isOpen: false });
   const { theme } = useTheme();
-  const { settings } = useAppSettings();
+  const { settings, effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
 
   // Use carousel mode on mobile and tablet (no scroll, paginated)
   const useCarouselMode = isMobile || isTablet;
@@ -535,18 +536,27 @@ export default function Home() {
       {/* Ambient nature scene background (for time-based & weather themes) */}
       <AmbientSceneBackground />
 
-      {/* Animated background effects */}
-      <div className="fixed inset-0 opacity-30 pointer-events-none z-[1]">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse"></div>
-        <div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 right-0 w-96 h-96 bg-orange-500 rounded-full mix-blend-screen filter blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-      </div>
+      {/* Animated background glow blobs — theme-aware, hidden in lightweight mode */}
+      {settings.performanceMode !== "lightweight" && (() => {
+        // Pick blob colors per theme
+        const blobs =
+          theme === "ghibli"
+            ? ["bg-green-500", "bg-amber-500", "bg-emerald-400"]
+            : theme === "coffeeshop"
+            ? ["bg-amber-500", "bg-orange-500", "bg-yellow-400"]
+            : theme === "horizon"
+            ? ["bg-sky-400", "bg-violet-500", "bg-orange-400"]
+            : ["bg-cyan-500", "bg-purple-500", "bg-pink-400"]; // lofi
+        const blendMode = isLightMode ? "mix-blend-multiply" : "mix-blend-screen";
+        const opacity = isLightMode ? "opacity-15" : "opacity-25";
+        return (
+          <div className={`fixed inset-0 ${opacity} pointer-events-none z-1`}>
+            <div className={`absolute top-0 left-1/4 w-96 h-96 ${blobs[0]} rounded-full ${blendMode} filter blur-3xl animate-pulse`} />
+            <div className={`absolute bottom-0 right-1/4 w-96 h-96 ${blobs[1]} rounded-full ${blendMode} filter blur-3xl animate-pulse`} style={{ animationDelay: "2s" }} />
+            <div className={`absolute top-1/2 right-0 w-96 h-96 ${blobs[2]} rounded-full ${blendMode} filter blur-3xl animate-pulse`} style={{ animationDelay: "1s" }} />
+          </div>
+        );
+      })()}
 
       {/* Weather particle overlay */}
       <WeatherParticles />

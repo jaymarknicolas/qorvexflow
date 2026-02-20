@@ -684,7 +684,8 @@ export default function AmbientSceneBackground() {
     isWeatherThemeActive,
     isHorizonThemeActive,
   } = useAmbient();
-  const { settings } = useAppSettings();
+  const { settings, effectiveColorScheme } = useAppSettings();
+  const isLightMode = effectiveColorScheme === "light";
 
   // Don't render in lightweight mode or if no ambient theme is active
   if (
@@ -712,8 +713,9 @@ export default function AmbientSceneBackground() {
         </div>
       )}
 
-      {/* Subtle overlay to ensure text readability */}
-      <div className="absolute inset-0 bg-black/20" />
+      {/* Readability overlay — light mode washes out dark scenes to match the light palette;
+          dark mode adds a subtle dark veil to deepen contrast */}
+      <div className={`absolute inset-0 ${isLightMode ? "bg-white/65" : "bg-black/20"}`} />
     </div>
   );
 }

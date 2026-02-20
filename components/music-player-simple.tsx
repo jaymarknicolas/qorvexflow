@@ -805,33 +805,44 @@ export default function MusicPlayerSimple() {
           : prevThemeRef.current === "coffeeshop"
             ? "coffeeshop"
             : "lofi";
+      // Save current position for the previous theme
       themeStateRef.current[prevThemeKey] = {
         track: currentTrack,
         isPlaying: youtubePlayer.isPlaying,
       };
 
-      const newThemeKey =
-        theme === "ghibli"
-          ? "ghibli"
-          : theme === "coffeeshop"
-            ? "coffeeshop"
-            : "lofi";
-      const savedState = themeStateRef.current[newThemeKey];
-      setCurrentTrack(savedState.track);
+      // If currently playing from the preset list, do NOT interrupt the active track.
+      // VIDEO_LIST is derived from `theme` so the next auto-play will already use
+      // the new theme's tracks without any extra action here.
+      const playingFromPresets = youtubePlayer.isPlaying && !youtubeSearchQueue;
 
-      // Load the new theme's track
-      const newVideoList =
-        theme === "ghibli"
-          ? GHIBLI_VIDEO_IDS
-          : theme === "coffeeshop"
-            ? COFFEESHOP_VIDEO_IDS
-            : LOFI_VIDEO_IDS;
-      const video = newVideoList[savedState.track];
-      if (video && youtubePlayer.isReady) {
-        youtubePlayer.loadVideo(video.id, {
-          title: video.name,
-          artist: video.artist,
-        });
+      if (!playingFromPresets) {
+        // Paused (or in search queue) — switch to the new theme's saved position
+        const newThemeKey =
+          theme === "ghibli"
+            ? "ghibli"
+            : theme === "coffeeshop"
+              ? "coffeeshop"
+              : "lofi";
+        const savedState = themeStateRef.current[newThemeKey];
+        setCurrentTrack(savedState.track);
+
+        // Only cue (never auto-play) a new video when not in a search queue
+        if (!youtubeSearchQueue) {
+          const newVideoList =
+            theme === "ghibli"
+              ? GHIBLI_VIDEO_IDS
+              : theme === "coffeeshop"
+                ? COFFEESHOP_VIDEO_IDS
+                : LOFI_VIDEO_IDS;
+          const video = newVideoList[savedState.track];
+          if (video && youtubePlayer.isReady) {
+            youtubePlayer.loadVideo(video.id, {
+              title: video.name,
+              artist: video.artist,
+            }, false); // cue only — never auto-start on theme change
+          }
+        }
       }
 
       prevThemeRef.current = theme;
@@ -842,6 +853,7 @@ export default function MusicPlayerSimple() {
     youtubePlayer.isPlaying,
     youtubePlayer.isReady,
     musicSource,
+    youtubeSearchQueue,
   ]);
 
   // Theme colors - light mode aware
@@ -1172,6 +1184,15 @@ export default function MusicPlayerSimple() {
       }
     }
   }, [spotifyAuth.isConnected]);
+
+  // If the Spotify SDK reports an authentication error (stale/scope-limited token),
+  // clear the stored token so the user re-authenticates with updated scopes next time.
+  useEffect(() => {
+    if (spotifyPlayback.error === "Spotify authentication failed") {
+      spotifyAuth.disconnect();
+      setMusicSource("youtube");
+    }
+  }, [spotifyPlayback.error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load initial video when player is ready (cue only, don't auto-play on startup)
   useEffect(() => {

@@ -1221,9 +1221,9 @@
   -webkit-backdrop-filter: none !important;
 }
 
-.reduce-transparency .bg-white\/5,
-.reduce-transparency .bg-white\/10,
-.reduce-transparency .bg-white\/20 {
+:root[data-color-scheme="dark"] .reduce-transparency .bg-white\/5,
+:root[data-color-scheme="dark"] .reduce-transparency .bg-white\/10,
+:root[data-color-scheme="dark"] .reduce-transparency .bg-white\/20 {
   background-color: rgba(30, 30, 30, 0.95) !important;
 }
 
@@ -1231,6 +1231,42 @@
 :root[data-color-scheme="light"] .reduce-transparency .bg-white\/10,
 :root[data-color-scheme="light"] .reduce-transparency .bg-white\/20 {
   background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Horizon theme in lightweight mode: ambient scene is hidden, so show a solid fallback gradient */
+:root.lightweight-mode[data-theme="horizon"] .themed-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
+  transition: none !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-time-period="dawn"] .themed-bg {
+  background: linear-gradient(135deg, #1c1917 0%, #431407 50%, #1c1917 100%) !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-time-period="day"] .themed-bg {
+  background: linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #0c4a6e 100%) !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-time-period="dusk"] .themed-bg {
+  background: linear-gradient(135deg, #1c1917 0%, #4c1d95 50%, #1c1917 100%) !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-time-period="night"] .themed-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
+}
+
+/* Horizon light mode + lightweight: use CSS-variable-matched light gradients */
+:root.lightweight-mode[data-theme="horizon"][data-color-scheme="light"] .themed-bg {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%) !important;
+  transition: none !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-color-scheme="light"][data-time-period="dawn"] .themed-bg {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fff7ed 100%) !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-color-scheme="light"][data-time-period="day"] .themed-bg {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 50%, #ecfeff 100%) !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-color-scheme="light"][data-time-period="dusk"] .themed-bg {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 50%, #fdf4ff 100%) !important;
+}
+:root.lightweight-mode[data-theme="horizon"][data-color-scheme="light"][data-time-period="night"] .themed-bg {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%) !important;
 }
 
 /* Static background for when video is disabled */

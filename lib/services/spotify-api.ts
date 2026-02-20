@@ -254,13 +254,15 @@ export class SpotifyAPIService {
 
       const data = await response.json();
 
-      return data.items.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description || "",
-        images: item.images || [],
-        tracks: { total: item.tracks.total },
-      }));
+      return data.items
+        .filter((item: any) => item && item.id)
+        .map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || "",
+          images: item.images || [],
+          tracks: { total: item.tracks?.total ?? 0 },
+        }));
     } catch (error) {
       console.error("Failed to get playlists:", error);
       return [];
