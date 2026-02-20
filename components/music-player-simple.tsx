@@ -37,7 +37,11 @@ import { useTheme } from "@/lib/contexts/theme-context";
 import { useAppSettings } from "@/lib/contexts/app-settings-context";
 import { useSpotifyAuth } from "@/lib/hooks/useSpotifyAuth";
 import { useSpotifyPlayback } from "@/lib/hooks/useSpotifyPlayback";
-import { spotifyAPI, SpotifyTrack, SpotifyPlaylist as SpotifyAPIPlaylist } from "@/lib/services/spotify-api";
+import {
+  spotifyAPI,
+  SpotifyTrack,
+  SpotifyPlaylist as SpotifyAPIPlaylist,
+} from "@/lib/services/spotify-api";
 import { useYouTubePlayer } from "@/lib/hooks/useYouTubePlayer";
 import {
   useYouTubeSearch,
@@ -49,7 +53,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { MusicTrack, MusicPlaylist, MusicPlaylistsState } from "@/types/music";
+import type {
+  MusicTrack,
+  MusicPlaylist,
+  MusicPlaylistsState,
+} from "@/types/music";
 
 // Music source type
 type MusicSourceType = "youtube" | "spotify";
@@ -202,7 +210,9 @@ export default function MusicPlayerSimple() {
   );
   const [playHistory, setPlayHistory] = useState<number[]>([]);
   // YouTube search queue - when set, next/prev cycle through search results instead of preset list
-  const [youtubeSearchQueue, setYoutubeSearchQueue] = useState<{ id: string; name: string; artist: string }[] | null>(null);
+  const [youtubeSearchQueue, setYoutubeSearchQueue] = useState<
+    { id: string; name: string; artist: string }[] | null
+  >(null);
   const [youtubeQueueIndex, setYoutubeQueueIndex] = useState(0);
   const [musicSource, setMusicSource] = useState<MusicSourceType>(
     () => persistedMusicState?.musicSource ?? "youtube",
@@ -218,38 +228,64 @@ export default function MusicPlayerSimple() {
   );
 
   // Playlist state
-  const [playlistsState, setPlaylistsState] = useState<MusicPlaylistsState>(() => loadPlaylists());
+  const [playlistsState, setPlaylistsState] = useState<MusicPlaylistsState>(
+    () => loadPlaylists(),
+  );
   const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
-  const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null);
+  const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(
+    null,
+  );
   const [editingName, setEditingName] = useState("");
   const [showPlaylistPicker, setShowPlaylistPicker] = useState(false);
 
   // Dashboard state - shows on init
   const [showDashboard, setShowDashboard] = useState(true);
-  const [dashboardVideos, setDashboardVideos] = useState<{ id: string; title: string; channel: string; thumbnail?: string }[]>([]);
+  const [dashboardVideos, setDashboardVideos] = useState<
+    { id: string; title: string; channel: string; thumbnail?: string }[]
+  >([]);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
-  const [dashboardSpotifyPlaylists, setDashboardSpotifyPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
-  const [isDashboardSpotifyLoading, setIsDashboardSpotifyLoading] = useState(false);
-  const [dashboardSpotifyTracks, setDashboardSpotifyTracks] = useState<SpotifyTrack[]>([]);
-  const [isDashboardSpotifyTracksLoading, setIsDashboardSpotifyTracksLoading] = useState(false);
+  const [dashboardSpotifyPlaylists, setDashboardSpotifyPlaylists] = useState<
+    SpotifyAPIPlaylist[]
+  >([]);
+  const [isDashboardSpotifyLoading, setIsDashboardSpotifyLoading] =
+    useState(false);
+  const [dashboardSpotifyTracks, setDashboardSpotifyTracks] = useState<
+    SpotifyTrack[]
+  >([]);
+  const [isDashboardSpotifyTracksLoading, setIsDashboardSpotifyTracksLoading] =
+    useState(false);
 
   // Browse state
   const [showBrowse, setShowBrowse] = useState(false);
-  const [browseVideos, setBrowseVideos] = useState<{ id: string; title: string; channel: string; thumbnail?: string }[]>([]);
+  const [browseVideos, setBrowseVideos] = useState<
+    { id: string; title: string; channel: string; thumbnail?: string }[]
+  >([]);
   const [isBrowseLoading, setIsBrowseLoading] = useState(false);
-  const [spotifyUserPlaylists, setSpotifyUserPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
+  const [spotifyUserPlaylists, setSpotifyUserPlaylists] = useState<
+    SpotifyAPIPlaylist[]
+  >([]);
   const [isSpotifyBrowseLoading, setIsSpotifyBrowseLoading] = useState(false);
-  const [browseSpotifyTracks, setBrowseSpotifyTracks] = useState<SpotifyTrack[]>([]);
-  const [browseSpotifyPlaylistName, setBrowseSpotifyPlaylistName] = useState<string | null>(null);
-  const [isBrowseSpotifyTracksLoading, setIsBrowseSpotifyTracksLoading] = useState(false);
+  const [browseSpotifyTracks, setBrowseSpotifyTracks] = useState<
+    SpotifyTrack[]
+  >([]);
+  const [browseSpotifyPlaylistName, setBrowseSpotifyPlaylistName] = useState<
+    string | null
+  >(null);
+  const [isBrowseSpotifyTracksLoading, setIsBrowseSpotifyTracksLoading] =
+    useState(false);
 
   // Spotify browse sections
-  const [browseRecentlyPlayed, setBrowseRecentlyPlayed] = useState<SpotifyTrack[]>([]);
+  const [browseRecentlyPlayed, setBrowseRecentlyPlayed] = useState<
+    SpotifyTrack[]
+  >([]);
   const [browseTopTracks, setBrowseTopTracks] = useState<SpotifyTrack[]>([]);
-  const [isSpotifyBrowseSectionsLoading, setIsSpotifyBrowseSectionsLoading] = useState(false);
-  const [spotifyBrowseView, setSpotifyBrowseView] = useState<"sections" | "playlist-tracks">("sections");
+  const [isSpotifyBrowseSectionsLoading, setIsSpotifyBrowseSectionsLoading] =
+    useState(false);
+  const [spotifyBrowseView, setSpotifyBrowseView] = useState<
+    "sections" | "playlist-tracks"
+  >("sections");
 
   // Save playlists whenever state changes
   useEffect(() => {
@@ -257,9 +293,10 @@ export default function MusicPlayerSimple() {
   }, [playlistsState]);
 
   // Derived playlist values
-  const activePlaylistId = musicSource === "youtube"
-    ? playlistsState.activeYoutubePlaylistId
-    : playlistsState.activeSpotifyPlaylistId;
+  const activePlaylistId =
+    musicSource === "youtube"
+      ? playlistsState.activeYoutubePlaylistId
+      : playlistsState.activeSpotifyPlaylistId;
 
   const activePlaylist = playlistsState.playlists.find(
     (p) => p.id === activePlaylistId && p.source === musicSource,
@@ -302,30 +339,33 @@ export default function MusicPlayerSimple() {
   const youtubeSearch = useYouTubeSearch();
 
   // Playlist CRUD functions
-  const createPlaylist = useCallback((name: string, source: MusicSourceType) => {
-    if (playlistsState.playlists.length >= 10) return null;
-    const id = crypto.randomUUID();
-    const now = Date.now();
-    const newPlaylist: MusicPlaylist = {
-      id,
-      name,
-      source,
-      tracks: [],
-      createdAt: now,
-      updatedAt: now,
-    };
-    setPlaylistsState((prev) => {
-      const updated = {
-        ...prev,
-        playlists: [...prev.playlists, newPlaylist],
-        ...(source === "youtube"
-          ? { activeYoutubePlaylistId: id }
-          : { activeSpotifyPlaylistId: id }),
+  const createPlaylist = useCallback(
+    (name: string, source: MusicSourceType) => {
+      if (playlistsState.playlists.length >= 10) return null;
+      const id = crypto.randomUUID();
+      const now = Date.now();
+      const newPlaylist: MusicPlaylist = {
+        id,
+        name,
+        source,
+        tracks: [],
+        createdAt: now,
+        updatedAt: now,
       };
-      return updated;
-    });
-    return id;
-  }, [playlistsState.playlists.length]);
+      setPlaylistsState((prev) => {
+        const updated = {
+          ...prev,
+          playlists: [...prev.playlists, newPlaylist],
+          ...(source === "youtube"
+            ? { activeYoutubePlaylistId: id }
+            : { activeSpotifyPlaylistId: id }),
+        };
+        return updated;
+      });
+      return id;
+    },
+    [playlistsState.playlists.length],
+  );
 
   const deletePlaylist = useCallback((id: string) => {
     setPlaylistsState((prev) => {
@@ -334,10 +374,16 @@ export default function MusicPlayerSimple() {
         ...prev,
         playlists: prev.playlists.filter((p) => p.id !== id),
       };
-      if (playlist?.source === "youtube" && prev.activeYoutubePlaylistId === id) {
+      if (
+        playlist?.source === "youtube" &&
+        prev.activeYoutubePlaylistId === id
+      ) {
         updated.activeYoutubePlaylistId = null;
       }
-      if (playlist?.source === "spotify" && prev.activeSpotifyPlaylistId === id) {
+      if (
+        playlist?.source === "spotify" &&
+        prev.activeSpotifyPlaylistId === id
+      ) {
         updated.activeSpotifyPlaylistId = null;
       }
       return updated;
@@ -353,111 +399,161 @@ export default function MusicPlayerSimple() {
     }));
   }, []);
 
-  const switchPlaylist = useCallback((id: string | null) => {
-    setPlaylistsState((prev) => ({
-      ...prev,
-      ...(musicSource === "youtube"
-        ? { activeYoutubePlaylistId: id }
-        : { activeSpotifyPlaylistId: id }),
-    }));
-    // If switching to a custom playlist and it has tracks, load them
-    if (id) {
-      const playlist = playlistsState.playlists.find((p) => p.id === id);
-      if (playlist && playlist.tracks.length > 0 && musicSource === "youtube") {
-        const queue = playlist.tracks.map((t) => ({
-          id: t.id,
-          name: t.name,
-          artist: t.artist,
-        }));
-        setYoutubeSearchQueue(queue);
-        setYoutubeQueueIndex(0);
-        const video = queue[0];
-        youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist }, false);
-      } else if (playlist && playlist.tracks.length > 0 && musicSource === "spotify") {
-        const uris = playlist.tracks.filter((t) => t.uri).map((t) => t.uri!);
-        if (uris.length > 0) {
-          spotifyAPI.play(undefined, uris, { position: 0 });
-        }
-      }
-    } else {
-      // Switching back to presets
-      if (musicSource === "youtube") {
-        setYoutubeSearchQueue(null);
-        const video = VIDEO_LIST[currentTrack];
-        youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist }, false);
-      }
-    }
-    setShowPlaylistDropdown(false);
-  }, [musicSource, playlistsState.playlists, VIDEO_LIST, currentTrack, youtubePlayer]);
-
-  const addTrackToPlaylist = useCallback((track: MusicTrack, playlistId?: string) => {
-    const targetId = playlistId || activePlaylistId;
-    if (!targetId) {
-      // Auto-create "Favorites" playlist
-      const id = crypto.randomUUID();
-      const now = Date.now();
-      const newPlaylist: MusicPlaylist = {
-        id,
-        name: "Favorites",
-        source: musicSource,
-        tracks: [track],
-        createdAt: now,
-        updatedAt: now,
-      };
+  const switchPlaylist = useCallback(
+    (id: string | null) => {
       setPlaylistsState((prev) => ({
         ...prev,
-        playlists: [...prev.playlists, newPlaylist],
         ...(musicSource === "youtube"
           ? { activeYoutubePlaylistId: id }
           : { activeSpotifyPlaylistId: id }),
       }));
-      return;
-    }
+      // If switching to a custom playlist and it has tracks, load them
+      if (id) {
+        const playlist = playlistsState.playlists.find((p) => p.id === id);
+        if (
+          playlist &&
+          playlist.tracks.length > 0 &&
+          musicSource === "youtube"
+        ) {
+          const queue = playlist.tracks.map((t) => ({
+            id: t.id,
+            name: t.name,
+            artist: t.artist,
+          }));
+          setYoutubeSearchQueue(queue);
+          setYoutubeQueueIndex(0);
+          const video = queue[0];
+          youtubePlayer.loadVideo(
+            video.id,
+            { title: video.name, artist: video.artist },
+            false,
+          );
+        } else if (
+          playlist &&
+          playlist.tracks.length > 0 &&
+          musicSource === "spotify"
+        ) {
+          const uris = playlist.tracks.filter((t) => t.uri).map((t) => t.uri!);
+          if (uris.length > 0) {
+            spotifyAPI.play(undefined, uris, { position: 0 });
+          }
+        }
+      } else {
+        // Switching back to presets
+        if (musicSource === "youtube") {
+          setYoutubeSearchQueue(null);
+          const video = VIDEO_LIST[currentTrack];
+          youtubePlayer.loadVideo(
+            video.id,
+            { title: video.name, artist: video.artist },
+            false,
+          );
+        }
+      }
+      setShowPlaylistDropdown(false);
+    },
+    [
+      musicSource,
+      playlistsState.playlists,
+      VIDEO_LIST,
+      currentTrack,
+      youtubePlayer,
+    ],
+  );
 
-    setPlaylistsState((prev) => ({
-      ...prev,
-      playlists: prev.playlists.map((p) => {
-        if (p.id !== targetId) return p;
-        if (p.tracks.some((t) => t.id === track.id)) return p;
-        return { ...p, tracks: [...p.tracks, track], updatedAt: Date.now() };
-      }),
-    }));
-  }, [activePlaylistId, musicSource]);
+  const addTrackToPlaylist = useCallback(
+    (track: MusicTrack, playlistId?: string) => {
+      const targetId = playlistId || activePlaylistId;
+      if (!targetId) {
+        // Auto-create "Favorites" playlist
+        const id = crypto.randomUUID();
+        const now = Date.now();
+        const newPlaylist: MusicPlaylist = {
+          id,
+          name: "Favorites",
+          source: musicSource,
+          tracks: [track],
+          createdAt: now,
+          updatedAt: now,
+        };
+        setPlaylistsState((prev) => ({
+          ...prev,
+          playlists: [...prev.playlists, newPlaylist],
+          ...(musicSource === "youtube"
+            ? { activeYoutubePlaylistId: id }
+            : { activeSpotifyPlaylistId: id }),
+        }));
+        return;
+      }
 
-  const removeTrackFromPlaylist = useCallback((trackId: string, playlistId?: string) => {
-    const targetId = playlistId || activePlaylistId;
-    if (!targetId) return;
-    setPlaylistsState((prev) => ({
-      ...prev,
-      playlists: prev.playlists.map((p) => {
-        if (p.id !== targetId) return p;
-        return { ...p, tracks: p.tracks.filter((t) => t.id !== trackId), updatedAt: Date.now() };
-      }),
-    }));
-  }, [activePlaylistId]);
+      setPlaylistsState((prev) => ({
+        ...prev,
+        playlists: prev.playlists.map((p) => {
+          if (p.id !== targetId) return p;
+          if (p.tracks.some((t) => t.id === track.id)) return p;
+          return { ...p, tracks: [...p.tracks, track], updatedAt: Date.now() };
+        }),
+      }));
+    },
+    [activePlaylistId, musicSource],
+  );
+
+  const removeTrackFromPlaylist = useCallback(
+    (trackId: string, playlistId?: string) => {
+      const targetId = playlistId || activePlaylistId;
+      if (!targetId) return;
+      setPlaylistsState((prev) => ({
+        ...prev,
+        playlists: prev.playlists.map((p) => {
+          if (p.id !== targetId) return p;
+          return {
+            ...p,
+            tracks: p.tracks.filter((t) => t.id !== trackId),
+            updatedAt: Date.now(),
+          };
+        }),
+      }));
+    },
+    [activePlaylistId],
+  );
 
   // Check if current track is in a playlist
-  const isCurrentTrackInPlaylist = useCallback((playlistId?: string) => {
-    const targetId = playlistId || activePlaylistId;
-    if (!targetId) return false;
-    const playlist = playlistsState.playlists.find((p) => p.id === targetId);
-    if (!playlist) return false;
+  const isCurrentTrackInPlaylist = useCallback(
+    (playlistId?: string) => {
+      const targetId = playlistId || activePlaylistId;
+      if (!targetId) return false;
+      const playlist = playlistsState.playlists.find((p) => p.id === targetId);
+      if (!playlist) return false;
 
-    if (musicSource === "youtube") {
-      const trackInfo = youtubePlayer.currentTrack;
-      if (!trackInfo) return false;
-      // Match by video ID from the search queue or preset
-      if (youtubeSearchQueue && youtubeSearchQueue[youtubeQueueIndex]) {
-        return playlist.tracks.some((t) => t.id === youtubeSearchQueue[youtubeQueueIndex].id);
+      if (musicSource === "youtube") {
+        const trackInfo = youtubePlayer.currentTrack;
+        if (!trackInfo) return false;
+        // Match by video ID from the search queue or preset
+        if (youtubeSearchQueue && youtubeSearchQueue[youtubeQueueIndex]) {
+          return playlist.tracks.some(
+            (t) => t.id === youtubeSearchQueue[youtubeQueueIndex].id,
+          );
+        }
+        const presetVideo = VIDEO_LIST[currentTrack];
+        return playlist.tracks.some((t) => t.id === presetVideo?.id);
+      } else {
+        const spotTrack = spotifyPlayback.currentTrack;
+        if (!spotTrack) return false;
+        return playlist.tracks.some((t) => t.id === spotTrack.id);
       }
-      const presetVideo = VIDEO_LIST[currentTrack];
-      return playlist.tracks.some((t) => t.id === presetVideo?.id);
-    } else {
-      const spotTrack = spotifyPlayback.currentTrack;
-      if (!spotTrack) return false;
-      return playlist.tracks.some((t) => t.id === spotTrack.id);
-    }
-  }, [activePlaylistId, playlistsState.playlists, musicSource, youtubePlayer.currentTrack, youtubeSearchQueue, youtubeQueueIndex, VIDEO_LIST, currentTrack, spotifyPlayback.currentTrack]);
+    },
+    [
+      activePlaylistId,
+      playlistsState.playlists,
+      musicSource,
+      youtubePlayer.currentTrack,
+      youtubeSearchQueue,
+      youtubeQueueIndex,
+      VIDEO_LIST,
+      currentTrack,
+      spotifyPlayback.currentTrack,
+    ],
+  );
 
   // Build current track as MusicTrack for saving
   const getCurrentMusicTrack = useCallback((): MusicTrack | null => {
@@ -489,7 +585,14 @@ export default function MusicPlayerSimple() {
         addedAt: Date.now(),
       };
     }
-  }, [musicSource, youtubeSearchQueue, youtubeQueueIndex, VIDEO_LIST, currentTrack, spotifyPlayback.currentTrack]);
+  }, [
+    musicSource,
+    youtubeSearchQueue,
+    youtubeQueueIndex,
+    VIDEO_LIST,
+    currentTrack,
+    spotifyPlayback.currentTrack,
+  ]);
 
   // Handle heart/save click
   const handleHeartClick = useCallback(() => {
@@ -514,32 +617,48 @@ export default function MusicPlayerSimple() {
 
     // Multiple playlists - show picker
     setShowPlaylistPicker(!showPlaylistPicker);
-  }, [getCurrentMusicTrack, sourcePlaylists, activePlaylistId, addTrackToPlaylist, removeTrackFromPlaylist, isCurrentTrackInPlaylist, showPlaylistPicker]);
+  }, [
+    getCurrentMusicTrack,
+    sourcePlaylists,
+    activePlaylistId,
+    addTrackToPlaylist,
+    removeTrackFromPlaylist,
+    isCurrentTrackInPlaylist,
+    showPlaylistPicker,
+  ]);
 
   // Browse: fetch YouTube suggestions
-  const fetchBrowseVideos = useCallback(async (force = false) => {
-    setIsBrowseLoading(true);
-    try {
-      const history = getSearchHistory();
-      const themeParam = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : "default";
-      const params = new URLSearchParams({ theme: themeParam });
-      if (history.length > 0) {
-        params.set("interests", history.slice(0, 10).join(","));
+  const fetchBrowseVideos = useCallback(
+    async (force = false) => {
+      setIsBrowseLoading(true);
+      try {
+        const history = getSearchHistory();
+        const themeParam =
+          theme === "ghibli"
+            ? "ghibli"
+            : theme === "coffeeshop"
+              ? "coffeeshop"
+              : "default";
+        const params = new URLSearchParams({ theme: themeParam });
+        if (history.length > 0) {
+          params.set("interests", history.slice(0, 10).join(","));
+        }
+        if (force) {
+          params.set("_t", Date.now().toString());
+        }
+        const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          setBrowseVideos(data.videos || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch browse videos:", err);
+      } finally {
+        setIsBrowseLoading(false);
       }
-      if (force) {
-        params.set("_t", Date.now().toString());
-      }
-      const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
-      if (resp.ok) {
-        const data = await resp.json();
-        setBrowseVideos(data.videos || []);
-      }
-    } catch (err) {
-      console.error("Failed to fetch browse videos:", err);
-    } finally {
-      setIsBrowseLoading(false);
-    }
-  }, [theme]);
+    },
+    [theme],
+  );
 
   // Browse: fetch Spotify user playlists
   const fetchSpotifyBrowse = useCallback(async () => {
@@ -578,44 +697,55 @@ export default function MusicPlayerSimple() {
   }, [spotifyAuth.isConnected, spotifyAuth.accessToken]);
 
   // Browse: fetch tracks from a Spotify playlist
-  const fetchSpotifyPlaylistTracks = useCallback(async (playlistId: string, playlistName: string) => {
-    setIsBrowseSpotifyTracksLoading(true);
-    setBrowseSpotifyPlaylistName(playlistName);
-    try {
-      const tracks = await spotifyAPI.getPlaylistTracks(playlistId);
-      setBrowseSpotifyTracks(tracks);
-    } catch (err) {
-      console.error("Failed to fetch Spotify playlist tracks:", err);
-    } finally {
-      setIsBrowseSpotifyTracksLoading(false);
-    }
-  }, []);
+  const fetchSpotifyPlaylistTracks = useCallback(
+    async (playlistId: string, playlistName: string) => {
+      setIsBrowseSpotifyTracksLoading(true);
+      setBrowseSpotifyPlaylistName(playlistName);
+      try {
+        const tracks = await spotifyAPI.getPlaylistTracks(playlistId);
+        setBrowseSpotifyTracks(tracks);
+      } catch (err) {
+        console.error("Failed to fetch Spotify playlist tracks:", err);
+      } finally {
+        setIsBrowseSpotifyTracksLoading(false);
+      }
+    },
+    [],
+  );
 
   // Dashboard: fetch YouTube suggestions on mount
-  const fetchDashboardVideos = useCallback(async (force = false) => {
-    setIsDashboardLoading(true);
-    try {
-      const history = getSearchHistory();
-      const themeParam = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : "default";
-      const params = new URLSearchParams({ theme: themeParam });
-      if (history.length > 0) {
-        params.set("interests", history.slice(0, 10).join(","));
+  const fetchDashboardVideos = useCallback(
+    async (force = false) => {
+      setIsDashboardLoading(true);
+      try {
+        const history = getSearchHistory();
+        const themeParam =
+          theme === "ghibli"
+            ? "ghibli"
+            : theme === "coffeeshop"
+              ? "coffeeshop"
+              : "default";
+        const params = new URLSearchParams({ theme: themeParam });
+        if (history.length > 0) {
+          params.set("interests", history.slice(0, 10).join(","));
+        }
+        // Cache-buster when explicitly refreshing to bypass browser HTTP cache
+        if (force) {
+          params.set("_t", Date.now().toString());
+        }
+        const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          setDashboardVideos(data.videos || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard videos:", err);
+      } finally {
+        setIsDashboardLoading(false);
       }
-      // Cache-buster when explicitly refreshing to bypass browser HTTP cache
-      if (force) {
-        params.set("_t", Date.now().toString());
-      }
-      const resp = await fetch(`/api/youtube/suggested?${params.toString()}`);
-      if (resp.ok) {
-        const data = await resp.json();
-        setDashboardVideos(data.videos || []);
-      }
-    } catch (err) {
-      console.error("Failed to fetch dashboard videos:", err);
-    } finally {
-      setIsDashboardLoading(false);
-    }
-  }, [theme]);
+    },
+    [theme],
+  );
 
   // Dashboard: fetch Spotify user playlists on mount
   const fetchDashboardSpotify = useCallback(async () => {
@@ -632,33 +762,71 @@ export default function MusicPlayerSimple() {
   }, [spotifyAuth.isConnected]);
 
   // Dashboard: fetch Spotify suggested tracks based on theme
-  const SPOTIFY_THEME_QUERIES: Record<string, string[]> = useMemo(() => ({
-    ghibli: ["studio ghibli piano", "ghibli jazz", "anime relaxing music", "japanese ambient"],
-    coffeeshop: ["coffee shop jazz", "bossa nova cafe", "acoustic coffee morning", "rainy jazz cafe"],
-    lofi: ["lofi hip hop beats", "chill beats study", "lo-fi ambient", "chillhop essentials"],
-    horizon: ["synthwave retrowave", "vaporwave chill", "electronic ambient", "future bass chill"],
-  }), []);
+  const SPOTIFY_THEME_QUERIES: Record<string, string[]> = useMemo(
+    () => ({
+      ghibli: [
+        "studio ghibli piano",
+        "ghibli jazz",
+        "anime relaxing music",
+        "japanese ambient",
+      ],
+      coffeeshop: [
+        "coffee shop jazz",
+        "bossa nova cafe",
+        "acoustic coffee morning",
+        "rainy jazz cafe",
+      ],
+      lofi: [
+        "lofi hip hop beats",
+        "chill beats study",
+        "lo-fi ambient",
+        "chillhop essentials",
+      ],
+      horizon: [
+        "synthwave retrowave",
+        "vaporwave chill",
+        "electronic ambient",
+        "future bass chill",
+      ],
+    }),
+    [],
+  );
 
-  const fetchDashboardSpotifyTracks = useCallback(async (force = false) => {
-    if (!spotifyAuth.isConnected || !spotifyAuth.accessToken) return;
-    // Ensure token is set on singleton before making API calls
-    spotifyAPI.setAccessToken(spotifyAuth.accessToken);
-    setIsDashboardSpotifyTracksLoading(true);
-    try {
-      const themeKey = theme === "ghibli" ? "ghibli" : theme === "coffeeshop" ? "coffeeshop" : theme === "horizon" ? "horizon" : "lofi";
-      const queries = SPOTIFY_THEME_QUERIES[themeKey];
-      // Pick a random query for variety
-      const query = queries[Math.floor(Math.random() * queries.length)];
-      const tracks = await spotifyAPI.getSuggestedTracks(query, 12);
-      if (tracks.length > 0) {
-        setDashboardSpotifyTracks(tracks);
+  const fetchDashboardSpotifyTracks = useCallback(
+    async (force = false) => {
+      if (!spotifyAuth.isConnected || !spotifyAuth.accessToken) return;
+      // Ensure token is set on singleton before making API calls
+      spotifyAPI.setAccessToken(spotifyAuth.accessToken);
+      setIsDashboardSpotifyTracksLoading(true);
+      try {
+        const themeKey =
+          theme === "ghibli"
+            ? "ghibli"
+            : theme === "coffeeshop"
+              ? "coffeeshop"
+              : theme === "horizon"
+                ? "horizon"
+                : "lofi";
+        const queries = SPOTIFY_THEME_QUERIES[themeKey];
+        // Pick a random query for variety
+        const query = queries[Math.floor(Math.random() * queries.length)];
+        const tracks = await spotifyAPI.getSuggestedTracks(query, 10);
+        if (tracks.length > 0) {
+          setDashboardSpotifyTracks(tracks);
+        }
+      } catch (err) {
+        // Silently ignore — user can retry with the "Load Suggestions" button
+      } finally {
+        setIsDashboardSpotifyTracksLoading(false);
       }
-    } catch (err) {
-      // Silently ignore — user can retry with the "Load Suggestions" button
-    } finally {
-      setIsDashboardSpotifyTracksLoading(false);
-    }
-  }, [spotifyAuth.isConnected, spotifyAuth.accessToken, theme, SPOTIFY_THEME_QUERIES]); // eslint-disable-line react-hooks/exhaustive-deps
+    },
+    [
+      spotifyAuth.isConnected,
+      spotifyAuth.accessToken,
+      theme,
+      SPOTIFY_THEME_QUERIES,
+    ],
+  ); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-fetch dashboard on mount
   useEffect(() => {
@@ -669,7 +837,11 @@ export default function MusicPlayerSimple() {
 
   // Fetch Spotify dashboard when connected (depends on accessToken to ensure token is available)
   useEffect(() => {
-    if (musicSource === "spotify" && spotifyAuth.isConnected && spotifyAuth.accessToken) {
+    if (
+      musicSource === "spotify" &&
+      spotifyAuth.isConnected &&
+      spotifyAuth.accessToken
+    ) {
       fetchDashboardSpotifyTracks();
       fetchDashboardSpotify();
     }
@@ -687,7 +859,12 @@ export default function MusicPlayerSimple() {
   }, [theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dashboard play handlers
-  const handleDashboardPlayVideo = (video: { id: string; title: string; channel: string; thumbnail?: string }) => {
+  const handleDashboardPlayVideo = (video: {
+    id: string;
+    title: string;
+    channel: string;
+    thumbnail?: string;
+  }) => {
     const queue = dashboardVideos.map((v) => ({
       id: v.id,
       name: v.title,
@@ -696,11 +873,16 @@ export default function MusicPlayerSimple() {
     const idx = dashboardVideos.findIndex((v) => v.id === video.id);
     setYoutubeSearchQueue(queue);
     setYoutubeQueueIndex(idx >= 0 ? idx : 0);
-    youtubePlayer.loadVideo(video.id, { title: video.title, artist: video.channel });
+    youtubePlayer.loadVideo(video.id, {
+      title: video.title,
+      artist: video.channel,
+    });
     setShowDashboard(false);
   };
 
-  const handleDashboardPlaySpotifyPlaylist = async (playlist: SpotifyAPIPlaylist) => {
+  const handleDashboardPlaySpotifyPlaylist = async (
+    playlist: SpotifyAPIPlaylist,
+  ) => {
     try {
       const tracks = await spotifyAPI.getPlaylistTracks(playlist.id);
       if (tracks.length > 0) {
@@ -716,8 +898,12 @@ export default function MusicPlayerSimple() {
   const handleDashboardPlaySpotifyTrack = async (track: SpotifyTrack) => {
     // Play the selected track with all dashboard tracks as queue
     const allUris = dashboardSpotifyTracks.map((t) => t.uri);
-    const trackIndex = dashboardSpotifyTracks.findIndex((t) => t.id === track.id);
-    await spotifyAPI.play(undefined, allUris, { position: trackIndex >= 0 ? trackIndex : 0 });
+    const trackIndex = dashboardSpotifyTracks.findIndex(
+      (t) => t.id === track.id,
+    );
+    await spotifyAPI.play(undefined, allUris, {
+      position: trackIndex >= 0 ? trackIndex : 0,
+    });
     setShowDashboard(false);
   };
 
@@ -730,20 +916,29 @@ export default function MusicPlayerSimple() {
         // Playing from search queue
         if (isRepeatOn) {
           const video = youtubeSearchQueue[youtubeQueueIndex];
-          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+          youtubePlayer.loadVideo(video.id, {
+            title: video.name,
+            artist: video.artist,
+          });
         } else {
           const nextIdx = isShuffleOn
             ? Math.floor(Math.random() * youtubeSearchQueue.length)
             : (youtubeQueueIndex + 1) % youtubeSearchQueue.length;
           setYoutubeQueueIndex(nextIdx);
           const video = youtubeSearchQueue[nextIdx];
-          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+          youtubePlayer.loadVideo(video.id, {
+            title: video.name,
+            artist: video.artist,
+          });
         }
       } else {
         // Playing from preset list
         if (isRepeatOn) {
           const video = VIDEO_LIST[currentTrack];
-          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+          youtubePlayer.loadVideo(video.id, {
+            title: video.name,
+            artist: video.artist,
+          });
         } else {
           const nextTrack = isShuffleOn
             ? Math.floor(Math.random() * VIDEO_LIST.length)
@@ -751,7 +946,10 @@ export default function MusicPlayerSimple() {
           setPlayHistory((prev) => [...prev, currentTrack]);
           setCurrentTrack(nextTrack);
           const video = VIDEO_LIST[nextTrack];
-          youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+          youtubePlayer.loadVideo(video.id, {
+            title: video.name,
+            artist: video.artist,
+          });
         }
       }
     };
@@ -773,9 +971,13 @@ export default function MusicPlayerSimple() {
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [spotifySearchResults, setSpotifySearchResults] = useState<SpotifyTrack[]>([]);
+  const [spotifySearchResults, setSpotifySearchResults] = useState<
+    SpotifyTrack[]
+  >([]);
   const [isSpotifySearching, setIsSpotifySearching] = useState(false);
-  const [spotifySearchError, setSpotifySearchError] = useState<string | null>(null);
+  const [spotifySearchError, setSpotifySearchError] = useState<string | null>(
+    null,
+  );
 
   // Persist state
   useEffect(() => {
@@ -831,10 +1033,14 @@ export default function MusicPlayerSimple() {
                 : LOFI_VIDEO_IDS;
           const video = newVideoList[savedState.track];
           if (video && youtubePlayer.isReady) {
-            youtubePlayer.loadVideo(video.id, {
-              title: video.name,
-              artist: video.artist,
-            }, false); // cue only — never auto-start on theme change
+            youtubePlayer.loadVideo(
+              video.id,
+              {
+                title: video.name,
+                artist: video.artist,
+              },
+              false,
+            ); // cue only — never auto-start on theme change
           }
         }
       }
@@ -1022,7 +1228,10 @@ export default function MusicPlayerSimple() {
         : (youtubeQueueIndex + 1) % youtubeSearchQueue.length;
       setYoutubeQueueIndex(nextIdx);
       const video = youtubeSearchQueue[nextIdx];
-      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
     } else {
       const nextTrack = isShuffleOn
         ? Math.floor(Math.random() * VIDEO_LIST.length)
@@ -1030,7 +1239,10 @@ export default function MusicPlayerSimple() {
       setPlayHistory((prev) => [...prev, currentTrack]);
       setCurrentTrack(nextTrack);
       const video = VIDEO_LIST[nextTrack];
-      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
     }
   };
 
@@ -1040,10 +1252,14 @@ export default function MusicPlayerSimple() {
     } else if (youtubeSearchQueue && youtubeSearchQueue.length > 0) {
       const prevIdx = isShuffleOn
         ? Math.floor(Math.random() * youtubeSearchQueue.length)
-        : (youtubeQueueIndex - 1 + youtubeSearchQueue.length) % youtubeSearchQueue.length;
+        : (youtubeQueueIndex - 1 + youtubeSearchQueue.length) %
+          youtubeSearchQueue.length;
       setYoutubeQueueIndex(prevIdx);
       const video = youtubeSearchQueue[prevIdx];
-      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
     } else {
       let prevTrack;
       if (playHistory.length > 0) {
@@ -1054,7 +1270,10 @@ export default function MusicPlayerSimple() {
       }
       setCurrentTrack(prevTrack);
       const video = VIDEO_LIST[prevTrack];
-      youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+      youtubePlayer.loadVideo(video.id, {
+        title: video.name,
+        artist: video.artist,
+      });
     }
   };
 
@@ -1104,11 +1323,9 @@ export default function MusicPlayerSimple() {
     // Pass all search results as the queue so next/prev work
     const allUris = spotifySearchResults.map((t) => t.uri);
     const trackIndex = spotifySearchResults.findIndex((t) => t.id === track.id);
-    await spotifyAPI.play(
-      undefined,
-      allUris,
-      { position: trackIndex >= 0 ? trackIndex : 0 },
-    );
+    await spotifyAPI.play(undefined, allUris, {
+      position: trackIndex >= 0 ? trackIndex : 0,
+    });
     // Sync shuffle/repeat state to Spotify so the queue respects current settings
     if (isShuffleOn) {
       await spotifyPlayback.setShuffle(true);
@@ -1129,7 +1346,9 @@ export default function MusicPlayerSimple() {
       name: r.title,
       artist: r.channelTitle,
     }));
-    const resultIndex = youtubeSearch.results.findIndex((r) => r.videoId === result.videoId);
+    const resultIndex = youtubeSearch.results.findIndex(
+      (r) => r.videoId === result.videoId,
+    );
     setYoutubeSearchQueue(queue);
     setYoutubeQueueIndex(resultIndex >= 0 ? resultIndex : 0);
 
@@ -1242,7 +1461,12 @@ export default function MusicPlayerSimple() {
       : (spotifyPlayback.currentTrack?.duration_ms || 0) / 1000;
 
   // Play a browse video (YouTube)
-  const handlePlayBrowseVideo = (video: { id: string; title: string; channel: string; thumbnail?: string }) => {
+  const handlePlayBrowseVideo = (video: {
+    id: string;
+    title: string;
+    channel: string;
+    thumbnail?: string;
+  }) => {
     const queue = browseVideos.map((v) => ({
       id: v.id,
       name: v.title,
@@ -1251,12 +1475,20 @@ export default function MusicPlayerSimple() {
     const idx = browseVideos.findIndex((v) => v.id === video.id);
     setYoutubeSearchQueue(queue);
     setYoutubeQueueIndex(idx >= 0 ? idx : 0);
-    youtubePlayer.loadVideo(video.id, { title: video.title, artist: video.channel });
+    youtubePlayer.loadVideo(video.id, {
+      title: video.title,
+      artist: video.channel,
+    });
     setShowBrowse(false);
   };
 
   // Add browse video to active playlist
-  const handleAddBrowseVideoToPlaylist = (video: { id: string; title: string; channel: string; thumbnail?: string }) => {
+  const handleAddBrowseVideoToPlaylist = (video: {
+    id: string;
+    title: string;
+    channel: string;
+    thumbnail?: string;
+  }) => {
     const track: MusicTrack = {
       id: video.id,
       name: video.title,
@@ -1272,18 +1504,24 @@ export default function MusicPlayerSimple() {
   const handlePlaySpotifyBrowseTrack = async (track: SpotifyTrack) => {
     const allUris = browseSpotifyTracks.map((t) => t.uri);
     const trackIndex = browseSpotifyTracks.findIndex((t) => t.id === track.id);
-    await spotifyAPI.play(undefined, allUris, { position: trackIndex >= 0 ? trackIndex : 0 });
+    await spotifyAPI.play(undefined, allUris, {
+      position: trackIndex >= 0 ? trackIndex : 0,
+    });
     setShowBrowse(false);
   };
 
   // Play a track from a browse section (recently played, top tracks, etc.)
-  const handlePlayBrowseSectionTrack = async (track: SpotifyTrack, allTracks: SpotifyTrack[]) => {
+  const handlePlayBrowseSectionTrack = async (
+    track: SpotifyTrack,
+    allTracks: SpotifyTrack[],
+  ) => {
     const allUris = allTracks.map((t) => t.uri);
     const trackIndex = allTracks.findIndex((t) => t.id === track.id);
-    await spotifyAPI.play(undefined, allUris, { position: trackIndex >= 0 ? trackIndex : 0 });
+    await spotifyAPI.play(undefined, allUris, {
+      position: trackIndex >= 0 ? trackIndex : 0,
+    });
     setShowBrowse(false);
   };
-
 
   // Add Spotify browse track to local playlist
   const handleAddSpotifyBrowseTrackToPlaylist = (track: SpotifyTrack) => {
@@ -1358,10 +1596,18 @@ export default function MusicPlayerSimple() {
               />
               <button
                 type="submit"
-                disabled={musicSource === "spotify" ? isSpotifySearching : youtubeSearch.isSearching}
+                disabled={
+                  musicSource === "spotify"
+                    ? isSpotifySearching
+                    : youtubeSearch.isSearching
+                }
                 className={`px-3 py-2 bg-gradient-to-r ${colors.primary} rounded-lg text-white text-sm font-medium disabled:opacity-50`}
               >
-                {(musicSource === "spotify" ? isSpotifySearching : youtubeSearch.isSearching) ? (
+                {(
+                  musicSource === "spotify"
+                    ? isSpotifySearching
+                    : youtubeSearch.isSearching
+                ) ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Search className="w-4 h-4" />
@@ -1388,12 +1634,16 @@ export default function MusicPlayerSimple() {
                             className="w-12 h-12 rounded object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                          <div
+                            className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                          >
                             <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${colors.textPrimary} truncate`}>
+                          <p
+                            className={`text-sm ${colors.textPrimary} truncate`}
+                          >
                             {track.name}
                           </p>
                           <p className={`text-xs ${colors.textMuted} truncate`}>
@@ -1401,7 +1651,9 @@ export default function MusicPlayerSimple() {
                           </p>
                         </div>
                       </button>
-                      <span className={`text-xs ${colors.textMuted} flex-shrink-0`}>
+                      <span
+                        className={`text-xs ${colors.textMuted} flex-shrink-0`}
+                      >
                         {formatTime(track.duration_ms / 1000)}
                       </span>
                       {activePlaylistId && (
@@ -1449,7 +1701,9 @@ export default function MusicPlayerSimple() {
                           className="w-12 h-12 rounded object-cover flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${colors.textPrimary} truncate`}>
+                          <p
+                            className={`text-sm ${colors.textPrimary} truncate`}
+                          >
                             {result.title}
                           </p>
                           <p className={`text-xs ${colors.textMuted} truncate`}>
@@ -1458,7 +1712,9 @@ export default function MusicPlayerSimple() {
                         </div>
                       </button>
                       {result.duration && (
-                        <span className={`text-xs ${colors.textMuted} flex-shrink-0`}>
+                        <span
+                          className={`text-xs ${colors.textMuted} flex-shrink-0`}
+                        >
                           {formatTime(result.duration)}
                         </span>
                       )}
@@ -1501,18 +1757,21 @@ export default function MusicPlayerSimple() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                {spotifyBrowseView === "playlist-tracks" && musicSource === "spotify" && (
-                  <button
-                    onClick={() => {
-                      setBrowseSpotifyTracks([]);
-                      setBrowseSpotifyPlaylistName(null);
-                      setSpotifyBrowseView("sections");
-                    }}
-                    className={`p-1 ${colors.hoverBg} rounded-lg`}
-                  >
-                    <ChevronDown className={`w-4 h-4 ${colors.textMuted} rotate-90`} />
-                  </button>
-                )}
+                {spotifyBrowseView === "playlist-tracks" &&
+                  musicSource === "spotify" && (
+                    <button
+                      onClick={() => {
+                        setBrowseSpotifyTracks([]);
+                        setBrowseSpotifyPlaylistName(null);
+                        setSpotifyBrowseView("sections");
+                      }}
+                      className={`p-1 ${colors.hoverBg} rounded-lg`}
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 ${colors.textMuted} rotate-90`}
+                      />
+                    </button>
+                  )}
                 <h3 className={`text-sm font-bold ${colors.textPrimary}`}>
                   {musicSource === "spotify"
                     ? spotifyBrowseView === "playlist-tracks"
@@ -1533,7 +1792,9 @@ export default function MusicPlayerSimple() {
                   disabled={isBrowseLoading || isSpotifyBrowseSectionsLoading}
                   className={`p-1 ${colors.hoverBg} rounded-lg`}
                 >
-                  <RefreshCw className={`w-4 h-4 ${colors.textMuted} ${(isBrowseLoading || isSpotifyBrowseSectionsLoading) ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${colors.textMuted} ${isBrowseLoading || isSpotifyBrowseSectionsLoading ? "animate-spin" : ""}`}
+                  />
                 </button>
                 <button
                   onClick={() => {
@@ -1554,10 +1815,14 @@ export default function MusicPlayerSimple() {
                 <>
                   {isBrowseLoading ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                      <Loader2
+                        className={`w-6 h-6 animate-spin ${colors.accent}`}
+                      />
                     </div>
                   ) : browseVideos.length === 0 ? (
-                    <p className={`text-center text-sm ${colors.textMuted} py-8`}>
+                    <p
+                      className={`text-center text-sm ${colors.textMuted} py-8`}
+                    >
                       No suggestions available
                     </p>
                   ) : (
@@ -1577,15 +1842,23 @@ export default function MusicPlayerSimple() {
                               className="w-12 h-12 rounded object-cover flex-shrink-0"
                             />
                           ) : (
-                            <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                              <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                            <div
+                              className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                            >
+                              <Music2
+                                className={`w-5 h-5 ${colors.textMuted}`}
+                              />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm ${colors.textPrimary} truncate`}>
+                            <p
+                              className={`text-sm ${colors.textPrimary} truncate`}
+                            >
                               {video.title}
                             </p>
-                            <p className={`text-xs ${colors.textMuted} truncate`}>
+                            <p
+                              className={`text-xs ${colors.textMuted} truncate`}
+                            >
                               {video.channel}
                             </p>
                           </div>
@@ -1609,10 +1882,14 @@ export default function MusicPlayerSimple() {
                     <>
                       {isBrowseSpotifyTracksLoading ? (
                         <div className="flex items-center justify-center py-8">
-                          <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                          <Loader2
+                            className={`w-6 h-6 animate-spin ${colors.accent}`}
+                          />
                         </div>
                       ) : browseSpotifyTracks.length === 0 ? (
-                        <p className={`text-center text-sm ${colors.textMuted} py-8`}>
+                        <p
+                          className={`text-center text-sm ${colors.textMuted} py-8`}
+                        >
                           No tracks found
                         </p>
                       ) : (
@@ -1622,7 +1899,9 @@ export default function MusicPlayerSimple() {
                             className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors`}
                           >
                             <button
-                              onClick={() => handlePlaySpotifyBrowseTrack(track)}
+                              onClick={() =>
+                                handlePlaySpotifyBrowseTrack(track)
+                              }
                               className="flex items-center gap-3 flex-1 min-w-0 text-left"
                             >
                               {track.albumArt ? (
@@ -1632,28 +1911,42 @@ export default function MusicPlayerSimple() {
                                   className="w-12 h-12 rounded object-cover flex-shrink-0"
                                 />
                               ) : (
-                                <div className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                                  <Music2 className={`w-5 h-5 ${colors.textMuted}`} />
+                                <div
+                                  className={`w-12 h-12 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                                >
+                                  <Music2
+                                    className={`w-5 h-5 ${colors.textMuted}`}
+                                  />
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <p className={`text-sm ${colors.textPrimary} truncate`}>
+                                <p
+                                  className={`text-sm ${colors.textPrimary} truncate`}
+                                >
                                   {track.name}
                                 </p>
-                                <p className={`text-xs ${colors.textMuted} truncate`}>
+                                <p
+                                  className={`text-xs ${colors.textMuted} truncate`}
+                                >
                                   {track.artist}
                                 </p>
                               </div>
                             </button>
-                            <span className={`text-xs ${colors.textMuted} flex-shrink-0`}>
+                            <span
+                              className={`text-xs ${colors.textMuted} flex-shrink-0`}
+                            >
                               {formatTime(track.duration_ms / 1000)}
                             </span>
                             <button
-                              onClick={() => handleAddSpotifyBrowseTrackToPlaylist(track)}
+                              onClick={() =>
+                                handleAddSpotifyBrowseTrackToPlaylist(track)
+                              }
                               className={`p-1.5 ${colors.hoverBg} rounded flex-shrink-0`}
                               title="Add to playlist"
                             >
-                              <Plus className={`w-3.5 h-3.5 ${colors.textMuted}`} />
+                              <Plus
+                                className={`w-3.5 h-3.5 ${colors.textMuted}`}
+                              />
                             </button>
                           </div>
                         ))
@@ -1662,7 +1955,9 @@ export default function MusicPlayerSimple() {
                   ) : !spotifyAuth.isConnected ? (
                     <div className="flex flex-col items-center justify-center py-8 gap-2">
                       <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
-                      <p className={`text-sm ${colors.textMuted}`}>Connect Spotify to browse</p>
+                      <p className={`text-sm ${colors.textMuted}`}>
+                        Connect Spotify to browse
+                      </p>
                       <button
                         onClick={() => handleSourceChange("spotify")}
                         className="text-xs px-3 py-1.5 bg-green-500 text-white rounded-lg"
@@ -1670,9 +1965,12 @@ export default function MusicPlayerSimple() {
                         Connect
                       </button>
                     </div>
-                  ) : isSpotifyBrowseSectionsLoading && browseRecentlyPlayed.length === 0 ? (
+                  ) : isSpotifyBrowseSectionsLoading &&
+                    browseRecentlyPlayed.length === 0 ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                      <Loader2
+                        className={`w-6 h-6 animate-spin ${colors.accent}`}
+                      />
                     </div>
                   ) : (
                     // Browse sections
@@ -1680,29 +1978,55 @@ export default function MusicPlayerSimple() {
                       {/* Recently Played */}
                       {browseRecentlyPlayed.length > 0 && (
                         <div>
-                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                          <h4
+                            className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}
+                          >
                             Recently Played
                           </h4>
                           <div className="space-y-1">
-                            {browseRecentlyPlayed.slice(0, 5).map((track, idx) => (
-                              <button
-                                key={`recent-${track.id}-${idx}`}
-                                onClick={() => handlePlayBrowseSectionTrack(track, browseRecentlyPlayed)}
-                                className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
-                              >
-                                {track.albumArt ? (
-                                  <img src={track.albumArt} alt={track.name} className="w-10 h-10 rounded object-cover flex-shrink-0" loading="lazy" />
-                                ) : (
-                                  <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                                    <Music2 className={`w-4 h-4 ${colors.textMuted}`} />
+                            {browseRecentlyPlayed
+                              .slice(0, 5)
+                              .map((track, idx) => (
+                                <button
+                                  key={`recent-${track.id}-${idx}`}
+                                  onClick={() =>
+                                    handlePlayBrowseSectionTrack(
+                                      track,
+                                      browseRecentlyPlayed,
+                                    )
+                                  }
+                                  className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                                >
+                                  {track.albumArt ? (
+                                    <img
+                                      src={track.albumArt}
+                                      alt={track.name}
+                                      className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div
+                                      className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                                    >
+                                      <Music2
+                                        className={`w-4 h-4 ${colors.textMuted}`}
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p
+                                      className={`text-xs font-medium ${colors.textPrimary} truncate`}
+                                    >
+                                      {track.name}
+                                    </p>
+                                    <p
+                                      className={`text-[10px] ${colors.textMuted} truncate`}
+                                    >
+                                      {track.artist}
+                                    </p>
                                   </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{track.name}</p>
-                                  <p className={`text-[10px] ${colors.textMuted} truncate`}>{track.artist}</p>
-                                </div>
-                              </button>
-                            ))}
+                                </button>
+                              ))}
                           </div>
                         </div>
                       )}
@@ -1710,26 +2034,50 @@ export default function MusicPlayerSimple() {
                       {/* Your Top Tracks */}
                       {browseTopTracks.length > 0 && (
                         <div>
-                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                          <h4
+                            className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}
+                          >
                             Your Top Tracks
                           </h4>
                           <div className="space-y-1">
                             {browseTopTracks.slice(0, 5).map((track, idx) => (
                               <button
                                 key={`top-${track.id}-${idx}`}
-                                onClick={() => handlePlayBrowseSectionTrack(track, browseTopTracks)}
+                                onClick={() =>
+                                  handlePlayBrowseSectionTrack(
+                                    track,
+                                    browseTopTracks,
+                                  )
+                                }
                                 className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
                               >
                                 {track.albumArt ? (
-                                  <img src={track.albumArt} alt={track.name} className="w-10 h-10 rounded object-cover flex-shrink-0" loading="lazy" />
+                                  <img
+                                    src={track.albumArt}
+                                    alt={track.name}
+                                    className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                  />
                                 ) : (
-                                  <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                                    <Music2 className={`w-4 h-4 ${colors.textMuted}`} />
+                                  <div
+                                    className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                                  >
+                                    <Music2
+                                      className={`w-4 h-4 ${colors.textMuted}`}
+                                    />
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{track.name}</p>
-                                  <p className={`text-[10px] ${colors.textMuted} truncate`}>{track.artist}</p>
+                                  <p
+                                    className={`text-xs font-medium ${colors.textPrimary} truncate`}
+                                  >
+                                    {track.name}
+                                  </p>
+                                  <p
+                                    className={`text-[10px] ${colors.textMuted} truncate`}
+                                  >
+                                    {track.artist}
+                                  </p>
                                 </div>
                               </button>
                             ))}
@@ -1740,7 +2088,9 @@ export default function MusicPlayerSimple() {
                       {/* Your Playlists */}
                       {spotifyUserPlaylists.length > 0 && (
                         <div>
-                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                          <h4
+                            className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}
+                          >
                             Your Playlists
                           </h4>
                           <div className="space-y-1">
@@ -1748,23 +2098,45 @@ export default function MusicPlayerSimple() {
                               <button
                                 key={`pl-${playlist.id}`}
                                 onClick={() => {
-                                  fetchSpotifyPlaylistTracks(playlist.id, playlist.name);
+                                  fetchSpotifyPlaylistTracks(
+                                    playlist.id,
+                                    playlist.name,
+                                  );
                                   setSpotifyBrowseView("playlist-tracks");
                                 }}
                                 className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
                               >
                                 {playlist.images?.[0]?.url ? (
-                                  <img src={playlist.images[0].url} alt={playlist.name} className="w-10 h-10 rounded object-cover flex-shrink-0" loading="lazy" />
+                                  <img
+                                    src={playlist.images[0].url}
+                                    alt={playlist.name}
+                                    className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                  />
                                 ) : (
-                                  <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                                    <ListMusic className={`w-4 h-4 ${colors.textMuted}`} />
+                                  <div
+                                    className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                                  >
+                                    <ListMusic
+                                      className={`w-4 h-4 ${colors.textMuted}`}
+                                    />
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{playlist.name}</p>
-                                  <p className={`text-[10px] ${colors.textMuted}`}>{playlist.tracks.total} tracks</p>
+                                  <p
+                                    className={`text-xs font-medium ${colors.textPrimary} truncate`}
+                                  >
+                                    {playlist.name}
+                                  </p>
+                                  <p
+                                    className={`text-[10px] ${colors.textMuted}`}
+                                  >
+                                    {playlist.tracks.total} tracks
+                                  </p>
                                 </div>
-                                <ChevronDown className={`w-4 h-4 ${colors.textMuted} -rotate-90 flex-shrink-0`} />
+                                <ChevronDown
+                                  className={`w-4 h-4 ${colors.textMuted} -rotate-90 flex-shrink-0`}
+                                />
                               </button>
                             ))}
                           </div>
@@ -1777,8 +2149,12 @@ export default function MusicPlayerSimple() {
                         browseTopTracks.length === 0 &&
                         spotifyUserPlaylists.length === 0 && (
                           <div className="flex flex-col items-center justify-center py-8 gap-2">
-                            <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
-                            <p className={`text-sm ${colors.textMuted}`}>No content available</p>
+                            <SpotifyIcon
+                              className={`w-8 h-8 ${colors.textMuted}`}
+                            />
+                            <p className={`text-sm ${colors.textMuted}`}>
+                              No content available
+                            </p>
                             <button
                               onClick={fetchSpotifyBrowseSections}
                               className={`text-xs px-3 py-1.5 ${colors.accentBg} ${colors.accent} rounded-lg`}
@@ -1801,7 +2177,9 @@ export default function MusicPlayerSimple() {
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={`p-1.5 rounded-lg ${colors.accentBg} flex-shrink-0`}>
+                  <div
+                    className={`p-1.5 rounded-lg ${colors.accentBg} flex-shrink-0`}
+                  >
                     <Music2 className={`w-4 h-4 ${colors.iconColor}`} />
                   </div>
                 </TooltipTrigger>
@@ -1813,10 +2191,14 @@ export default function MusicPlayerSimple() {
                 {/* Playlist Dropdown */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowPlaylistDropdown(!showPlaylistDropdown)}
+                    onClick={() =>
+                      setShowPlaylistDropdown(!showPlaylistDropdown)
+                    }
                     className={`flex items-center gap-1 max-w-full`}
                   >
-                    <h2 className={`text-sm font-bold ${colors.textPrimary} truncate`}>
+                    <h2
+                      className={`text-sm font-bold ${colors.textPrimary} truncate`}
+                    >
                       {activePlaylist
                         ? activePlaylist.name
                         : musicSource === "spotify"
@@ -1826,16 +2208,21 @@ export default function MusicPlayerSimple() {
                             : theme === "coffeeshop"
                               ? "Coffee Shop"
                               : "Ghibli"}{" "}
-                      {!activePlaylist && (musicSource === "spotify" ? "Connect" : "Beats")}
+                      {!activePlaylist &&
+                        (musicSource === "spotify" ? "Connect" : "Beats")}
                     </h2>
-                    <ChevronDown className={`w-3 h-3 ${colors.textMuted} flex-shrink-0 transition-transform ${showPlaylistDropdown ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      className={`w-3 h-3 ${colors.textMuted} flex-shrink-0 transition-transform ${showPlaylistDropdown ? "rotate-180" : ""}`}
+                    />
                   </button>
 
                   {showPlaylistDropdown && (
                     <div
                       className={`absolute left-0 top-full mt-2 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-[9999] min-w-[200px] max-w-[260px]`}
                     >
-                      <div className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}>
+                      <div
+                        className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}
+                      >
                         Playlists
                       </div>
 
@@ -1850,13 +2237,18 @@ export default function MusicPlayerSimple() {
                       >
                         <Music2 className="w-3.5 h-3.5 flex-shrink-0" />
                         <span className="text-xs truncate">
-                          {musicSource === "spotify" ? "Spotify Connect" : "Presets"}
+                          {musicSource === "spotify"
+                            ? "Spotify Connect"
+                            : "Presets"}
                         </span>
                       </button>
 
                       {/* Custom playlists */}
                       {sourcePlaylists.map((pl) => (
-                        <div key={pl.id} className="flex items-center gap-1 mt-0.5">
+                        <div
+                          key={pl.id}
+                          className="flex items-center gap-1 mt-0.5"
+                        >
                           {editingPlaylistId === pl.id ? (
                             <form
                               onSubmit={(e) => {
@@ -1875,7 +2267,10 @@ export default function MusicPlayerSimple() {
                                 className={`flex-1 ${colors.accentBg} border ${colors.border} rounded px-2 py-1 text-xs ${colors.textPrimary} focus:outline-none`}
                                 autoFocus
                               />
-                              <button type="submit" className={`p-1 ${colors.hoverBg} rounded`}>
+                              <button
+                                type="submit"
+                                className={`p-1 ${colors.hoverBg} rounded`}
+                              >
                                 <Check className={`w-3 h-3 ${colors.accent}`} />
                               </button>
                             </form>
@@ -1890,8 +2285,12 @@ export default function MusicPlayerSimple() {
                                 }`}
                               >
                                 <ListMusic className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span className="text-xs truncate">{pl.name}</span>
-                                <span className={`text-[10px] ml-auto flex-shrink-0 ${activePlaylistId === pl.id ? "text-white/70" : colors.textMuted}`}>
+                                <span className="text-xs truncate">
+                                  {pl.name}
+                                </span>
+                                <span
+                                  className={`text-[10px] ml-auto flex-shrink-0 ${activePlaylistId === pl.id ? "text-white/70" : colors.textMuted}`}
+                                >
                                   {pl.tracks.length}
                                 </span>
                               </button>
@@ -1902,7 +2301,9 @@ export default function MusicPlayerSimple() {
                                 }}
                                 className={`p-1 ${colors.hoverBg} rounded flex-shrink-0`}
                               >
-                                <Pencil className={`w-3 h-3 ${colors.textMuted}`} />
+                                <Pencil
+                                  className={`w-3 h-3 ${colors.textMuted}`}
+                                />
                               </button>
                               <button
                                 onClick={() => deletePlaylist(pl.id)}
@@ -1921,7 +2322,10 @@ export default function MusicPlayerSimple() {
                           onSubmit={(e) => {
                             e.preventDefault();
                             if (newPlaylistName.trim()) {
-                              createPlaylist(newPlaylistName.trim(), musicSource);
+                              createPlaylist(
+                                newPlaylistName.trim(),
+                                musicSource,
+                              );
                               setNewPlaylistName("");
                               setIsCreatingPlaylist(false);
                             }
@@ -1937,12 +2341,18 @@ export default function MusicPlayerSimple() {
                             className={`flex-1 ${colors.accentBg} border ${colors.border} rounded px-2 py-1 text-xs ${colors.textPrimary} placeholder:${colors.textMuted} focus:outline-none`}
                             autoFocus
                           />
-                          <button type="submit" className={`p-1 ${colors.hoverBg} rounded`}>
+                          <button
+                            type="submit"
+                            className={`p-1 ${colors.hoverBg} rounded`}
+                          >
                             <Check className={`w-3 h-3 ${colors.accent}`} />
                           </button>
                           <button
                             type="button"
-                            onClick={() => { setIsCreatingPlaylist(false); setNewPlaylistName(""); }}
+                            onClick={() => {
+                              setIsCreatingPlaylist(false);
+                              setNewPlaylistName("");
+                            }}
                             className={`p-1 ${colors.hoverBg} rounded`}
                           >
                             <X className={`w-3 h-3 ${colors.textMuted}`} />
@@ -1990,7 +2400,10 @@ export default function MusicPlayerSimple() {
                       </span>
                     )
                   ) : activePlaylist ? (
-                    <>{activePlaylist.tracks.length} tracks · {effectiveIsPlaying ? "Playing" : "Paused"}</>
+                    <>
+                      {activePlaylist.tracks.length} tracks ·{" "}
+                      {effectiveIsPlaying ? "Playing" : "Paused"}
+                    </>
                   ) : (
                     <>{effectiveIsPlaying ? "Now Playing" : "Paused"}</>
                   )}
@@ -2009,7 +2422,10 @@ export default function MusicPlayerSimple() {
                         setShowDashboard(false);
                       } else {
                         setShowDashboard(true);
-                        if (musicSource === "youtube" && dashboardVideos.length === 0) {
+                        if (
+                          musicSource === "youtube" &&
+                          dashboardVideos.length === 0
+                        ) {
                           fetchDashboardVideos();
                         } else if (musicSource === "spotify") {
                           if (dashboardSpotifyTracks.length === 0) {
@@ -2078,7 +2494,9 @@ export default function MusicPlayerSimple() {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Search {musicSource === "spotify" ? "Spotify" : "YouTube"}</p>
+                  <p>
+                    Search {musicSource === "spotify" ? "Spotify" : "YouTube"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
 
@@ -2222,7 +2640,9 @@ export default function MusicPlayerSimple() {
           /* Dashboard Grid */
           <div className="flex-1 overflow-y-auto scrollbar-hide min-h-0">
             <div className="flex items-center justify-between mb-3">
-              <h3 className={`text-xs font-semibold ${colors.textMuted} uppercase tracking-wider`}>
+              <h3
+                className={`text-xs font-semibold ${colors.textMuted} uppercase tracking-wider`}
+              >
                 Suggested for You
               </h3>
               <button
@@ -2236,19 +2656,25 @@ export default function MusicPlayerSimple() {
                 disabled={isDashboardLoading || isDashboardSpotifyTracksLoading}
                 className={`p-1 ${colors.hoverBg} rounded-lg`}
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${colors.textMuted} ${(isDashboardLoading || isDashboardSpotifyTracksLoading) ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${colors.textMuted} ${isDashboardLoading || isDashboardSpotifyTracksLoading ? "animate-spin" : ""}`}
+                />
               </button>
             </div>
 
             {musicSource === "youtube" ? (
               isDashboardLoading && dashboardVideos.length === 0 ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+                  <Loader2
+                    className={`w-6 h-6 animate-spin ${colors.accent}`}
+                  />
                 </div>
               ) : dashboardVideos.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 gap-2">
                   <Music2 className={`w-8 h-8 ${colors.textMuted}`} />
-                  <p className={`text-sm ${colors.textMuted}`}>No suggestions yet</p>
+                  <p className={`text-sm ${colors.textMuted}`}>
+                    No suggestions yet
+                  </p>
                   <button
                     onClick={() => fetchDashboardVideos(true)}
                     className={`text-xs px-3 py-1.5 bg-gradient-to-r ${colors.primary} text-white rounded-lg`}
@@ -2271,15 +2697,21 @@ export default function MusicPlayerSimple() {
                           className="w-full aspect-video object-cover"
                         />
                       ) : (
-                        <div className={`w-full aspect-video ${colors.accentBg} flex items-center justify-center`}>
+                        <div
+                          className={`w-full aspect-video ${colors.accentBg} flex items-center justify-center`}
+                        >
                           <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
                         </div>
                       )}
                       <div className="p-2 flex-1 min-w-0">
-                        <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
+                        <p
+                          className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}
+                        >
                           {video.title}
                         </p>
-                        <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>
+                        <p
+                          className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}
+                        >
                           {video.channel}
                         </p>
                       </div>
@@ -2287,113 +2719,147 @@ export default function MusicPlayerSimple() {
                   ))}
                 </div>
               )
+            ) : /* Spotify Dashboard — Suggested Tracks */
+            !spotifyAuth.isConnected ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
+                <p className={`text-sm ${colors.textMuted}`}>
+                  Connect Spotify to browse
+                </p>
+                <button
+                  onClick={() => handleSourceChange("spotify")}
+                  className="text-xs px-3 py-1.5 bg-green-500 text-white rounded-lg"
+                >
+                  Connect
+                </button>
+              </div>
+            ) : isDashboardSpotifyTracksLoading &&
+              dashboardSpotifyTracks.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
+              </div>
+            ) : dashboardSpotifyTracks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                <Music2 className={`w-8 h-8 ${colors.textMuted}`} />
+                <p className={`text-sm ${colors.textMuted}`}>
+                  No suggestions yet
+                </p>
+                <button
+                  onClick={() => fetchDashboardSpotifyTracks(true)}
+                  className={`text-xs px-3 py-1.5 ${colors.accentBg} ${colors.accent} rounded-lg`}
+                >
+                  Load Suggestions
+                </button>
+              </div>
             ) : (
-              /* Spotify Dashboard — Suggested Tracks */
-              !spotifyAuth.isConnected ? (
-                <div className="flex flex-col items-center justify-center py-8 gap-2">
-                  <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
-                  <p className={`text-sm ${colors.textMuted}`}>Connect Spotify to browse</p>
-                  <button
-                    onClick={() => handleSourceChange("spotify")}
-                    className="text-xs px-3 py-1.5 bg-green-500 text-white rounded-lg"
-                  >
-                    Connect
-                  </button>
-                </div>
-              ) : isDashboardSpotifyTracksLoading && dashboardSpotifyTracks.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className={`w-6 h-6 animate-spin ${colors.accent}`} />
-                </div>
-              ) : dashboardSpotifyTracks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 gap-2">
-                  <Music2 className={`w-8 h-8 ${colors.textMuted}`} />
-                  <p className={`text-sm ${colors.textMuted}`}>No suggestions yet</p>
-                  <button
-                    onClick={() => fetchDashboardSpotifyTracks(true)}
-                    className={`text-xs px-3 py-1.5 ${colors.accentBg} ${colors.accent} rounded-lg`}
-                  >
-                    Load Suggestions
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {dashboardSpotifyTracks.map((track, idx) => (
-                      <button
-                        key={`dash-sp-track-${track.id}-${idx}`}
-                        onClick={() => handleDashboardPlaySpotifyTrack(track)}
-                        className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
-                      >
-                        {track.albumArt ? (
-                          <img
-                            src={track.albumArt}
-                            alt={track.name}
-                            className="w-full aspect-square object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
-                            <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
-                          </div>
-                        )}
-                        <div className="p-2 flex-1 min-w-0">
-                          <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
-                            {track.name}
-                          </p>
-                          <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>
-                            {track.artist}
-                          </p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {dashboardSpotifyTracks.map((track, idx) => (
+                    <button
+                      key={`dash-sp-track-${track.id}-${idx}`}
+                      onClick={() => handleDashboardPlaySpotifyTrack(track)}
+                      className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
+                    >
+                      {track.albumArt ? (
+                        <img
+                          src={track.albumArt}
+                          alt={track.name}
+                          className="w-full aspect-square object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div
+                          className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}
+                        >
+                          <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                      )}
+                      <div className="p-2 flex-1 min-w-0">
+                        <p
+                          className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}
+                        >
+                          {track.name}
+                        </p>
+                        <p
+                          className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}
+                        >
+                          {track.artist}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
-                  {/* User playlists section */}
-                  {isDashboardSpotifyLoading && dashboardSpotifyPlaylists.length === 0 ? (
-                    <div className="flex items-center justify-center py-4">
-                      <Loader2 className={`w-4 h-4 animate-spin ${colors.accent}`} />
-                    </div>
-                  ) : dashboardSpotifyPlaylists.length > 0 && (
+                {/* User playlists section */}
+                {isDashboardSpotifyLoading &&
+                dashboardSpotifyPlaylists.length === 0 ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2
+                      className={`w-4 h-4 animate-spin ${colors.accent}`}
+                    />
+                  </div>
+                ) : (
+                  dashboardSpotifyPlaylists.length > 0 && (
                     <div>
-                      <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                      <h4
+                        className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}
+                      >
                         Your Playlists
                       </h4>
                       <div className="space-y-1">
-                        {dashboardSpotifyPlaylists.slice(0, 8).map((playlist) => (
-                          <button
-                            key={`dash-sp-pl-${playlist.id}`}
-                            onClick={() => handleDashboardPlaySpotifyPlaylist(playlist)}
-                            className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
-                          >
-                            {playlist.images?.[0]?.url ? (
-                              <img
-                                src={playlist.images[0].url}
-                                alt={playlist.name}
-                                className="w-10 h-10 rounded object-cover flex-shrink-0"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
-                                <ListMusic className={`w-4 h-4 ${colors.textMuted}`} />
+                        {dashboardSpotifyPlaylists
+                          .slice(0, 8)
+                          .map((playlist) => (
+                            <button
+                              key={`dash-sp-pl-${playlist.id}`}
+                              onClick={() =>
+                                handleDashboardPlaySpotifyPlaylist(playlist)
+                              }
+                              className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                            >
+                              {playlist.images?.[0]?.url ? (
+                                <img
+                                  src={playlist.images[0].url}
+                                  alt={playlist.name}
+                                  className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div
+                                  className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}
+                                >
+                                  <ListMusic
+                                    className={`w-4 h-4 ${colors.textMuted}`}
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p
+                                  className={`text-xs font-medium ${colors.textPrimary} truncate`}
+                                >
+                                  {playlist.name}
+                                </p>
+                                <p
+                                  className={`text-[10px] ${colors.textMuted}`}
+                                >
+                                  {playlist.tracks.total} tracks
+                                </p>
                               </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{playlist.name}</p>
-                              <p className={`text-[10px] ${colors.textMuted}`}>{playlist.tracks.total} tracks</p>
-                            </div>
-                          </button>
-                        ))}
+                            </button>
+                          ))}
                       </div>
                     </div>
-                  )}
-                </div>
-              )
+                  )
+                )}
+              </div>
             )}
 
             {/* Presets quick-play section */}
             {musicSource === "youtube" && (
               <div className="mt-4">
-                <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                <h4
+                  className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}
+                >
                   Presets
                 </h4>
                 <div className="space-y-1">
@@ -2403,17 +2869,30 @@ export default function MusicPlayerSimple() {
                       onClick={() => {
                         setYoutubeSearchQueue(null);
                         setCurrentTrack(idx);
-                        youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
+                        youtubePlayer.loadVideo(video.id, {
+                          title: video.name,
+                          artist: video.artist,
+                        });
                         setShowDashboard(false);
                       }}
                       className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
                     >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colors.primary} flex items-center justify-center flex-shrink-0`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colors.primary} flex items-center justify-center flex-shrink-0`}
+                      >
                         <Play className="w-3.5 h-3.5 text-white ml-0.5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{video.name}</p>
-                        <p className={`text-[10px] ${colors.textMuted} truncate`}>{video.artist}</p>
+                        <p
+                          className={`text-xs font-medium ${colors.textPrimary} truncate`}
+                        >
+                          {video.name}
+                        </p>
+                        <p
+                          className={`text-[10px] ${colors.textMuted} truncate`}
+                        >
+                          {video.artist}
+                        </p>
                       </div>
                     </button>
                   ))}
@@ -2429,14 +2908,18 @@ export default function MusicPlayerSimple() {
               <div className="relative w-24 h-24 sm:w-28 sm:h-28">
                 <div
                   className={`absolute inset-0 rounded-full bg-gradient-to-br ${colors.primary} opacity-20 ${
-                    effectiveIsPlaying && !effectiveIsLoading ? "animate-pulse" : ""
+                    effectiveIsPlaying && !effectiveIsLoading
+                      ? "animate-pulse"
+                      : ""
                   }`}
                   style={{ animationDuration: "2s" }}
                 />
 
                 <div
                   className={`absolute inset-2 rounded-full ${isLightMode ? "bg-white/80" : "bg-gradient-to-br from-slate-800 to-slate-900"} border-2 ${colors.border} flex items-center justify-center overflow-hidden ${
-                    effectiveIsPlaying && !effectiveIsLoading ? "animate-spin" : ""
+                    effectiveIsPlaying && !effectiveIsLoading
+                      ? "animate-spin"
+                      : ""
                   }`}
                   style={{ animationDuration: "4s" }}
                 >
@@ -2494,7 +2977,9 @@ export default function MusicPlayerSimple() {
                 >
                   {musicSource === "spotify"
                     ? spotifyPlayback.currentTrack?.name ||
-                      (spotifyPlayback.isSDKReady ? "Ready to Play" : "Connecting...")
+                      (spotifyPlayback.isSDKReady
+                        ? "Ready to Play"
+                        : "Connecting...")
                     : (currentTrackInfo && (currentTrackInfo as any)?.title) ||
                       VIDEO_LIST[currentTrack]?.name ||
                       "Loading..."}
@@ -2508,7 +2993,11 @@ export default function MusicPlayerSimple() {
                         ? colors.heartActive
                         : `${colors.textMuted} ${colors.hoverBg}`
                     }`}
-                    title={isCurrentTrackInPlaylist() ? "In playlist" : "Save to playlist"}
+                    title={
+                      isCurrentTrackInPlaylist()
+                        ? "In playlist"
+                        : "Save to playlist"
+                    }
                   >
                     <Heart
                       className={`w-4 h-4 ${isCurrentTrackInPlaylist() ? "fill-current" : ""}`}
@@ -2520,7 +3009,9 @@ export default function MusicPlayerSimple() {
                     <div
                       className={`absolute right-0 top-full mt-1 p-2 ${colors.surfaceBg} backdrop-blur-xl border ${colors.border} rounded-xl shadow-xl z-[9999] min-w-[160px]`}
                     >
-                      <div className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}>
+                      <div
+                        className={`text-[10px] ${colors.textMuted} uppercase tracking-wider px-2 pb-1 mb-1 border-b ${colors.border}`}
+                      >
                         Save to...
                       </div>
                       {sourcePlaylists.map((pl) => {
@@ -2543,7 +3034,9 @@ export default function MusicPlayerSimple() {
                             <Heart
                               className={`w-3 h-3 flex-shrink-0 ${inPl ? `fill-current ${colors.heartActive}` : colors.textMuted}`}
                             />
-                            <span className={`text-xs truncate ${colors.textSecondary}`}>
+                            <span
+                              className={`text-xs truncate ${colors.textSecondary}`}
+                            >
                               {pl.name}
                             </span>
                           </button>
@@ -2563,203 +3056,208 @@ export default function MusicPlayerSimple() {
               </p>
             </div>
 
-        {/* Progress Bar */}
-        {totalDuration > 0 && (
-          <div className=" px-2">
-            <input
-              type="range"
-              min="0"
-              max={totalDuration}
-              value={currentProgress}
-              onChange={handleSeek}
-              className={`w-full h-1 ${isLightMode ? "bg-black/10" : "bg-white/20"} rounded-full appearance-none cursor-pointer`}
-              style={{
-                background: `linear-gradient(to right, ${colors.progressBg} ${
-                  (currentProgress / totalDuration) * 100
-                }%, ${isLightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)"} ${(currentProgress / totalDuration) * 100}%)`,
-              }}
-            />
-            <div
-              className={`flex justify-between mt-1 text-[10px] ${colors.textMuted}`}
-            >
-              <span>{formatTime(currentProgress)}</span>
-              <span>{formatTime(totalDuration)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Main Controls */}
-        <TooltipProvider delayDuration={300}>
-          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={async () => {
-                    const newState = !isShuffleOn;
-                    setIsShuffleOn(newState);
-                    setPlayHistory([]);
-                    if (musicSource === "spotify") {
-                      await spotifyPlayback.setShuffle(newState);
-                    }
+            {/* Progress Bar */}
+            {totalDuration > 0 && (
+              <div className=" px-2">
+                <input
+                  type="range"
+                  min="0"
+                  max={totalDuration}
+                  value={currentProgress}
+                  onChange={handleSeek}
+                  className={`w-full h-1 ${isLightMode ? "bg-black/10" : "bg-white/20"} rounded-full appearance-none cursor-pointer`}
+                  style={{
+                    background: `linear-gradient(to right, ${colors.progressBg} ${
+                      (currentProgress / totalDuration) * 100
+                    }%, ${isLightMode ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)"} ${(currentProgress / totalDuration) * 100}%)`,
                   }}
-                  className={`p-2 rounded-lg transition-all ${
-                    isShuffleOn
-                      ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"}`
-                  }`}
-                >
-                  <Shuffle className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{isShuffleOn ? "Shuffle on" : "Shuffle off"}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handlePrev}
-                  disabled={effectiveIsLoading}
-                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"} disabled:opacity-50`}
-                >
-                  <SkipBack className="w-5 h-5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Previous</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handlePlayPause}
-                  disabled={
-                    effectiveIsLoading ||
-                    (musicSource === "spotify" &&
-                      !spotifyPlayback.hasActiveDevice)
-                  }
-                  className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100`}
-                >
-                  {effectiveIsLoading ? (
-                    <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
-                  ) : effectiveIsPlaying ? (
-                    <Pause className="w-5 h-5 sm:w-6 sm:h-6" />
-                  ) : (
-                    <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{effectiveIsPlaying ? "Pause" : "Play"}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handleNext}
-                  disabled={effectiveIsLoading}
-                  className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"} disabled:opacity-50`}
-                >
-                  <SkipForward className="w-5 h-5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Next</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={async () => {
-                    const newState = !isRepeatOn;
-                    setIsRepeatOn(newState);
-                    if (musicSource === "spotify") {
-                      await spotifyPlayback.setRepeat(newState ? "track" : "off");
-                    }
-                  }}
-                  className={`p-2 rounded-lg transition-all ${
-                    isRepeatOn
-                      ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
-                      : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"}`
-                  }`}
-                >
-                  <Repeat className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{isRepeatOn ? "Repeat on" : "Repeat off"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
-
-        {/* Footer */}
-        <div className="flex items-center justify-center gap-1 mt-3 flex-shrink-0">
-          {musicSource === "youtube" ? (
-            activePlaylist && activePlaylist.tracks.length > 0 ? (
-              // Custom playlist dots
-              activePlaylist.tracks.slice(0, 10).map((_, idx) => (
-                <button
-                  key={idx}
-                  disabled={effectiveIsLoading}
-                  onClick={() => {
-                    const queue = activePlaylist.tracks.map((t) => ({
-                      id: t.id,
-                      name: t.name,
-                      artist: t.artist,
-                    }));
-                    setYoutubeSearchQueue(queue);
-                    setYoutubeQueueIndex(idx);
-                    const video = queue[idx];
-                    youtubePlayer.loadVideo(video.id, { title: video.name, artist: video.artist });
-                  }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
-                    youtubeQueueIndex === idx && youtubeSearchQueue
-                      ? `bg-gradient-to-r ${colors.primary} w-4`
-                      : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
-                  }`}
                 />
-              ))
-            ) : (
-              // Preset dots
-              VIDEO_LIST.map((_, idx) => (
-                <button
-                  key={idx}
-                  disabled={effectiveIsLoading}
-                  onClick={() => {
-                    setYoutubeSearchQueue(null); // Clear search queue, back to preset list
-                    setCurrentTrack(idx);
-                    const video = VIDEO_LIST[idx];
-                    youtubePlayer.loadVideo(video.id, {
-                      title: video.name,
-                      artist: video.artist,
-                    });
-                  }}
-                  className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
-                    currentTrack === idx && !youtubeSearchQueue
-                      ? `bg-gradient-to-r ${colors.primary} w-4`
-                      : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
-                  }`}
-                />
-              ))
-            )
-          ) : (
-            <div
-              className={`flex items-center gap-2 text-[10px] ${colors.textMuted}`}
-            >
-              <Smartphone className="w-3 h-3" />
-              <span>
-                {spotifyPlayback.hasActiveDevice
-                  ? `Playing on ${spotifyPlayback.activeDevice?.name}`
-                  : "Open Spotify on a device"}
-              </span>
+                <div
+                  className={`flex justify-between mt-1 text-[10px] ${colors.textMuted}`}
+                >
+                  <span>{formatTime(currentProgress)}</span>
+                  <span>{formatTime(totalDuration)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Main Controls */}
+            <TooltipProvider delayDuration={300}>
+              <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 flex-shrink-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={async () => {
+                        const newState = !isShuffleOn;
+                        setIsShuffleOn(newState);
+                        setPlayHistory([]);
+                        if (musicSource === "spotify") {
+                          await spotifyPlayback.setShuffle(newState);
+                        }
+                      }}
+                      className={`p-2 rounded-lg transition-all ${
+                        isShuffleOn
+                          ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
+                          : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"}`
+                      }`}
+                    >
+                      <Shuffle className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isShuffleOn ? "Shuffle on" : "Shuffle off"}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handlePrev}
+                      disabled={effectiveIsLoading}
+                      className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"} disabled:opacity-50`}
+                    >
+                      <SkipBack className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Previous</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handlePlayPause}
+                      disabled={
+                        effectiveIsLoading ||
+                        (musicSource === "spotify" &&
+                          !spotifyPlayback.hasActiveDevice)
+                      }
+                      className={`p-3 sm:p-4 bg-gradient-to-br ${colors.primary} text-white rounded-full hover:scale-105 shadow-lg ${colors.glow} transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100`}
+                    >
+                      {effectiveIsLoading ? (
+                        <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
+                      ) : effectiveIsPlaying ? (
+                        <Pause className="w-5 h-5 sm:w-6 sm:h-6" />
+                      ) : (
+                        <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{effectiveIsPlaying ? "Pause" : "Play"}</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleNext}
+                      disabled={effectiveIsLoading}
+                      className={`p-2 ${colors.hoverBg} rounded-lg transition-colors ${colors.textSecondary} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"} disabled:opacity-50`}
+                    >
+                      <SkipForward className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Next</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={async () => {
+                        const newState = !isRepeatOn;
+                        setIsRepeatOn(newState);
+                        if (musicSource === "spotify") {
+                          await spotifyPlayback.setRepeat(
+                            newState ? "track" : "off",
+                          );
+                        }
+                      }}
+                      className={`p-2 rounded-lg transition-all ${
+                        isRepeatOn
+                          ? `bg-gradient-to-br ${colors.primary} text-white shadow-lg ${colors.glow}`
+                          : `${colors.hoverBg} ${colors.textMuted} ${isLightMode ? "hover:text-gray-900" : "hover:text-white"}`
+                      }`}
+                    >
+                      <Repeat className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isRepeatOn ? "Repeat on" : "Repeat off"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+
+            {/* Footer */}
+            <div className="flex items-center justify-center gap-1 mt-3 flex-shrink-0">
+              {musicSource === "youtube" ? (
+                activePlaylist && activePlaylist.tracks.length > 0 ? (
+                  // Custom playlist dots
+                  activePlaylist.tracks.slice(0, 10).map((_, idx) => (
+                    <button
+                      key={idx}
+                      disabled={effectiveIsLoading}
+                      onClick={() => {
+                        const queue = activePlaylist.tracks.map((t) => ({
+                          id: t.id,
+                          name: t.name,
+                          artist: t.artist,
+                        }));
+                        setYoutubeSearchQueue(queue);
+                        setYoutubeQueueIndex(idx);
+                        const video = queue[idx];
+                        youtubePlayer.loadVideo(video.id, {
+                          title: video.name,
+                          artist: video.artist,
+                        });
+                      }}
+                      className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
+                        youtubeQueueIndex === idx && youtubeSearchQueue
+                          ? `bg-gradient-to-r ${colors.primary} w-4`
+                          : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
+                      }`}
+                    />
+                  ))
+                ) : (
+                  // Preset dots
+                  VIDEO_LIST.map((_, idx) => (
+                    <button
+                      key={idx}
+                      disabled={effectiveIsLoading}
+                      onClick={() => {
+                        setYoutubeSearchQueue(null); // Clear search queue, back to preset list
+                        setCurrentTrack(idx);
+                        const video = VIDEO_LIST[idx];
+                        youtubePlayer.loadVideo(video.id, {
+                          title: video.name,
+                          artist: video.artist,
+                        });
+                      }}
+                      className={`w-1.5 h-1.5 rounded-full transition-all disabled:cursor-not-allowed ${
+                        currentTrack === idx && !youtubeSearchQueue
+                          ? `bg-gradient-to-r ${colors.primary} w-4`
+                          : `${isLightMode ? "bg-black/20 hover:bg-black/40" : "bg-white/20 hover:bg-white/40"}`
+                      }`}
+                    />
+                  ))
+                )
+              ) : (
+                <div
+                  className={`flex items-center gap-2 text-[10px] ${colors.textMuted}`}
+                >
+                  <Smartphone className="w-3 h-3" />
+                  <span>
+                    {spotifyPlayback.hasActiveDevice
+                      ? `Playing on ${spotifyPlayback.activeDevice?.name}`
+                      : "Open Spotify on a device"}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
           </>
         )}
 
@@ -2818,7 +3316,11 @@ export default function MusicPlayerSimple() {
       {showPlaylistDropdown && (
         <div
           className="fixed inset-0 -z-1"
-          onClick={() => { setShowPlaylistDropdown(false); setIsCreatingPlaylist(false); setEditingPlaylistId(null); }}
+          onClick={() => {
+            setShowPlaylistDropdown(false);
+            setIsCreatingPlaylist(false);
+            setEditingPlaylistId(null);
+          }}
         />
       )}
       {showPlaylistPicker && (
