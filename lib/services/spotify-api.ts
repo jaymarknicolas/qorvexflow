@@ -348,25 +348,31 @@ export class SpotifyAPIService {
   }
 
   /**
-   * Get suggested tracks based on a search query (theme-based)
+   * Get suggested tracks based on a search query (theme-based).
+   * Throws a "spotify_auth_error" Error on 400/401/403 so callers can detect stale tokens.
    */
   async getSuggestedTracks(query: string, limit: number = 20): Promise<SpotifyTrack[]> {
     if (!this.accessToken) return [];
 
+    const response = await fetch(
+      `${SPOTIFY_API_BASE}/search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      // Throw on auth errors so callers can detect and clear stale tokens
+      if (response.status === 400 || response.status === 401 || response.status === 403) {
+        throw new Error(`spotify_auth_error:${response.status}`);
+      }
+      return [];
+    }
+
     try {
-      const response = await fetch(
-        `${SPOTIFY_API_BASE}/search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) return [];
-
       const data = await response.json();
-
       return data.tracks.items.map((item: any) => ({
         id: item.id,
         name: item.name,

@@ -654,11 +654,17 @@ export default function MusicPlayerSimple() {
         setDashboardSpotifyTracks(tracks);
       }
     } catch (err) {
-      console.error("Failed to fetch Spotify suggested tracks:", err);
+      // Auth error (stale token missing required scopes) — disconnect so user re-authenticates
+      if (err instanceof Error && err.message.startsWith("spotify_auth_error:")) {
+        spotifyAuth.disconnect();
+        setMusicSource("youtube");
+      } else {
+        console.error("Failed to fetch Spotify suggested tracks:", err);
+      }
     } finally {
       setIsDashboardSpotifyTracksLoading(false);
     }
-  }, [spotifyAuth.isConnected, spotifyAuth.accessToken, theme, SPOTIFY_THEME_QUERIES]);
+  }, [spotifyAuth.isConnected, spotifyAuth.accessToken, theme, SPOTIFY_THEME_QUERIES]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-fetch dashboard on mount
   useEffect(() => {
