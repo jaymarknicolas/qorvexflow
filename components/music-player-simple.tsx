@@ -248,8 +248,6 @@ export default function MusicPlayerSimple() {
   // Spotify browse sections
   const [browseRecentlyPlayed, setBrowseRecentlyPlayed] = useState<SpotifyTrack[]>([]);
   const [browseTopTracks, setBrowseTopTracks] = useState<SpotifyTrack[]>([]);
-  const [browseFeaturedPlaylists, setBrowseFeaturedPlaylists] = useState<SpotifyAPIPlaylist[]>([]);
-  const [browseNewReleases, setBrowseNewReleases] = useState<{ id: string; name: string; artist: string; albumArt: string; uri: string }[]>([]);
   const [isSpotifyBrowseSectionsLoading, setIsSpotifyBrowseSectionsLoading] = useState(false);
   const [spotifyBrowseView, setSpotifyBrowseView] = useState<"sections" | "playlist-tracks">("sections");
 
@@ -564,17 +562,13 @@ export default function MusicPlayerSimple() {
     spotifyAPI.setAccessToken(spotifyAuth.accessToken);
     setIsSpotifyBrowseSectionsLoading(true);
     try {
-      const [recent, top, featured, releases, playlists] = await Promise.all([
+      const [recent, top, playlists] = await Promise.all([
         spotifyAPI.getRecentlyPlayed(10),
         spotifyAPI.getTopTracks(10, "short_term"),
-        spotifyAPI.getFeaturedPlaylists(10),
-        spotifyAPI.getNewReleases(10),
         spotifyAPI.getUserPlaylists(10),
       ]);
       setBrowseRecentlyPlayed(recent);
       setBrowseTopTracks(top);
-      setBrowseFeaturedPlaylists(featured);
-      setBrowseNewReleases(releases);
       setSpotifyUserPlaylists(playlists);
     } catch (err) {
       console.error("Failed to fetch Spotify browse sections:", err);
@@ -1290,38 +1284,6 @@ export default function MusicPlayerSimple() {
     setShowBrowse(false);
   };
 
-  // Play a featured playlist from browse
-  const handlePlayBrowseFeaturedPlaylist = async (playlist: SpotifyAPIPlaylist) => {
-    try {
-      const tracks = await spotifyAPI.getPlaylistTracks(playlist.id);
-      if (tracks.length > 0) {
-        const uris = tracks.map((t) => t.uri);
-        await spotifyAPI.play(undefined, uris, { position: 0 });
-      }
-    } catch (err) {
-      console.error("Failed to play featured playlist:", err);
-    }
-    setShowBrowse(false);
-  };
-
-  // Play a new release album
-  const handlePlayBrowseNewRelease = async (album: { id: string; uri: string }) => {
-    try {
-      const response = await fetch("https://api.spotify.com/v1/me/player/play", {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${spotifyAuth.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ context_uri: album.uri }),
-      });
-      if (response.ok || response.status === 204) {
-        setShowBrowse(false);
-      }
-    } catch (err) {
-      console.error("Failed to play new release:", err);
-    }
-  };
 
   // Add Spotify browse track to local playlist
   const handleAddSpotifyBrowseTrackToPlaylist = (track: SpotifyTrack) => {
@@ -1775,66 +1737,6 @@ export default function MusicPlayerSimple() {
                         </div>
                       )}
 
-                      {/* Featured Playlists */}
-                      {browseFeaturedPlaylists.length > 0 && (
-                        <div>
-                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
-                            Featured Playlists
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            {browseFeaturedPlaylists.slice(0, 6).map((playlist, idx) => (
-                              <button
-                                key={`feat-${playlist.id}-${idx}`}
-                                onClick={() => handlePlayBrowseFeaturedPlaylist(playlist)}
-                                className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
-                              >
-                                {playlist.images?.[0]?.url ? (
-                                  <img src={playlist.images[0].url} alt={playlist.name} className="w-full aspect-square object-cover" loading="lazy" />
-                                ) : (
-                                  <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
-                                    <ListMusic className={`w-6 h-6 ${colors.textMuted}`} />
-                                  </div>
-                                )}
-                                <div className="p-2 flex-1 min-w-0">
-                                  <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>{playlist.name}</p>
-                                  <p className={`text-[10px] ${colors.textMuted} mt-0.5`}>{playlist.tracks.total} tracks</p>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* New Releases */}
-                      {browseNewReleases.length > 0 && (
-                        <div>
-                          <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
-                            New Releases
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            {browseNewReleases.slice(0, 6).map((album, idx) => (
-                              <button
-                                key={`release-${album.id}-${idx}`}
-                                onClick={() => handlePlayBrowseNewRelease(album)}
-                                className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
-                              >
-                                {album.albumArt ? (
-                                  <img src={album.albumArt} alt={album.name} className="w-full aspect-square object-cover" loading="lazy" />
-                                ) : (
-                                  <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
-                                    <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
-                                  </div>
-                                )}
-                                <div className="p-2 flex-1 min-w-0">
-                                  <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>{album.name}</p>
-                                  <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>{album.artist}</p>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                       {/* Your Playlists */}
                       {spotifyUserPlaylists.length > 0 && (
                         <div>
@@ -1873,8 +1775,6 @@ export default function MusicPlayerSimple() {
                       {!isSpotifyBrowseSectionsLoading &&
                         browseRecentlyPlayed.length === 0 &&
                         browseTopTracks.length === 0 &&
-                        browseFeaturedPlaylists.length === 0 &&
-                        browseNewReleases.length === 0 &&
                         spotifyUserPlaylists.length === 0 && (
                           <div className="flex flex-col items-center justify-center py-8 gap-2">
                             <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />

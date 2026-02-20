@@ -235,6 +235,13 @@ export function useSpotifyPlayback(
           console.error("Spotify authentication error:", message);
           setError("Spotify authentication failed");
           setIsLoading(false);
+          setIsSDKReady(false);
+          // Immediately disconnect to stop the SDK retry loop before React state propagates
+          const player = playerRef.current;
+          playerRef.current = null;
+          if (player) {
+            try { player.disconnect(); } catch {}
+          }
         },
       );
 
@@ -272,11 +279,10 @@ export function useSpotifyPlayback(
   // Don't gate on state.isPlaying — our local state can be out of sync with Spotify
   useEffect(() => {
     if (!isActive) {
-      // Try SDK pause first, then REST API as fallback
+      // Use SDK if available, otherwise fall back to REST API (not both — REST causes 404 with SDK device)
       if (playerRef.current) {
         playerRef.current.pause().catch(() => {});
-      }
-      if (accessToken) {
+      } else if (accessToken) {
         spotifyAPI.pause().catch(() => {});
       }
     }
@@ -298,26 +304,26 @@ export function useSpotifyPlayback(
   }, []);
 
   const pause = useCallback(async (): Promise<boolean> => {
-    let success = false;
-    // Try SDK pause
+    // Use SDK if available — REST API causes 404 when no external device is active
     if (playerRef.current) {
       try {
         await playerRef.current.pause();
-        success = true;
+        return true;
       } catch (err) {
         console.error("Failed to pause via SDK:", err);
+        return false;
       }
     }
-    // Always also call REST API as fallback to ensure Spotify actually stops
+    // Fallback: REST API (only when no SDK player)
     if (accessToken) {
       try {
-        await spotifyAPI.pause();
-        success = true;
+        return await spotifyAPI.pause();
       } catch (err) {
         console.error("Failed to pause via API:", err);
+        return false;
       }
     }
-    return success;
+    return false;
   }, [accessToken]);
 
   const skipNext = useCallback(async (): Promise<boolean> => {
