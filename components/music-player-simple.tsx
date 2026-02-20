@@ -677,6 +677,7 @@ export default function MusicPlayerSimple() {
   useEffect(() => {
     if (musicSource === "spotify" && spotifyAuth.isConnected && spotifyAuth.accessToken) {
       fetchDashboardSpotifyTracks();
+      fetchDashboardSpotify();
     }
   }, [spotifyAuth.isConnected, spotifyAuth.accessToken, musicSource]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1285,8 +1286,6 @@ export default function MusicPlayerSimple() {
   // Play a new release album
   const handlePlayBrowseNewRelease = async (album: { id: string; uri: string }) => {
     try {
-      await spotifyAPI.play(undefined, undefined, undefined);
-      // Play the album context
       const response = await fetch("https://api.spotify.com/v1/me/player/play", {
         method: "PUT",
         headers: {
@@ -1295,7 +1294,7 @@ export default function MusicPlayerSimple() {
         },
         body: JSON.stringify({ context_uri: album.uri }),
       });
-      if (response.ok) {
+      if (response.ok || response.status === 204) {
         setShowBrowse(false);
       }
     } catch (err) {
@@ -1848,6 +1847,25 @@ export default function MusicPlayerSimple() {
                           </div>
                         </div>
                       )}
+
+                      {/* Empty state when all sections are empty */}
+                      {!isSpotifyBrowseSectionsLoading &&
+                        browseRecentlyPlayed.length === 0 &&
+                        browseTopTracks.length === 0 &&
+                        browseFeaturedPlaylists.length === 0 &&
+                        browseNewReleases.length === 0 &&
+                        spotifyUserPlaylists.length === 0 && (
+                          <div className="flex flex-col items-center justify-center py-8 gap-2">
+                            <SpotifyIcon className={`w-8 h-8 ${colors.textMuted}`} />
+                            <p className={`text-sm ${colors.textMuted}`}>No content available</p>
+                            <button
+                              onClick={fetchSpotifyBrowseSections}
+                              className={`text-xs px-3 py-1.5 ${colors.accentBg} ${colors.accent} rounded-lg`}
+                            >
+                              Retry
+                            </button>
+                          </div>
+                        )}
                     </div>
                   )}
                 </>
@@ -2072,8 +2090,13 @@ export default function MusicPlayerSimple() {
                         setShowDashboard(true);
                         if (musicSource === "youtube" && dashboardVideos.length === 0) {
                           fetchDashboardVideos();
-                        } else if (musicSource === "spotify" && dashboardSpotifyTracks.length === 0) {
-                          fetchDashboardSpotifyTracks();
+                        } else if (musicSource === "spotify") {
+                          if (dashboardSpotifyTracks.length === 0) {
+                            fetchDashboardSpotifyTracks();
+                          }
+                          if (dashboardSpotifyPlaylists.length === 0) {
+                            fetchDashboardSpotify();
+                          }
                         }
                       }
                     }}
@@ -2372,35 +2395,76 @@ export default function MusicPlayerSimple() {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {dashboardSpotifyTracks.map((track, idx) => (
-                    <button
-                      key={`dash-sp-track-${track.id}-${idx}`}
-                      onClick={() => handleDashboardPlaySpotifyTrack(track)}
-                      className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
-                    >
-                      {track.albumArt ? (
-                        <img
-                          src={track.albumArt}
-                          alt={track.name}
-                          className="w-full aspect-square object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
-                          <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {dashboardSpotifyTracks.map((track, idx) => (
+                      <button
+                        key={`dash-sp-track-${track.id}-${idx}`}
+                        onClick={() => handleDashboardPlaySpotifyTrack(track)}
+                        className={`flex flex-col ${colors.accentBg} ${colors.hoverBg} rounded-xl overflow-hidden transition-all hover:scale-[1.02] text-left`}
+                      >
+                        {track.albumArt ? (
+                          <img
+                            src={track.albumArt}
+                            alt={track.name}
+                            className="w-full aspect-square object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className={`w-full aspect-square ${colors.accentBg} flex items-center justify-center`}>
+                            <Music2 className={`w-6 h-6 ${colors.textMuted}`} />
+                          </div>
+                        )}
+                        <div className="p-2 flex-1 min-w-0">
+                          <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
+                            {track.name}
+                          </p>
+                          <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>
+                            {track.artist}
+                          </p>
                         </div>
-                      )}
-                      <div className="p-2 flex-1 min-w-0">
-                        <p className={`text-xs font-medium ${colors.textPrimary} line-clamp-2 leading-tight`}>
-                          {track.name}
-                        </p>
-                        <p className={`text-[10px] ${colors.textMuted} truncate mt-0.5`}>
-                          {track.artist}
-                        </p>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* User playlists section */}
+                  {isDashboardSpotifyLoading && dashboardSpotifyPlaylists.length === 0 ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className={`w-4 h-4 animate-spin ${colors.accent}`} />
+                    </div>
+                  ) : dashboardSpotifyPlaylists.length > 0 && (
+                    <div>
+                      <h4 className={`text-[10px] font-semibold ${colors.textMuted} uppercase tracking-wider mb-2`}>
+                        Your Playlists
+                      </h4>
+                      <div className="space-y-1">
+                        {dashboardSpotifyPlaylists.slice(0, 8).map((playlist) => (
+                          <button
+                            key={`dash-sp-pl-${playlist.id}`}
+                            onClick={() => handleDashboardPlaySpotifyPlaylist(playlist)}
+                            className={`w-full flex items-center gap-3 p-2 ${colors.hoverBg} rounded-lg transition-colors text-left`}
+                          >
+                            {playlist.images?.[0]?.url ? (
+                              <img
+                                src={playlist.images[0].url}
+                                alt={playlist.name}
+                                className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className={`w-10 h-10 rounded ${colors.accentBg} flex items-center justify-center flex-shrink-0`}>
+                                <ListMusic className={`w-4 h-4 ${colors.textMuted}`} />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-xs font-medium ${colors.textPrimary} truncate`}>{playlist.name}</p>
+                              <p className={`text-[10px] ${colors.textMuted}`}>{playlist.tracks.total} tracks</p>
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                    </button>
-                  ))}
+                    </div>
+                  )}
                 </div>
               )
             )}
@@ -2779,7 +2843,7 @@ export default function MusicPlayerSimple() {
         )}
 
         {/* Waveform */}
-        {totalDuration > 0 && (
+        {totalDuration > 0 && !showDashboard && (
           <div className="mt-2 absolute flex items-end justify-center gap-[3px] h-1/2 sm:h-16 flex-shrink-0 w-full -z-1 -bottom-1 opacity-30 pointer-events-none left-0 right-0">
             {waveformBars.map((bar) => {
               const isAnimating = effectiveIsPlaying && !effectiveIsLoading;

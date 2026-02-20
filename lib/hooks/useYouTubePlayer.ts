@@ -137,7 +137,7 @@ export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayer
 
   const playerRef = useRef<YTPlayer | null>(null);
   const timeUpdateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingVideoRef = useRef<{ videoId: string; track?: Partial<YouTubeTrack> } | null>(null);
+  const pendingVideoRef = useRef<{ videoId: string; track?: Partial<YouTubeTrack>; autoPlay?: boolean } | null>(null);
   const playRetryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onEndedRef = useRef(options?.onEnded);
 
@@ -188,10 +188,14 @@ export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayer
             setIsLoading(false);
             event.target.setVolume(volume);
 
-            // Load pending video if any (cue only, don't auto-play)
+            // Load pending video if any
             if (pendingVideoRef.current) {
-              const { videoId, track } = pendingVideoRef.current;
-              event.target.cueVideoById(videoId);
+              const { videoId, track, autoPlay: pendingAutoPlay = false } = pendingVideoRef.current;
+              if (pendingAutoPlay) {
+                event.target.loadVideoById(videoId);
+              } else {
+                event.target.cueVideoById(videoId);
+              }
               if (track) {
                 setCurrentTrack({
                   videoId,
@@ -428,7 +432,7 @@ export function useYouTubePlayer(containerId: string, options?: UseYouTubePlayer
         }
       } else {
         // Store for when player is ready
-        pendingVideoRef.current = { videoId, track };
+        pendingVideoRef.current = { videoId, track, autoPlay };
       }
     },
     [isReady]
